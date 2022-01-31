@@ -6,9 +6,6 @@
 \usage{
 quiet_r5_ttm(...)
 }
-\arguments{
-\item{...}{voir safe_r5_ttm}
-}
 \description{
 fonction de récupération
 }

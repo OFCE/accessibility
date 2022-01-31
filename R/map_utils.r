@@ -244,3 +244,27 @@ second2str <- function(temps) {
   }
   stringr::str_replace(s, " $", "")
 }
+
+#' Projette un raster RGB
+#'
+#' En procédant à une interpolation, la projection simple d'un raster
+#' produit un raster avec des valeurs non entières même si l'input
+#' est composé de composantes RGB et entière (0-255)
+#' La fonction projette donc dans un système de coordonnées
+#' et rebase et arrondi les différentes couches.
+#'
+#' @param rgb le raster en entrée
+#' @param crs le système de coordonnées en sortie
+#'
+#' @return un raster RGB projetté dans
+#' @export
+#'
+projectrgb <- function(rgb, crs="3035", res=200) {
+  maxs <- raster::cellStats(rgb, max)
+  mins <- raster::cellStats(rgb, min)
+  rgbp <- raster::projectRaster(from=rgb, res=res, crs=sp::CRS(glue::glue("EPSG:{crs}"))) # la projection fait un truc bizarre sur les entiers
+  maxp <- raster::cellStats(rgbp, max)
+  minp <- raster::cellStats(rgbp, min)
+  rgbp <- round((rgbp-minp)/(maxp-minp)*(maxs-mins) + mins)
+  rgbp
+}

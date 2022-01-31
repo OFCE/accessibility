@@ -56,11 +56,15 @@ safe_r5_ttm <- purrr::safely(r5r::travel_time_matrix)
 
 #' fonction de récupération
 #'
-#' @param ... voir safe_r5_ttm
+#' @inheritParams r5r::travel_time_matrix
 #'
-#' @importFrom utils capture.output
+
 quiet_r5_ttm <- function(...) {
-  capture.output(r <- safe_r5_ttm(...), file="output.txt",type=c("output", "message"), split = FALSE, append = TRUE)
+  utils::capture.output(
+    r <- safe_r5_ttm(...),
+    file=NULL,
+    type=c("output", "message"),
+    split = FALSE, append = TRUE)
   r
 }
 
@@ -76,7 +80,6 @@ r5_ttm <- function(o, d, tmax, routing)
 {
   o <- o[, .(id=as.character(id),lon,lat)]
   d <- d[, .(id=as.character(id),lon,lat)]
-
   res <- quiet_r5_ttm(
     r5r_core = routing$core,
     origins = o,
@@ -90,6 +93,7 @@ r5_ttm <- function(o, d, tmax, routing)
     walk_speed = routing$walk_speed,
     bike_speed = routing$bike_speed,
     max_rides = routing$max_rides,
+    max_lts = routing$max_lts,
     n_threads = routing$n_threads,
     verbose=FALSE,
     progress=FALSE)
@@ -375,21 +379,31 @@ routing_setup_r5 <- function(path,
                              percentiles=50L,
                              walk_speed = 5.0,
                              bike_speed = 12.0,
+                             max_lts= 2,
                              max_rides= 5L,
+                             use_elevation = FALSE,
+                             overwrite = FALSE,
                              n_threads= 4L,
                              jMem = "12G",
                              quick_setup = FALSE)
 {
   env <- parent.frame()
   path <- glue::glue(path, .envir = env)
+  assertthat::assert_that(
+    all(mode%in%c('TRAM', 'SUBWAY', 'RAIL', 'BUS',
+              'FERRY', 'CABLE_CAR', 'GONDOLA', 'FUNICULAR',
+              'TRANSIT', 'WALK', 'BICYCLE', 'CAR', 'BICYCLE_RENT', 'CAR_PARK')),
+    msg = "incorrect transport mode")
+
   mode_string <- stringr::str_c(mode, collapse = "&")
   r5r::stop_r5()
   #rJava::.jgc(R.gc = TRUE)
-  .jinit(force.init = TRUE) #modif du code ci-dessus (MP)
+  rJava::.jinit(force.init = TRUE, silent=TRUE) #modif du code ci-dessus (MP)
   if(quick_setup)
     core <- quick_setup_r5(data_path = path)
   else
-    core <- r5r::setup_r5(data_path = path, verbose=FALSE)
+    core <- r5r::setup_r5(data_path = path, verbose=FALSE,
+                          use_elevation=use_elevation, overwrite = overwrite)
 
   core$setNumberOfMonteCarloDraws(as.integer(montecarlo))
   setup <- get_setup_r5(data_path = path)
@@ -408,6 +422,7 @@ routing_setup_r5 <- function(path,
     walk_speed = walk_speed,
     bike_speed = bike_speed,
     max_rides = max_rides,
+    max_lts = max_lts,
     n_threads = as.integer(n_threads),
     future = TRUE,
     jMem = jMem,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/iso_accessibilite.r
 \name{iso_accessibilite}
 \alias{iso_accessibilite}
-\title{Calcul de l'accessibilité.}
+\title{Calcul de l'accessibilité}
 \usage{
 iso_accessibilite(
   quoi,
@@ -25,7 +25,8 @@ iso_accessibilite(
 \arguments{
 \item{quoi}{sf de variables numériques de différentes aménités, qui vont être agrégées au sein d'isochrones.}
 
-\item{ou}{positions sur lesquelles sont calculés les accessibilités. Si NULL, un raster est défini par défaut.}
+\item{ou}{positions sur lesquelles sont calculées les accessibilités.
+Si NULL, un raster est défini par défaut en ayant la même empreinte que les oportunités, à la résolution resolution.}
 
 \item{res_quoi}{rasterisation éventuelle des lieux à la résolution donnée. Par défaut, reste un sf.}
 

@@ -1,4 +1,4 @@
-#' Calcul de l'accessibilité.
+#' Calcul de l'accessibilité
 #'
 #' /code{iso_accessibilite} calcule l'accessibilité à des aménités définies sur une carte (sous forme de sf) et
 #' renvoie un raster à une certaine résolution. Le calcul des distances isochroniques est organisé par secteurs et
@@ -6,7 +6,8 @@
 #' Les étapes du calcul peuvent être enregistrées pour ne pas repartir de zéro si le calcul plante en cours de route.
 #'
 #' @param quoi sf de variables numériques de différentes aménités, qui vont être agrégées au sein d'isochrones.
-#' @param ou positions sur lesquelles sont calculés les accessibilités. Si NULL, un raster est défini par défaut.
+#' @param ou positions sur lesquelles sont calculées les accessibilités.
+#'           Si NULL, un raster est défini par défaut en ayant la même empreinte que les oportunités, à la résolution resolution.
 #' @param res_quoi rasterisation éventuelle des lieux à la résolution donnée. Par défaut, reste un sf.
 #' @param resolution résolution retenue pour l'accessibilité. Par défaut, 200m si ou est NULL, Inf sinon.
 #' @param var_quoi si rasterisation, définie la fonction d'agrégation. Non implémenté.

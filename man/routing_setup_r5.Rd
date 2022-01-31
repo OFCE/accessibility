@@ -14,7 +14,10 @@ routing_setup_r5(
   percentiles = 50L,
   walk_speed = 5,
   bike_speed = 12,
+  max_lts = 2,
   max_rides = 5L,
+  use_elevation = FALSE,
+  overwrite = FALSE,
   n_threads = 4L,
   jMem = "12G",
   quick_setup = FALSE
