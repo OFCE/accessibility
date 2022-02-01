@@ -268,3 +268,26 @@ projectrgb <- function(rgb, crs="3035", res=200) {
   rgbp <- round((rgbp-minp)/(maxp-minp)*(maxs-mins) + mins)
   rgbp
 }
+
+
+#' Repackage la matrice de distance
+#'
+#' A partir de l'output de \code{\link{iso_accessibilite}} en mode \code{ttm_out=TRUE}
+#' calcule les idINS et fabrique un data.table associant les points de départ (from) à ceux de destination (to)
+#'
+#' @param ttm l'output de \code{\link{iso_accessibilite}}
+#' @param resolution la résolution par défaut 200m
+#'
+#' @return un data.table avec les paires o-d et les temps en fonction du mode
+#' @export
+#'
+ttm_idINS <- function(ttm, resolution=200) {
+  require("data.table")
+  from <- ttm$fromId[, .(id, fromidINS = idINS3035(x,y, resolution = resolution))]
+  to <- ttm$toId[, .(id, toidINS = idINS3035(x,y, resolution = resolution))]
+  out <- merge(ttm$time_table, from, by.x="fromId", by.y="id")
+  out[, fromId:=NULL]
+  out <- merge(out, to, by.x="toId", by.y="id")
+  out[, toId :=NULL]
+  return(out)
+}

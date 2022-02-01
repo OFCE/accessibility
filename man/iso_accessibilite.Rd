@@ -58,7 +58,7 @@ Si NULL, un raster est défini par défaut en ayant la même empreinte que les o
 Par défaut, la sortie est une liste de bricks (ensemble de rasters). Chaque élément de la liste renvoie à une aménité et la brick donne tous les rasters selon le temps de déplacement.
 }
 \description{
-/code{iso_accessibilite} calcule l'accessibilité à des aménités définies sur une carte (sous forme de sf) et
+\code{iso_accessibilite} calcule l'accessibilité à des aménités définies sur une carte (sous forme de sf) et
 renvoie un raster à une certaine résolution. Le calcul des distances isochroniques est organisé par secteurs et
 est majoré pour évacuer des calculs inutiles entre secteurs éloignés.
 Les étapes du calcul peuvent être enregistrées pour ne pas repartir de zéro si le calcul plante en cours de route.

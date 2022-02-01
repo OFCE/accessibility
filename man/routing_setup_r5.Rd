@@ -20,6 +20,7 @@ routing_setup_r5(
   overwrite = FALSE,
   n_threads = 4L,
   jMem = "12G",
+  di = FALSE,
   quick_setup = FALSE
 )
 }
@@ -47,6 +48,8 @@ routing_setup_r5(
 \item{n_threads}{nombre de calcul simultané}
 
 \item{jMem}{taille mémoire vive}
+
+\item{di}{renvoie des itinéraires détaillés (distance, nombre de branche) en perdant le montecarlo}
 
 \item{quick_setup}{par défaut, FALSE}
 }

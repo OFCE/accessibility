@@ -248,7 +248,7 @@ vmaxmode <- function(mode)
 #' @param routing ??
 select_ancres <- function(s_ou, k, routing)
 {
-  if(nrow(s_ou)<=1)
+   if(nrow(s_ou)<=1)
     return(list(les_ou=s_ou,
                 les_ou_s=s_ou$id,
                 error=NULL,
@@ -287,6 +287,8 @@ ttm_on_closest <- function(ppou, s_ou, quoi, ttm_0, les_ou, tmax, routing, grdeo
   null_result <- data.table(fromId=numeric(),
                             toId=numeric(),
                             travel_time=numeric(),
+                            distance = numeric(),
+                            legs = numeric(),
                             npea=numeric(),
                             npep=numeric())
   if(nrow(ss_ou)>0)
@@ -434,9 +436,8 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
             purrr::map(pproches,
                        function(close)
                          ttm_on_closest(close, s_ou, quoi_4326, ttm_0, ttm_ou$les_ou, tmax, routing, groupe)
-            )
-          )
-          ttm <- rbind(ttm_0[travel_time<=tmax], ttm[travel_time<=tmax])
+            ), use.names = TRUE, fill = TRUE)
+          ttm <- rbind(ttm_0[travel_time<=tmax], ttm[travel_time<=tmax], use.names=TRUE, fill=TRUE)
         }
         else
           ttm <- ttm_0
@@ -466,7 +467,10 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
           }
           else
           {
-            ttm_d <- ttm[, .(fromId, toId, travel_time)]
+            out_names <- intersect(
+              names(ttm),
+              c("fromId", "toId", "travel_time", "distance", "legs"))
+            ttm_d <- ttm[, ..out_names]
           }
           logger::log_success("{spid} carreau:{groupe} {speed_log}")
         }

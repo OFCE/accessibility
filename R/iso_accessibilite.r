@@ -1,6 +1,6 @@
 #' Calcul de l'accessibilité
 #'
-#' /code{iso_accessibilite} calcule l'accessibilité à des aménités définies sur une carte (sous forme de sf) et
+#' \code{iso_accessibilite} calcule l'accessibilité à des aménités définies sur une carte (sous forme de sf) et
 #' renvoie un raster à une certaine résolution. Le calcul des distances isochroniques est organisé par secteurs et
 #' est majoré pour évacuer des calculs inutiles entre secteurs éloignés.
 #' Les étapes du calcul peuvent être enregistrées pour ne pas repartir de zéro si le calcul plante en cours de route.
@@ -132,7 +132,6 @@ iso_accessibilite <- function(
       dir.create(dir)
 
   message("...calcul des temps de parcours")
-
   pb <- progressr::progressor(steps=sum(groupes$Nous))
 
   if(routing$future & future) {
@@ -187,23 +186,25 @@ iso_accessibilite <- function(
     })
   }
 
-  access <- rbindlist(access)
-
+  access <- rbindlist(access, use.names = TRUE, fill = TRUE)
   if(ttm_out)
   {
     message("...finalisation du routing engine")
     gc()
     pl <- future::plan()
     future::plan(pl) # pour reprendre la mémoire
-    access <- purrr::map(access$file,~{
-      tt <- qs::qread(.x, nthreads=4)
-      if(is.null(tt)) return(NULL)
-      tt[, .(fromId, toId, travel_time)]
-      setkey(tt, fromId)
-      setindex(tt, toId)
-      tt
-    }) |> purrr::compact()
-    names(access) <- ou_gr
+    if(table2disk) {
+      access <- purrr::map(access$file,~{
+        tt <- qs::qread(.x, nthreads=4)
+        if(is.null(tt)) return(NULL)
+        tt[, .(fromId, toId, travel_time)]
+        setkey(tt, fromId)
+        setindex(tt, toId)
+        tt
+      }) |> purrr::compact()
+      names(access) <- ou_gr
+    }
+
     res <- list(
       type = "dt",
       origin = routing$type,
@@ -224,7 +225,7 @@ iso_accessibilite <- function(
   {
     if(table2disk)
       access <- rbindlist(
-        purrr::map(access$file,~qs::qread(.x, nthreads=4)))
+        purrr::map(access$file,~qs::qread(.x, nthreads=4)), use.names = TRUE, fill = TRUE)
 
     npaires <- sum(access[, .(npaires=npep[[1]]), by=fromId][["npaires"]])
     access[, `:=`(npea=NULL, npep=NULL)]

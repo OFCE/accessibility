@@ -10,11 +10,13 @@ iso_ttm <- function(o, d, tmax, routing)
   logger::log_debug("iso_ttm:{tmax} {nrow(o)} {nrow(d)}")
   r <- switch(routing$type,
               "r5" = r5_ttm(o, d, tmax, routing),
+              "r5_di" = r5_di(o, d, tmax, routing),
               "otpv1" = otpv1_ttm(o, d, tmax, routing),
               "osrm" = osrm_ttm(o, d, tmax, routing),
               "dt"= dt_ttm(o, d, tmax, routing),
               "euclidean" = euc_ttm(o, d, tmax, routing))
   logger::log_debug("result:{nrow(r$result)}")
+
   r
 }
 
@@ -128,6 +130,66 @@ r5_ttm <- function(o, d, tmax, routing)
   }
   res
 }
+
+#' wrapper pour detailed_itineraries
+#'
+#' @inheritParams r5r::detailed_itineraries
+safe_r5_di <- purrr::safely(r5r::detailed_itineraries)
+
+#' calcul des itinéraires détaillés avec r5r
+#'
+#' @param o origine
+#' @param d destination
+#' @param tmax temps max pour le trajet
+#' @param routing système de routing
+#'
+#' @import data.table
+r5_di <- function(o, d, tmax, routing)
+{
+  o <- o[, .(id,lon,lat)]
+  d <- d[, .(id,lon,lat)]
+  od <- CJ(o = o$id, d=d$id)
+  oCJ <- data.table(id=od$o)
+  dCJ <- data.table(id=od$d)
+  res <- safe_r5_di(
+      r5r_core = routing$core,
+      origins = o[oCJ, on="id"],
+      destinations = d[dCJ, on="id"],
+      mode=routing$mode,
+      mode_egress="WALK",
+      departure_datetime = routing$departure_datetime,
+      max_walk_dist = routing$max_walk_dist,
+      max_bike_dist = Inf,
+      max_trip_duration = tmax+1,
+      walk_speed = routing$walk_speed,
+      bike_speed = routing$bike_speed,
+      max_rides = routing$max_rides,
+      max_lts = routing$max_lts,
+      shortest_path= TRUE,
+      n_threads = routing$n_threads,
+      verbose=FALSE,
+      progress=FALSE,
+      drop_geometry=TRUE)
+
+    if (is.null(res$error)&&nrow(res$result)>0) {
+      resdi <- as.data.table(res$result)
+      resdi <- resdi[ , .(travel_time =as.integer(sum(total_duration)),
+                          distance = sum(distance),
+                          legs = .N), by=c("fromId", "toId")]
+      resdi[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId))]
+      res$result <- resdi
+    }
+    else
+    {
+      logger::log_warn("error r5::travel_time_matrix, give an empty matrix after 2 attemps")
+      res$result <- data.table(fromId=numeric(),
+                               toId=numeric(),
+                               travel_time=numeric(),
+                               distance=numeric(),
+                               legs=numeric())
+    }
+    res
+    }
 
 #' calcul du temps de trajet avec une distance euclidienne
 #'
@@ -306,7 +368,7 @@ quick_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
   dat_file <- file.path(data_path, "network.dat")
   if (checkmate::test_file_exists(dat_file) && !overwrite) {
     r5r_core <- .jnew("org.ipea.r5r.R5RCore", data_path,
-                             verbose)
+                      verbose)
     message("\nUsing cached network.dat from ", dat_file)
   }
   else {
@@ -366,7 +428,7 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 #' @param n_threads nombre de calcul simultané
 #' @param jMem taille mémoire vive
 #' @param quick_setup par défaut, FALSE
-#'
+#' @param di renvoie des itinéraires détaillés (distance, nombre de branche) en perdant le montecarlo
 #' @import rJava
 #'
 #' @export
@@ -385,14 +447,15 @@ routing_setup_r5 <- function(path,
                              overwrite = FALSE,
                              n_threads= 4L,
                              jMem = "12G",
+                             di = FALSE,
                              quick_setup = FALSE)
 {
   env <- parent.frame()
   path <- glue::glue(path, .envir = env)
   assertthat::assert_that(
     all(mode%in%c('TRAM', 'SUBWAY', 'RAIL', 'BUS',
-              'FERRY', 'CABLE_CAR', 'GONDOLA', 'FUNICULAR',
-              'TRANSIT', 'WALK', 'BICYCLE', 'CAR', 'BICYCLE_RENT', 'CAR_PARK')),
+                  'FERRY', 'CABLE_CAR', 'GONDOLA', 'FUNICULAR',
+                  'TRANSIT', 'WALK', 'BICYCLE', 'CAR', 'BICYCLE_RENT', 'CAR_PARK')),
     msg = "incorrect transport mode")
 
   mode_string <- stringr::str_c(mode, collapse = "&")
@@ -409,7 +472,8 @@ routing_setup_r5 <- function(path,
   setup <- get_setup_r5(data_path = path)
   mtnt <- lubridate::now()
   list(
-    type = "r5",
+    type = ifelse(di, "r5_di", "r5"),
+    di = di,
     path = path,
     string = glue::glue("r5 routing {mode_string} sur {path} a {mtnt}"),
     core = core,
@@ -501,9 +565,9 @@ routing_setup_osrm <- function(
     osrm.profile = profile,
     future = TRUE,
     mode = switch(profile,
-                driving="CAR",
-                walk="WALK",
-                bike="BIKE"))
+                  driving="CAR",
+                  walk="WALK",
+                  bike="BIKE"))
 }
 
 #' setup du système de routing euclidien

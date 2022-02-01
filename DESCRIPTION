@@ -37,5 +37,6 @@ Imports:
   stringr,
   tictoc,
   tidyselect,
-  utils
+  utils,
+  tidytransit
   
