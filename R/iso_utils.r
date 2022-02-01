@@ -1,5 +1,5 @@
 #' construit la grille pour projetter le résultat en crs 4326
-#' /code{iso_ouetquoi} projette sur 4326 les coordonnées et fabrique les grilles nécessaires en donnant en sortie les ou et quoi utilisés pour ttm
+#' \code{iso_ouetquoi} projette sur 4326 les coordonnées et fabrique les grilles nécessaires en donnant en sortie les ou et quoi utilisés pour ttm
 #'
 #' @param ou positions sur lesquelles sont calculés les accessibilités. Si NULL, un raster est défini par défaut.
 #' @param quoi sf de variables numériques de différentes aménités, qui vont être agrégées au sein d'isochrones.

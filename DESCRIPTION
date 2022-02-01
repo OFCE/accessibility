@@ -5,7 +5,7 @@ Authors@R: c(
       person("Xavier", "Timbeau", email = "xavier.timbeau@sciencespo.fr", role = c("aut", "cre")),
       person("Maxime", "Parodi", email = "maxime.parodi@sciencespo.fr", role = c("aut")))
 Description: The package is a wrapper of a routing system to calculate accessibility. It creates chunks of positions and amenities to manage the calculations and do parallel computations.
-License: MIT + file LICENSE
+License: CeCILL-B
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
@@ -38,5 +38,6 @@ Imports:
   tictoc,
   tidyselect,
   utils,
-  tidytransit
+  tidytransit,
+  assertthat
   

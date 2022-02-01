@@ -471,11 +471,12 @@ routing_setup_r5 <- function(path,
   core$setNumberOfMonteCarloDraws(as.integer(montecarlo))
   setup <- get_setup_r5(data_path = path)
   mtnt <- lubridate::now()
+  type <- ifelse(di, "r5_di", "r5")
   list(
-    type = ifelse(di, "r5_di", "r5"),
+    type = type,
     di = di,
     path = path,
-    string = glue::glue("r5 routing {mode_string} sur {path} a {mtnt}"),
+    string = glue::glue("{type} routing {mode_string} sur {path} a {mtnt}"),
     core = core,
     montecarlo = as.integer(montecarlo),
     time_window = as.integer(time_window),

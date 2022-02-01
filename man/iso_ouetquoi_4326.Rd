@@ -3,7 +3,7 @@
 \name{iso_ouetquoi_4326}
 \alias{iso_ouetquoi_4326}
 \title{construit la grille pour projetter le résultat en crs 4326
-/code{iso_ouetquoi} projette sur 4326 les coordonnées et fabrique les grilles nécessaires en donnant en sortie les ou et quoi utilisés pour ttm}
+\code{iso_ouetquoi} projette sur 4326 les coordonnées et fabrique les grilles nécessaires en donnant en sortie les ou et quoi utilisés pour ttm}
 \usage{
 iso_ouetquoi_4326(
   ou,
@@ -35,5 +35,5 @@ iso_ouetquoi_4326(
 }
 \description{
 construit la grille pour projetter le résultat en crs 4326
-/code{iso_ouetquoi} projette sur 4326 les coordonnées et fabrique les grilles nécessaires en donnant en sortie les ou et quoi utilisés pour ttm
+\code{iso_ouetquoi} projette sur 4326 les coordonnées et fabrique les grilles nécessaires en donnant en sortie les ou et quoi utilisés pour ttm
 }
