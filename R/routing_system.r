@@ -494,9 +494,9 @@ routing_setup_r5 <- function(path,
     r5_jar = setup$r5_jar,
     core_init = function(routing){
       options(java.parameters = glue::glue('-Xmx{routing$jMem}'))
-      .jinit()
+      rJava::.jinit()
       r5r::stop_r5()
-      .jgc(R.gc = TRUE)
+      rJava::.jgc(R.gc = TRUE)
       core <- r5r::setup_r5(data_path = routing$path, verbose=FALSE)
       return(core)
     })

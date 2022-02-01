@@ -262,7 +262,8 @@ select_ancres <- function(s_ou, k, routing)
   if(!is.null(ttm_ou$error))
   {
     logger::log_warn("erreur de routeur ttm_ou {ttm_ou$error}")
-    ttm_ou$result <- data.table()
+    ttm_ou$result <- data.table(fromId = numeric(), toId = numeric(),
+                                travel_time=numeric(), distance = numeric(), legs = numeric())
   }
   ttm_ou$les_ou_s <- stringr::str_c(les_ou$id, collapse=",")
   ttm_ou$les_ou <- les_ou
