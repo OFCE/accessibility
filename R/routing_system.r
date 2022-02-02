@@ -146,6 +146,7 @@ safe_r5_di <- purrr::safely(r5r::detailed_itineraries)
 #' @import data.table
 r5_di <- function(o, d, tmax, routing)
 {
+  browser()
   o <- o[, .(id,lon,lat)]
   d <- d[, .(id,lon,lat)]
   od <- CJ(o = o$id, d=d$id)
@@ -169,7 +170,7 @@ r5_di <- function(o, d, tmax, routing)
       n_threads = routing$n_threads,
       verbose=FALSE,
       progress=FALSE,
-      drop_geometry=TRUE)
+      drop_geometry=!is.null(routing$elevation))
 
     if (is.null(res$error)&&nrow(res$result)>0) {
       resdi <- as.data.table(res$result)
@@ -429,6 +430,7 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 #' @param jMem taille mémoire vive
 #' @param quick_setup par défaut, FALSE
 #' @param di renvoie des itinéraires détaillés (distance, nombre de branche) en perdant le montecarlo
+#' @param elevation raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif
 #' @import rJava
 #'
 #' @export
@@ -448,6 +450,7 @@ routing_setup_r5 <- function(path,
                              n_threads= 4L,
                              jMem = "12G",
                              di = FALSE,
+                             elevation = NULL,
                              quick_setup = FALSE)
 {
   env <- parent.frame()
@@ -488,6 +491,7 @@ routing_setup_r5 <- function(path,
     bike_speed = bike_speed,
     max_rides = max_rides,
     max_lts = max_lts,
+    elevation = elevation,
     n_threads = as.integer(n_threads),
     future = TRUE,
     jMem = jMem,
