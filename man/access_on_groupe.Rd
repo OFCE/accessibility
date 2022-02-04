@@ -27,19 +27,19 @@ access_on_groupe(
 
 \item{routing}{le système de routing.}
 
-\item{k}{??}
+\item{k}{facteur de subsampling}
 
 \item{tmax}{temps maximal des isochrones.}
 
 \item{opp_var}{liste des variables d'aménités/opportunités.}
 
-\item{ttm_out}{??}
+\item{ttm_out}{switch selon lequel on performe l'aggrégation ou on garde la matrice des temps}
 
-\item{pids}{??}
+\item{pids}{liste des process en //}
 
 \item{dir}{dossier des résultats intermédiaires.}
 
-\item{t2d}{??}
+\item{t2d}{enregistre ou non sur disque les résultats}
 }
 \description{
 calcul de l'accessibilité par compartiments

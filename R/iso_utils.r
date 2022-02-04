@@ -358,13 +358,13 @@ is.in.dir <- function(groupe, dir)
 #' @param ou_4326 les positions.
 #' @param quoi_4326 les aménités/opportunités.
 #' @param routing le système de routing.
-#' @param k ??
+#' @param k facteur de subsampling
 #' @param tmax temps maximal des isochrones.
 #' @param opp_var liste des variables d'aménités/opportunités.
-#' @param ttm_out ??
-#' @param pids ??
+#' @param ttm_out switch selon lequel on performe l'aggrégation ou on garde la matrice des temps
+#' @param pids liste des process en //
 #' @param dir dossier des résultats intermédiaires.
-#' @param t2d ??
+#' @param t2d enregistre ou non sur disque les résultats
 #'
 #' @import data.table
 access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_var, ttm_out, pids, dir, t2d)
@@ -383,7 +383,9 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
   if(is.null(routing$ancres))
   {
     tictoc::tic()
-    ttm_ou <- select_ancres(s_ou, k, routing)
+    routing_sans_elevation <- routing
+    routing_sans_elevation$elevation <- NULL
+    ttm_ou <- select_ancres(s_ou, k, routing_sans_elevation)
     les_ou_s <- ttm_ou$les_ou_s
 
     if(is.null(ttm_ou$error))
@@ -470,7 +472,7 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
           {
             out_names <- intersect(
               names(ttm),
-              c("fromId", "toId", "travel_time", "distance", "legs"))
+              c("fromId", "toId", "travel_time", "distance", "deniv", "deniv_pos", "legs"))
             ttm_d <- ttm[, ..out_names]
           }
           logger::log_success("{spid} carreau:{groupe} {speed_log}")

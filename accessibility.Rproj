@@ -18,5 +18,5 @@ LineEndingConversion: Posix
 
 BuildType: Package
 PackageUseDevtools: Yes
-PackageInstallArgs: --no-multiarch --with-keep.source
+PackageInstallArgs: --no-multiarch --with-keep.source --library=/usr/local/lib/R/user-library
 PackageRoxygenize: rd,collate,namespace

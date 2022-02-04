@@ -152,44 +152,65 @@ r5_di <- function(o, d, tmax, routing)
   oCJ <- data.table(id=od$o)
   dCJ <- data.table(id=od$d)
   res <- safe_r5_di(
-      r5r_core = routing$core,
-      origins = o[oCJ, on="id"],
-      destinations = d[dCJ, on="id"],
-      mode=routing$mode,
-      mode_egress="WALK",
-      departure_datetime = routing$departure_datetime,
-      max_walk_dist = routing$max_walk_dist,
-      max_bike_dist = Inf,
-      max_trip_duration = tmax+1,
-      walk_speed = routing$walk_speed,
-      bike_speed = routing$bike_speed,
-      max_rides = routing$max_rides,
-      max_lts = routing$max_lts,
-      shortest_path= TRUE,
-      n_threads = routing$n_threads,
-      verbose=FALSE,
-      progress=FALSE,
-      drop_geometry=TRUE)
-
-    if (is.null(res$error)&&nrow(res$result)>0) {
+    r5r_core = routing$core,
+    origins = o[oCJ, on="id"],
+    destinations = d[dCJ, on="id"],
+    mode=routing$mode,
+    mode_egress="WALK",
+    departure_datetime = routing$departure_datetime,
+    max_walk_dist = routing$max_walk_dist,
+    max_bike_dist = Inf,
+    max_trip_duration = tmax+1,
+    walk_speed = routing$walk_speed,
+    bike_speed = routing$bike_speed,
+    max_rides = routing$max_rides,
+    max_lts = routing$max_lts,
+    shortest_path= TRUE,
+    n_threads = routing$n_threads,
+    verbose=FALSE,
+    progress=FALSE,
+    drop_geometry=is.null(routing$elevation))
+  if (is.null(res$error)&&nrow(res$result)>0) {
+    if(!is.null(routing$elevation)) {
+      # on discretise par pas de 10m pour le calcul des dénivelés
+      # ca va plus vite que la version LINESTRING (x10)
+      # avec un zoom à 13 les carreaux font 5x5m
+      # mais on n'attrape pas le pont de l'ile de Ré
+      vv <- terra::vect(st_cast(
+        st_segmentize(st_geometry(res$result[1:10,]), dfMaxLength = 10),
+        "MULTIPOINT"))
+      elvts <- as.data.table(terra::extract(routing$elevation, vv))
+      names(elvts) <- c("id", "h")
+      elvts[, h:= nafill(h, type="locf")]
+      elvts[, dh:= h-shift(h, type="lag", fill=0), by="id"]
+      deniv <- elvts[, .(deniv=sum(dh), deniv_pos=sum(dh[dh>0])), by="id"]
+      deniv[, id:=NULL]
+      resdi <- cbind(as.data.table(st_drop_geometry(res$result)), deniv)
+    } else {
       resdi <- as.data.table(res$result)
-      resdi <- resdi[ , .(travel_time =as.integer(sum(total_duration)),
-                          distance = sum(distance),
-                          legs = .N), by=c("fromId", "toId")]
-      resdi[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId))]
-      res$result <- resdi
-    }
-    else
-    {
-      logger::log_warn("error r5::travel_time_matrix, give an empty matrix after 2 attemps")
-      res$result <- data.table(fromId=numeric(),
-                               toId=numeric(),
-                               travel_time=numeric(),
-                               distance=numeric(),
-                               legs=numeric())
-    }
-    res
-    }
+      resdi[, `:=`(deniv=NA, deniv_pos=NA)]
+      }
+    resdi <- resdi[ , .(travel_time = as.integer(sum(total_duration)),
+                        distance = sum(distance),
+                        deniv = sum(deniv),
+                        deniv_pos = sum(deniv_pos),
+                        legs = .N), by=c("fromId", "toId")]
+    resdi[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId))]
+    res$result <- resdi
+  }
+  else
+  {
+    logger::log_warn("error r5::travel_time_matrix, give an empty matrix after 2 attemps")
+    res$result <- data.table(fromId=numeric(),
+                             toId=numeric(),
+                             travel_time=numeric(),
+                             distance=numeric(),
+                             deniv = numeric(),
+                             deniv_pos = numeric(),
+                             legs=numeric())
+  }
+  res
+}
 
 #' calcul du temps de trajet avec une distance euclidienne
 #'
@@ -444,6 +465,7 @@ routing_setup_r5 <- function(path,
                              max_lts= 2,
                              max_rides= 5L,
                              use_elevation = FALSE,
+                             elevation = NULL,
                              overwrite = FALSE,
                              n_threads= 4L,
                              jMem = "12G",
@@ -488,6 +510,7 @@ routing_setup_r5 <- function(path,
     bike_speed = bike_speed,
     max_rides = max_rides,
     max_lts = max_lts,
+    elevation = terra::rast(elevation),
     n_threads = as.integer(n_threads),
     future = TRUE,
     jMem = jMem,

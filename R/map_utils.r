@@ -285,9 +285,15 @@ ttm_idINS <- function(ttm, resolution=200) {
   require("data.table")
   from <- ttm$fromId[, .(id, fromidINS = idINS3035(x,y, resolution = resolution))]
   to <- ttm$toId[, .(id, toidINS = idINS3035(x,y, resolution = resolution))]
-  out <- merge(ttm$time_table, from, by.x="fromId", by.y="id")
-  out[, fromId:=NULL]
-  out <- merge(out, to, by.x="toId", by.y="id")
-  out[, toId :=NULL]
-  return(out)
+  tt <- ttm$time_table
+  if(length(tt)>1)
+    tt <- rbindlist(tt, use.names=TRUE)
+  else
+    if("list"%in%class(tt))
+      tt <- tt[[1]]
+  tt <- merge(tt, from, by.x="fromId", by.y="id")
+  tt[, fromId:=NULL]
+  tt <- merge(tt, to, by.x="toId", by.y="id")
+  tt[, toId :=NULL]
+  return(tt)
 }

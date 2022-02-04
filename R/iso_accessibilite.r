@@ -186,6 +186,7 @@ iso_accessibilite <- function(
     })
   }
 
+  access_names <- names(access)
   access <- rbindlist(access, use.names = TRUE, fill = TRUE)
   if(ttm_out)
   {
@@ -194,7 +195,7 @@ iso_accessibilite <- function(
     pl <- future::plan()
     future::plan(pl) # pour reprendre la mémoire
     if(table2disk) {
-      access <- purrr::map(access$file,~{
+      access <- purrr::map(set_names(access$file, access_names),~{
         tt <- qs::qread(.x, nthreads=4)
         if(is.null(tt)) return(NULL)
         tt[, .(fromId, toId, travel_time)]
@@ -202,9 +203,10 @@ iso_accessibilite <- function(
         setindex(tt, toId)
         tt
       }) |> purrr::compact()
-      names(access) <- ou_gr
+      # if(length(access)>1)
+      #   access <- rbindlist(access, use.names = TRUE)
     }
-
+    npaires <- sum(map_dbl(acces, nrow))
     res <- list(
       type = "dt",
       origin = routing$type,
@@ -276,16 +278,18 @@ iso_accessibilite <- function(
           r_xy <- merge(r_xy, ids, by="fromId")[, fromId:=NULL]
           raster::readAll(dt2r(r_xy, resolution=outr))
         })})
-    dtime <- as.numeric(Sys.time()) - as.numeric(start_time)
-    red <- 100 * (npaires_brut - npaires) / npaires_brut
-    tmn <- second2str(dtime)
-    speed_b <- npaires_brut / dtime
-    speed <- npaires / dtime
-    mtime <- glue::glue("{tmn} - {f2si2(npaires)} routes - {f2si2(speed_b)} routes(brut)/s - {f2si2(speed)} routes/s - {signif(red,2)}% reduction")
-    message(mtime)
-    logger::log_success("{routing$string} en {mtime}")
-    attr(res, "routing") <- glue::glue("{routing$string} en {mtime}")
+
   }
+
+  dtime <- as.numeric(Sys.time()) - as.numeric(start_time)
+  red <- 100 * (npaires_brut - npaires) / npaires_brut
+  tmn <- second2str(dtime)
+  speed_b <- npaires_brut / dtime
+  speed <- npaires / dtime
+  mtime <- glue::glue("{tmn} - {f2si2(npaires)} routes - {f2si2(speed_b)} routes(brut)/s - {f2si2(speed)} routes/s - {signif(red,2)}% reduction")
+  message(mtime)
+  logger::log_success("{routing$string} en {mtime}")
+  attr(res, "routing") <- glue::glue("{routing$string} en {mtime}")
   message("...nettoyage")
   future::plan() # remplace plan(plan())
   gc()

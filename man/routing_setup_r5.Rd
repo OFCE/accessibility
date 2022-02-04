@@ -17,6 +17,7 @@ routing_setup_r5(
   max_lts = 2,
   max_rides = 5L,
   use_elevation = FALSE,
+  elevation = NULL,
   overwrite = FALSE,
   n_threads = 4L,
   jMem = "12G",
