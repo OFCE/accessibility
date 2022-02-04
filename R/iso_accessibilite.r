@@ -206,7 +206,7 @@ iso_accessibilite <- function(
       # if(length(access)>1)
       #   access <- rbindlist(access, use.names = TRUE)
     }
-    npaires <- sum(map_dbl(acces, nrow))
+    npaires <- sum(map_dbl(access, nrow))
     res <- list(
       type = "dt",
       origin = routing$type,

@@ -472,7 +472,6 @@ routing_setup_r5 <- function(path,
                              n_threads= 4L,
                              jMem = "12G",
                              di = FALSE,
-                             elevation = NULL,
                              quick_setup = FALSE)
 {
   env <- parent.frame()
