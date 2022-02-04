@@ -146,7 +146,6 @@ safe_r5_di <- purrr::safely(r5r::detailed_itineraries)
 #' @import data.table
 r5_di <- function(o, d, tmax, routing)
 {
-  browser()
   o <- o[, .(id,lon,lat)]
   d <- d[, .(id,lon,lat)]
   od <- CJ(o = o$id, d=d$id)
