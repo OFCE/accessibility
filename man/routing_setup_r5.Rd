@@ -46,6 +46,8 @@ routing_setup_r5(
 
 \item{max_rides}{nombre de changements de transport.}
 
+\item{elevation}{raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif}
+
 \item{n_threads}{nombre de calcul simultané}
 
 \item{jMem}{taille mémoire vive}

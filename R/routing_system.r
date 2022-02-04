@@ -511,6 +511,7 @@ routing_setup_r5 <- function(path,
     bike_speed = bike_speed,
     max_rides = max_rides,
     max_lts = max_lts,
+    use_elevation = use_elevation,
     elevation = terra::rast(elevation),
     n_threads = as.integer(n_threads),
     future = TRUE,
@@ -522,7 +523,8 @@ routing_setup_r5 <- function(path,
       rJava::.jinit()
       r5r::stop_r5()
       rJava::.jgc(R.gc = TRUE)
-      core <- r5r::setup_r5(data_path = routing$path, verbose=FALSE)
+      core <- r5r::setup_r5(data_path = routing$path, verbose=FALSE,
+                            use_elevation=routing$use_elevation)
       return(core)
     })
 }
