@@ -4,20 +4,32 @@
 #' renvoie un raster à une certaine résolution. Le calcul des distances isochroniques est organisé par secteurs et
 #' est majoré pour évacuer des calculs inutiles entre secteurs éloignés.
 #' Les étapes du calcul peuvent être enregistrées pour ne pas repartir de zéro si le calcul plante en cours de route.
+#' l'algorithme fonctionne comme cela :
+#' 1. découpe les groupes d'origines
+#' 2. par groupe
+#'   1. prend un point au hasard
+#'   2. calcule les distances entre ce point et les cibles
+#'   3. calcule les distance entre le point et les autres du paquet
+#'   4. sélectionne pour chaque auter point du paquet les cibles atteignables
+#'   5. calcule les distances
+#' 4. aggrege
+#' 5. cumule
+#' 6. rasterize
 #'
 #' @param quoi sf de variables numériques de différentes aménités, qui vont être agrégées au sein d'isochrones.
+#'             Différentes options sont possibles pour le format et les formes passées en entrée.
 #' @param ou positions sur lesquelles sont calculées les accessibilités.
 #'           Si NULL, un raster est défini par défaut en ayant la même empreinte que les oportunités, à la résolution resolution.
 #' @param res_quoi rasterisation éventuelle des lieux à la résolution donnée. Par défaut, reste un sf.
 #' @param resolution résolution retenue pour l'accessibilité. Par défaut, 200m si ou est NULL, Inf sinon.
 #' @param var_quoi si rasterisation, définie la fonction d'agrégation. Non implémenté.
-#' @param routing défini le moteur de routage parmi "r5", "otpv1", "osrm", "dt", "euclidean". Par défaut, r5.
+#' @param routing défini le moteur de routage. Le routing dopit être initialisé par un setup_routing_*
 #' @param tmax temps maximal pour les calculs d'isochrone. Par défaut, 10 mn.
 #' @param pdt pas de temps pour le calcul des isochrones. Par defaut, incrément de 1mn.
 #' @param chunk taille des paquets pour le compartimentage des calculs.
-#' @param future calcul parallélisé ? Par défaut, FALSE.
+#' @param future calcul parallélisé. Par défaut, FALSE.
 #' @param out format de sortie ("data.table", "sf", "raster"). Par défaut, raster.
-#' @param ttm_out conserver travel_time_matrix. Par défaut, FALSE.
+#' @param ttm_out conserver travel_time_matrix. Par défaut, FALSE. Peut générer un objet volumineux.
 #' @param logs dossier pour le fichier log, par defaut la variable localdata (non définie).
 #' @param dir dossier des étapes du calcul (permet de récupérer ce qui a déjà calculé en cas de plantage).
 #' @param table2disk enregistre les étapes du calcul. Par défaut, si dir est défini, TRUE.
@@ -44,22 +56,13 @@ iso_accessibilite <- function(
   future = FALSE,
   out = ifelse(is.finite(resolution), resolution, "raster"),
   ttm_out = FALSE,
-  logs = localdata,
+  logs = ".",
   dir = NULL,
   table2disk = if(is.null(dir)) FALSE else TRUE)    # ne recalcule pas les groupes déjà calculés, attention !
 {
   start_time <- Sys.time()
 
-  # 1. découpe les groupes d'origines
-  # 2. par groupe
-  #    1. prend un point au hasard
-  #    2. calcule les distances entre ce point et les cibles
-  #    3. calcule les distance entre le point et les autres du paquet
-  #    4. sélectionne pour chaque auter point du paquet les cibles atteignables
-  #    5. calcule les distances
-  # 4. aggrege
-  # 5. cumule
-  # 6. rasterize
+
 
   dir.create(glue::glue("{logs}/logs"), showWarnings = FALSE, recursive = TRUE)
   timestamp <- lubridate::stamp("15-01-20 10h08.05", orders = "dmy HMS", quiet = TRUE) (lubridate::now())
@@ -145,10 +148,11 @@ iso_accessibilite <- function(
       nw <- future::nbrOfWorkers()
       splittage <- seq(0,length(ou_gr)-1) %/% ceiling(length(ou_gr)/nw)
       workable_ous <- split(ou_gr, splittage)
+      routing$elevation_data <- NULL
       access <- furrr::future_map(workable_ous, function(gs) {
         logger::log_threshold(lt)
         logger::log_appender(logger::appender_file(logfile))
-        routing$core <- routing$core_init(routing)
+        routing <- routing$core_init(routing)
         purrr::map(gs, function(g) {
           pb(amount=groupes$Nous[[g]])
           rrouting <- get_routing(routing, g)
@@ -156,7 +160,7 @@ iso_accessibilite <- function(
         })
       }, .options=furrr::furrr_options(seed=TRUE,
                                        stdout=FALSE ,
-                                       packages=c("data.table", "logger", "stringr", "glue", "r5r", "rJava"))) |>
+                                       packages=c("data.table", "logger", "stringr", "glue", "r5r", "rJava", "terra"))) |>
         purrr::flatten()
     }
     else {
@@ -166,6 +170,7 @@ iso_accessibilite <- function(
         1:(future::nbrOfWorkers()),
         ~future:::session_uuid()[[1]])
       lt <- logger::log_threshold()
+      routing$elevation_data <- NULL
       access <- furrr::future_map(
         ou_gr,
         function(g) {
@@ -175,7 +180,7 @@ iso_accessibilite <- function(
           rrouting <- get_routing(routing, g)
           access_on_groupe(g, ou_4326, quoi_4326, rrouting, k, tmax, opp_var, ttm_out, pids, dir, t2d=table2disk)
         },
-        .options=furrr::furrr_options(seed=TRUE, stdout=FALSE, packages=c("data.table", "logger", "stringr", "glue", "r5r")))
+        .options=furrr::furrr_options(seed=TRUE, stdout=FALSE, packages=c("data.table", "logger", "stringr", "glue", "r5r", "terra")))
     }}
   else {
     pids <- future:::session_uuid()[[1]]

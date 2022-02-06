@@ -26,36 +26,47 @@ routing_setup_r5(
 )
 }
 \arguments{
-\item{path}{path}
+\item{path}{path Chemin d'accès au dossier}
 
-\item{date}{date}
+\item{date}{date Date où seront simulées les routes}
 
-\item{mode}{mode de transport, par défaut c("WALK", "TRANSIT")}
+\item{mode}{mode de transport, par défaut c("WALK", "TRANSIT"), voir r5r ou r5 pour les autres modes}
 
-\item{montecarlo}{par défaut, 1.}
+\item{montecarlo}{nombre de tirages montecarlo par défaut 1, mais n'est plus utilisé (voir r5r::time_travel_matrix )}
 
 \item{max_walk_dist}{distance maximale à pied}
 
-\item{time_window}{par défaut, 1. fenêtre pour l'heure de départ.}
+\item{time_window}{par défaut, 1. fenêtre pour l'heure de départ en minutes}
 
-\item{percentiles}{par défaut, 50.}
+\item{percentiles}{par défaut, 50., retourne les percentiles de temps de trajet (montecarlo)}
 
 \item{walk_speed}{vitesse piéton}
 
 \item{bike_speed}{vitesse vélo}
 
-\item{max_rides}{nombre de changements de transport.}
+\item{max_lts}{stress maximal à vélo (de 1 enfant à 4 toutes routes), 2 par défaut}
 
-\item{elevation}{raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif}
+\item{max_rides}{nombre maximal de changements de transport.}
 
-\item{n_threads}{nombre de calcul simultané}
+\item{use_elevation}{le routing est effectué en utilisant l'information de dénivelé. Pas sûr que cela fonctionne.}
 
-\item{jMem}{taille mémoire vive}
+\item{elevation}{nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
+elevatr::get_elev_raster est un bon moyen de le générer. Fonctionne même si on n'utilise pas les élévations dans le routing}
 
-\item{di}{renvoie des itinéraires détaillés (distance, nombre de branche) en perdant le montecarlo}
+\item{overwrite}{Regénére le network.dat même si il est présent}
 
-\item{quick_setup}{par défaut, FALSE}
+\item{n_threads}{nombre de threads}
+
+\item{jMem}{taille mémoire vive, plus le nombre de threads est élevé, plus la mémoire doit être importante}
+
+\item{di}{renvoie des itinéraires détaillés (distance, nombre de branche) en perdant le montecarlo et au prix d'une plus grande lenteur}
+
+\item{quick_setup}{dans le cas où le core existe déjà, il n'est pas recréer, plus rapide donc, par défaut, FALSE}
 }
 \description{
-setup du système de routing de r5
+Cette fonction est utlisée pour fabriquer le "core" r5 qui est ensuite appelé pour faire le routage.
+Elle utilise le r5.....jar téléchargé ou le télécharge si nécessaire.
+Un dossier contenant les informations nécessaires doit être passé en parmètre.
+Ce dossier contient au moins un pbf (OSM), des fichiers GTFS (zip), des fichiers d'élévation (.tif)
+Si iol contient un network.dat, celui ci sera utilisé sans reconstruire le réseau
 }

@@ -17,13 +17,14 @@ iso_accessibilite(
   future = FALSE,
   out = ifelse(is.finite(resolution), resolution, "raster"),
   ttm_out = FALSE,
-  logs = localdata,
+  logs = ".",
   dir = NULL,
   table2disk = if (is.null(dir)) FALSE else TRUE
 )
 }
 \arguments{
-\item{quoi}{sf de variables numériques de différentes aménités, qui vont être agrégées au sein d'isochrones.}
+\item{quoi}{sf de variables numériques de différentes aménités, qui vont être agrégées au sein d'isochrones.
+Différentes options sont possibles pour le format et les formes passées en entrée.}
 
 \item{ou}{positions sur lesquelles sont calculées les accessibilités.
 Si NULL, un raster est défini par défaut en ayant la même empreinte que les oportunités, à la résolution resolution.}
@@ -34,7 +35,7 @@ Si NULL, un raster est défini par défaut en ayant la même empreinte que les o
 
 \item{var_quoi}{si rasterisation, définie la fonction d'agrégation. Non implémenté.}
 
-\item{routing}{défini le moteur de routage parmi "r5", "otpv1", "osrm", "dt", "euclidean". Par défaut, r5.}
+\item{routing}{défini le moteur de routage. Le routing dopit être initialisé par un setup_routing_*}
 
 \item{tmax}{temps maximal pour les calculs d'isochrone. Par défaut, 10 mn.}
 
@@ -42,11 +43,11 @@ Si NULL, un raster est défini par défaut en ayant la même empreinte que les o
 
 \item{chunk}{taille des paquets pour le compartimentage des calculs.}
 
-\item{future}{calcul parallélisé ? Par défaut, FALSE.}
+\item{future}{calcul parallélisé. Par défaut, FALSE.}
 
 \item{out}{format de sortie ("data.table", "sf", "raster"). Par défaut, raster.}
 
-\item{ttm_out}{conserver travel_time_matrix. Par défaut, FALSE.}
+\item{ttm_out}{conserver travel_time_matrix. Par défaut, FALSE. Peut générer un objet volumineux.}
 
 \item{logs}{dossier pour le fichier log, par defaut la variable localdata (non définie).}
 
@@ -62,4 +63,17 @@ Par défaut, la sortie est une liste de bricks (ensemble de rasters). Chaque él
 renvoie un raster à une certaine résolution. Le calcul des distances isochroniques est organisé par secteurs et
 est majoré pour évacuer des calculs inutiles entre secteurs éloignés.
 Les étapes du calcul peuvent être enregistrées pour ne pas repartir de zéro si le calcul plante en cours de route.
+l'algorithme fonctionne comme cela :
+\enumerate{
+\item découpe les groupes d'origines
+\item par groupe
+\item prend un point au hasard
+\item calcule les distances entre ce point et les cibles
+\item calcule les distance entre le point et les autres du paquet
+\item sélectionne pour chaque auter point du paquet les cibles atteignables
+\item calcule les distances
+\item aggrege
+\item cumule
+\item rasterize
+}
 }

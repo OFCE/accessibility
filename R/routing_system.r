@@ -170,7 +170,8 @@ r5_di <- function(o, d, tmax, routing)
     verbose=FALSE,
     progress=FALSE,
     drop_geometry=is.null(routing$elevation))
-  if (is.null(res$error)&&nrow(res$result)>0) {
+
+  if(is.null(res$error)&&nrow(res$result)>0) {
     if(!is.null(routing$elevation)) {
       # on discretise par pas de 10m pour le calcul des dénivelés
       # ca va plus vite que la version LINESTRING (x10)
@@ -179,7 +180,7 @@ r5_di <- function(o, d, tmax, routing)
       vv <- terra::vect(st_cast(
         st_segmentize(st_geometry(res$result[1:10,]), dfMaxLength = 10),
         "MULTIPOINT"))
-      elvts <- as.data.table(terra::extract(routing$elevation, vv))
+      elvts <- as.data.table(terra::extract(routing$elevation_data, vv))
       names(elvts) <- c("id", "h")
       elvts[, h:= nafill(h, type="locf")]
       elvts[, dh:= h-shift(h, type="lag", fill=0), by="id"]
@@ -436,21 +437,31 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 
 #' setup du système de routing de r5
 #'
-#' @param path path
-#' @param date date
-#' @param mode mode de transport, par défaut c("WALK", "TRANSIT")
-#' @param montecarlo par défaut, 1.
+#' Cette fonction est utlisée pour fabriquer le "core" r5 qui est ensuite appelé pour faire le routage.
+#' Elle utilise le r5.....jar téléchargé ou le télécharge si nécessaire.
+#' Un dossier contenant les informations nécessaires doit être passé en parmètre.
+#' Ce dossier contient au moins un pbf (OSM), des fichiers GTFS (zip), des fichiers d'élévation (.tif)
+#' Si iol contient un network.dat, celui ci sera utilisé sans reconstruire le réseau
+#'
+#' @param path path Chemin d'accès au dossier
+#' @param overwrite Regénére le network.dat même si il est présent
+#' @param date date Date où seront simulées les routes
+#' @param mode mode de transport, par défaut c("WALK", "TRANSIT"), voir r5r ou r5 pour les autres modes
+#' @param montecarlo nombre de tirages montecarlo par défaut 1, mais n'est plus utilisé (voir r5r::time_travel_matrix )
 #' @param max_walk_dist distance maximale à pied
-#' @param time_window par défaut, 1. fenêtre pour l'heure de départ.
-#' @param percentiles par défaut, 50.
+#' @param time_window par défaut, 1. fenêtre pour l'heure de départ en minutes
+#' @param percentiles par défaut, 50., retourne les percentiles de temps de trajet (montecarlo)
 #' @param walk_speed vitesse piéton
 #' @param bike_speed vitesse vélo
-#' @param max_rides nombre de changements de transport.
-#' @param n_threads nombre de calcul simultané
-#' @param jMem taille mémoire vive
-#' @param quick_setup par défaut, FALSE
-#' @param di renvoie des itinéraires détaillés (distance, nombre de branche) en perdant le montecarlo
-#' @param elevation raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif
+#' @param max_lts stress maximal à vélo (de 1 enfant à 4 toutes routes), 2 par défaut
+#' @param max_rides nombre maximal de changements de transport.
+#' @param n_threads nombre de threads
+#' @param jMem taille mémoire vive, plus le nombre de threads est élevé, plus la mémoire doit être importante
+#' @param quick_setup dans le cas où le core existe déjà, il n'est pas recréer, plus rapide donc, par défaut, FALSE
+#' @param di renvoie des itinéraires détaillés (distance, nombre de branche) en perdant le montecarlo et au prix d'une plus grande lenteur
+#' @param use_elevation le routing est effectué en utilisant l'information de dénivelé. Pas sûr que cela fonctionne.
+#' @param elevation nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
+#'                  elevatr::get_elev_raster est un bon moyen de le générer. Fonctionne même si on n'utilise pas les élévations dans le routing
 #' @import rJava
 #'
 #' @export
@@ -487,9 +498,13 @@ routing_setup_r5 <- function(path,
   rJava::.jinit(force.init = TRUE, silent=TRUE) #modif du code ci-dessus (MP)
   if(quick_setup)
     core <- quick_setup_r5(data_path = path)
-  else
-    core <- r5r::setup_r5(data_path = path, verbose=FALSE,
+  else {
+    out <- capture.output(
+      core <- r5r::setup_r5(data_path = path, verbose=FALSE,
                           use_elevation=use_elevation, overwrite = overwrite)
+      )
+  }
+
 
   core$setNumberOfMonteCarloDraws(as.integer(montecarlo))
   setup <- get_setup_r5(data_path = path)
@@ -512,7 +527,8 @@ routing_setup_r5 <- function(path,
     max_rides = max_rides,
     max_lts = max_lts,
     use_elevation = use_elevation,
-    elevation = terra::rast(elevation),
+    elevation = elevation,
+    elevation_data = if(is.null(elevation)) NULL else terra::rast(str_c(path, "/", elevation)),
     n_threads = as.integer(n_threads),
     future = TRUE,
     jMem = jMem,
@@ -520,12 +536,17 @@ routing_setup_r5 <- function(path,
     r5_jar = setup$r5_jar,
     core_init = function(routing){
       options(java.parameters = glue::glue('-Xmx{routing$jMem}'))
-      rJava::.jinit()
+      rJava::.jinit(silent=TRUE)
       r5r::stop_r5()
       rJava::.jgc(R.gc = TRUE)
       core <- r5r::setup_r5(data_path = routing$path, verbose=FALSE,
                             use_elevation=routing$use_elevation)
-      return(core)
+      out <- routing
+      out$core <- core
+      if(!is.null(routing$elevation))
+        out$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation))
+
+      return(out)
     })
 }
 
