@@ -1,4 +1,5 @@
 #' construit la grille pour projetter le résultat en crs 4326
+#'
 #' \code{iso_ouetquoi} projette sur 4326 les coordonnées et fabrique les grilles nécessaires en donnant en sortie les ou et quoi utilisés pour ttm
 #'
 #' @param ou positions sur lesquelles sont calculés les accessibilités. Si NULL, un raster est défini par défaut.
@@ -8,7 +9,7 @@
 #' @param opp_var liste des variables d'aménités et d'opportunités.
 #' @param fun_quoi fonction d'aggrégation des aménités/opportunités à la résolution demandée.
 #' @param resolution resolution finale. Par défaut, identique à la résolution des aménités/opportunités.
-#' @param rf je ne sais pas trop.
+#' @param rf suréchantillonage dui raster ou, pour cacluler les recouvrements partiels, 5 par défaut
 #'
 #' @import data.table
 #' @import sf
