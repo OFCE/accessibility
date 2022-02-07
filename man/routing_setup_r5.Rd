@@ -18,6 +18,7 @@ routing_setup_r5(
   max_rides = 5L,
   use_elevation = FALSE,
   elevation = NULL,
+  dfMaxLength = 10,
   overwrite = FALSE,
   n_threads = 4L,
   jMem = "12G",
@@ -52,6 +53,8 @@ routing_setup_r5(
 
 \item{elevation}{nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
 elevatr::get_elev_raster est un bon moyen de le générer. Fonctionne même si on n'utilise pas les élévations dans le routing}
+
+\item{dfMaxLength}{longueur en mètre des segments pour la discrétization}
 
 \item{overwrite}{Regénére le network.dat même si il est présent}
 

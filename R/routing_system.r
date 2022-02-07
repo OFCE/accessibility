@@ -144,8 +144,7 @@ safe_r5_di <- purrr::safely(r5r::detailed_itineraries)
 #' @param routing système de routing
 #'
 #' @import data.table
-r5_di <- function(o, d, tmax, routing)
-{
+r5_di <- function(o, d, tmax, routing) {
   o <- o[, .(id,lon,lat)]
   d <- d[, .(id,lon,lat)]
   od <- CJ(o = o$id, d=d$id)
@@ -170,46 +169,68 @@ r5_di <- function(o, d, tmax, routing)
     verbose=FALSE,
     progress=FALSE,
     drop_geometry=is.null(routing$elevation))
-
-  if(is.null(res$error)&&nrow(res$result)>0) {
-    if(!is.null(routing$elevation)) {
-      # on discretise par pas de 10m pour le calcul des dénivelés
-      # ca va plus vite que la version LINESTRING (x10)
-      # avec un zoom à 13 les carreaux font 5x5m
-      # mais on n'attrape pas le pont de l'ile de Ré
-      vv <- terra::vect(st_cast(
-        st_segmentize(st_geometry(res$result[1:10,]), dfMaxLength = 10),
-        "MULTIPOINT"))
-      elvts <- as.data.table(terra::extract(routing$elevation_data, vv))
-      names(elvts) <- c("id", "h")
-      elvts[, h:= nafill(h, type="locf")]
-      elvts[, dh:= h-shift(h, type="lag", fill=0), by="id"]
-      deniv <- elvts[, .(deniv=sum(dh), deniv_pos=sum(dh[dh>0])), by="id"]
-      deniv[, id:=NULL]
-      resdi <- cbind(as.data.table(st_drop_geometry(res$result)), deniv)
-    } else {
-      resdi <- as.data.table(res$result)
-      resdi[, `:=`(deniv=NA, deniv_pos=NA)]
+  if(!is.null(res$error)) {
+    gc()
+    res <- safe_r5_di(
+      r5r_core = routing$core,
+      origins = o[oCJ, on="id"],
+      destinations = d[dCJ, on="id"],
+      mode=routing$mode,
+      mode_egress="WALK",
+      departure_datetime = routing$departure_datetime,
+      max_walk_dist = routing$max_walk_dist,
+      max_bike_dist = Inf,
+      max_trip_duration = tmax+1,
+      walk_speed = routing$walk_speed,
+      bike_speed = routing$bike_speed,
+      max_rides = routing$max_rides,
+      max_lts = routing$max_lts,
+      shortest_path= TRUE,
+      n_threads = routing$n_threads,
+      verbose=FALSE,
+      progress=FALSE,
+      drop_geometry=is.null(routing$elevation))
+    if(!is.null(res$error))
+      logger::log_warn("error r5::travel_time_matrix, give an empty matrix after 2 attempts")
+  }
+  if(is.null(res$error)) {
+    if(nrow(res$result)>0) {
+      if(!is.null(routing$elevation)) {
+        # on discretise par pas de 10m pour le calcul des dénivelés
+        # ca va plus vite que la version LINESTRING (x10)
+        # avec un zoom à 13 les carreaux font 5x5m
+        # mais on n'attrape pas le pont de l'ile de Ré
+        vv <- terra::vect(st_cast(
+          st_segmentize(st_geometry(res$result), dfMaxLength = routing$dfMaxLength),
+          "MULTIPOINT"))
+        elvts <- as.data.table(terra::extract(routing$elevation_data, vv))
+        names(elvts) <- c("id", "h")
+        elvts[, h:= nafill(h, type="locf")]
+        elvts[, dh:= h-shift(h, type="lag", fill=0), by="id"]
+        deniv <- elvts[, .(deniv=sum(dh), deniv_pos=sum(dh[dh>0])), by="id"]
+        deniv[, id:=NULL]
+        resdi <- cbind(as.data.table(st_drop_geometry(res$result)), deniv)
+      } else {
+        resdi <- as.data.table(res$result)
+        resdi[, `:=`(deniv=NA, deniv_pos=NA)]
       }
-    resdi <- resdi[ , .(travel_time = as.integer(sum(total_duration)),
-                        distance = sum(distance),
-                        deniv = sum(deniv),
-                        deniv_pos = sum(deniv_pos),
-                        legs = .N), by=c("fromId", "toId")]
-    resdi[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId))]
-    res$result <- resdi
-  }
-  else
-  {
-    logger::log_warn("error r5::travel_time_matrix, give an empty matrix after 2 attemps")
-    res$result <- data.table(fromId=numeric(),
-                             toId=numeric(),
-                             travel_time=numeric(),
-                             distance=numeric(),
-                             deniv = numeric(),
-                             deniv_pos = numeric(),
-                             legs=numeric())
-  }
+      resdi <- resdi[ , .(travel_time = as.integer(sum(total_duration)),
+                          distance = sum(distance),
+                          deniv = sum(deniv),
+                          deniv_pos = sum(deniv_pos),
+                          legs = .N), by=c("fromId", "toId")]
+      resdi[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId))]
+      res$result <- resdi
+    }
+  } else # quand il y a erreur on renvoie une table nulle
+    res$result <- data.table(
+      fromId=numeric(),
+      toId=numeric(),
+      travel_time=numeric(),
+      distance=numeric(),
+      deniv = numeric(),
+      deniv_pos = numeric(),
+      legs=numeric())
   res
 }
 
@@ -462,6 +483,7 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 #' @param use_elevation le routing est effectué en utilisant l'information de dénivelé. Pas sûr que cela fonctionne.
 #' @param elevation nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
 #'                  elevatr::get_elev_raster est un bon moyen de le générer. Fonctionne même si on n'utilise pas les élévations dans le routing
+#' @param dfMaxLength longueur en mètre des segments pour la discrétization
 #' @import rJava
 #'
 #' @export
@@ -478,6 +500,7 @@ routing_setup_r5 <- function(path,
                              max_rides= 5L,
                              use_elevation = FALSE,
                              elevation = NULL,
+                             dfMaxLength = 10,
                              overwrite = FALSE,
                              n_threads= 4L,
                              jMem = "12G",
@@ -501,8 +524,8 @@ routing_setup_r5 <- function(path,
   else {
     out <- capture.output(
       core <- r5r::setup_r5(data_path = path, verbose=FALSE,
-                          use_elevation=use_elevation, overwrite = overwrite)
-      )
+                            use_elevation=use_elevation, overwrite = overwrite)
+    )
   }
 
 
@@ -528,6 +551,7 @@ routing_setup_r5 <- function(path,
     max_lts = max_lts,
     use_elevation = use_elevation,
     elevation = elevation,
+    dfMaxLength = dfMaxLength,
     elevation_data = if(is.null(elevation)) NULL else terra::rast(str_c(path, "/", elevation)),
     n_threads = as.integer(n_threads),
     future = TRUE,

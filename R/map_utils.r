@@ -287,7 +287,7 @@ ttm_idINS <- function(ttm, resolution=200) {
   to <- ttm$toId[, .(id, toidINS = idINS3035(x,y, resolution = resolution))]
   tt <- ttm$time_table
   if(length(tt)>1)
-    tt <- rbindlist(tt, use.names=TRUE)
+    tt <- rbindlist(tt, use.names=TRUE, fill = TRUE)
   else
     if("list"%in%class(tt))
       tt <- tt[[1]]
