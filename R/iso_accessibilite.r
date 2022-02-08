@@ -65,7 +65,7 @@ iso_accessibilite <- function(
 
 
   dir.create(glue::glue("{logs}/logs"), showWarnings = FALSE, recursive = TRUE)
-  timestamp <- lubridate::stamp("15-01-20 10h08.05", orders = "dmy HMS", quiet = TRUE) (lubridate::now())
+  timestamp <- lubridate::stamp("15-01-20 10h08.05", orders = "dmy HMS", quiet = TRUE) (lubridate::now(tzone = "Europe/Paris"))
   logfile <- glue::glue("{logs}/logs/iso_accessibilite.{routing$type}.{timestamp}.log")
   logger::log_appender(logger::appender_file(logfile))
 
@@ -76,7 +76,7 @@ iso_accessibilite <- function(
   logger::log_success("pdt:{pdt}")
   logger::log_success("chunk:{f2si2(chunk)}")
   logger::log_success("resolution:{resolution}")
-  logger::log_success("future:{future}")
+
   logger::log_success("out:{out}")
 
   opp_var <- names(quoi |>
@@ -136,16 +136,17 @@ iso_accessibilite <- function(
 
   message("...calcul des temps de parcours")
   pb <- progressr::progressor(steps=sum(groupes$Nous))
+  nw <- future::nbrOfWorkers()
+  logger::log_success("future:{future}, {nw} workers")
 
   if(routing$future & future) {
     if(!is.null(routing$core_init)) {
       pl <- future::plan()
       future::plan(pl)
       pids <- furrr::future_map(
-        1:(future::nbrOfWorkers()),
+        1:nw,
         ~ future:::session_uuid()[[1]])
       lt <- logger::log_threshold()
-      nw <- future::nbrOfWorkers()
       splittage <- seq(0,length(ou_gr)-1) %/% ceiling(length(ou_gr)/nw)
       workable_ous <- split(ou_gr, splittage)
       routing$elevation_data <- NULL
@@ -167,7 +168,7 @@ iso_accessibilite <- function(
       pl <- future::plan()
       future::plan(pl)
       pids <- furrr::future_map(
-        1:(future::nbrOfWorkers()),
+        1:nw,
         ~future:::session_uuid()[[1]])
       lt <- logger::log_threshold()
       routing$elevation_data <- NULL
