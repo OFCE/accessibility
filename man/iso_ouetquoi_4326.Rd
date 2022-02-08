@@ -2,8 +2,7 @@
 % Please edit documentation in R/iso_utils.r
 \name{iso_ouetquoi_4326}
 \alias{iso_ouetquoi_4326}
-\title{construit la grille pour projetter le résultat en crs 4326
-\code{iso_ouetquoi} projette sur 4326 les coordonnées et fabrique les grilles nécessaires en donnant en sortie les ou et quoi utilisés pour ttm}
+\title{construit la grille pour projetter le résultat en crs 4326}
 \usage{
 iso_ouetquoi_4326(
   ou,
@@ -31,9 +30,8 @@ iso_ouetquoi_4326(
 
 \item{resolution}{resolution finale. Par défaut, identique à la résolution des aménités/opportunités.}
 
-\item{rf}{je ne sais pas trop.}
+\item{rf}{suréchantillonage dui raster ou, pour cacluler les recouvrements partiels, 5 par défaut}
 }
 \description{
-construit la grille pour projetter le résultat en crs 4326
 \code{iso_ouetquoi} projette sur 4326 les coordonnées et fabrique les grilles nécessaires en donnant en sortie les ou et quoi utilisés pour ttm
 }
