@@ -150,6 +150,7 @@ r5_di <- function(o, d, tmax, routing) {
   od <- CJ(o = o$id, d=d$id)
   oCJ <- data.table(id=od$o)
   dCJ <- data.table(id=od$d)
+  tt <- Sys.time()
   res <- safe_r5_di(
     r5r_core = routing$core,
     origins = o[oCJ, on="id"],
@@ -169,6 +170,7 @@ r5_di <- function(o, d, tmax, routing) {
     verbose=FALSE,
     progress=FALSE,
     drop_geometry=is.null(routing$elevation))
+  logger::log_debug("calcul de distances ({round(as.numeric(Sys.time()-tt), 2)} s.)")
   if(!is.null(res$error)) {
     gc()
     res <- safe_r5_di(
@@ -210,7 +212,7 @@ r5_di <- function(o, d, tmax, routing) {
         elvts[, dh:= h-shift(h, type="lag", fill=0), by="id"]
         deniv <- elvts[, .(deniv=sum(dh), deniv_pos=sum(dh[dh>0])), by="id"]
         deniv[, id:=NULL]
-        logger::log_success("calcul d'élévation ({round(as.numeric(Sys.time()-tt), 2)})")
+        logger::log_debug("calcul d'élévation ({round(as.numeric(Sys.time()-tt), 2)} s.)")
         resdi <- cbind(as.data.table(st_drop_geometry(res$result)), deniv)
       } else {
         resdi <- as.data.table(res$result)
