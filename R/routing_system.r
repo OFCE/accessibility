@@ -200,6 +200,7 @@ r5_di <- function(o, d, tmax, routing) {
         # ca va plus vite que la version LINESTRING (x10)
         # avec un zoom à 13 les carreaux font 5x5m
         # mais on n'attrape pas le pont de l'ile de Ré
+        tt <- Sys.time()
         vv <- terra::vect(st_cast(
           st_segmentize(st_geometry(res$result), dfMaxLength = routing$dfMaxLength),
           "MULTIPOINT"))
@@ -209,6 +210,7 @@ r5_di <- function(o, d, tmax, routing) {
         elvts[, dh:= h-shift(h, type="lag", fill=0), by="id"]
         deniv <- elvts[, .(deniv=sum(dh), deniv_pos=sum(dh[dh>0])), by="id"]
         deniv[, id:=NULL]
+        logger::log_success("calcul d'élévation ({round(as.numeric(Sys.time()-tt), 2)})")
         resdi <- cbind(as.data.table(st_drop_geometry(res$result)), deniv)
       } else {
         resdi <- as.data.table(res$result)
@@ -220,6 +222,7 @@ r5_di <- function(o, d, tmax, routing) {
                           deniv_pos = sum(deniv_pos),
                           legs = .N), by=c("fromId", "toId")]
       resdi[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId))]
+
       res$result <- resdi
     }
   } else # quand il y a erreur on renvoie une table nulle
