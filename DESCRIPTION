@@ -33,11 +33,9 @@ Imports:
   rdist,
   rlang,
   sp,
-  stats,
   stringr,
   tictoc,
   tidyselect,
-  utils,
   tidytransit,
   assertthat,
   terra

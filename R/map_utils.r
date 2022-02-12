@@ -191,7 +191,7 @@ dt2r <- function(dt, resolution=NULL, idINS="idINS")
 #' @param digits nombre de chiffre après la virgule.
 #' @param unit méthode de choix de l'unité ("median" par défaut)
 #'
-#' @importFrom stats median
+
 f2si2 <- function(number, rounding = TRUE, digits = 1, unit = "median") {
   lut <- c(
     1e-24, 1e-21, 1e-18, 1e-15, 1e-12, 1e-09, 1e-06,

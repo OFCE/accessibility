@@ -38,7 +38,6 @@
 #'
 #' @import data.table
 #' @import sf
-#' @importFrom utils capture.output
 #'
 #' @export
 #'

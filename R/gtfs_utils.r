@@ -26,8 +26,7 @@ choisir_jour_transit <- function(plage, start_time = "8:00:00") {
 #'
 #' @return une date
 #' @export
-#'
-#' @examples
+
 choix_jour <- function(directory) {
   les_gtfs <- list.files(directory, pattern = "*gtfs*|*GTFS*") |>
     purrr::map( ~ tidytransit::read_gtfs(stringr::str_c(directory, .x, sep = "/")))
@@ -66,8 +65,7 @@ choix_jour <- function(directory) {
 #'
 #' @return
 #' @export
-#'
-#' @examples
+
 plage <- function(directory) {
   les_gtfs <- list.files(directory, pattern = "*gtfs*|*GTFS*") |>
     purrr::map( ~ tidytransit::read_gtfs(str_c(directory, .x, sep = "/")))

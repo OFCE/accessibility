@@ -162,7 +162,7 @@ iso_ouetquoi_4326 <- function(ou, quoi, res_ou, res_quoi, opp_var, fun_quoi="mea
 #'
 #' @import data.table
 #' @import sf
-#' @importFrom stats median
+
 iso_split_ou <- function(ou, quoi, chunk=NULL, routing, tmax=60)
 {
   n <- min(100, nrow(ou))
