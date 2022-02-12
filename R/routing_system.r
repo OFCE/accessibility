@@ -203,11 +203,14 @@ r5_di <- function(o, d, tmax, routing) {
         # avec un zoom à 13 les carreaux font 5x5m
         # mais on n'attrape pas le pont de l'ile de Ré
         tt <- Sys.time()
-        vv <- terra::vect(st_cast(
-          st_segmentize(st_geometry(res$result), dfMaxLength = routing$dfMaxLength),
+        pp <- sf::st_coordinates(
+          sf::st_cast(
+          sf::st_segmentize(
+            st_geometry(res$result),
+            dfMaxLength = routing$dfMaxLength),
           "MULTIPOINT"))
-        elvts <- as.data.table(terra::extract(routing$elevation_data, vv))
-        names(elvts) <- c("id", "h")
+        elvts <- data.table(id = pp[,3], h = terra::extract(routing$elevation_data, pp[, 1:2]))
+        setnames(elvts, "h.elevation", "h")
         elvts[, h:= nafill(h, type="locf")]
         elvts[, dh:= h-shift(h, type="lag", fill=0), by="id"]
         deniv <- elvts[, .(deniv=sum(dh), deniv_pos=sum(dh[dh>0])), by="id"]
@@ -259,13 +262,13 @@ euc_ttm <- function(o, d, tmax, routing)
   o_3035 <- sf_project(from=st_crs(4326), to=st_crs(3035), o[, .(lon, lat)])
   d_3035 <- sf_project(from=st_crs(4326), to=st_crs(3035), d[, .(lon, lat)])
   dist <- rdist::cdist(X=o_3035, Y=d_3035, metric="euclidean", p=2)
-  dist <- dist/(vitesse*1000/60)
   colnames(dist) <- d$id
   rownames(dist) <- o$id
   dt <- data.table(dist, keep.rownames=TRUE)
   setnames(dt, "rn", "fromId")
   dt[, fromId:=as.integer(fromId)]
-  dt <- melt(dt, id.vars="fromId", variable.name="toId", value.name = "travel_time", variable.factor = FALSE)
+  dt <- melt(dt, id.vars="fromId", variable.name="toId", value.name = "distance", variable.factor = FALSE)
+  dt[, travel_time := distance/1000/vitesse*60]
   dt <- dt[travel_time<tmax,]
   dt[, `:=`(toId = as.integer(toId), travel_time = as.integer(ceiling(travel_time)))]
   list(error=NULL,
@@ -651,6 +654,8 @@ routing_setup_osrm <- function(
 #'
 #' @param mode mode de transport, par défaut, "WALK".
 #' @param speed vitesse de déplacement, par défaut, 5km/h.
+#'
+#' @export
 routing_setup_euc <- function(
   mode="WALK", speed=5)
 {
@@ -669,6 +674,8 @@ routing_setup_euc <- function(
 #' @param port par défaut, 8000
 #' @param memory taille mémoire du serveur, par défaut 8G
 #' @param rep répertoire
+#' @export
+
 OTP_server <- function(router="IDF1", port=8008, memory="8G", rep)
 {
   safe_otp_connect <- purrr::safely(otpr::otp_connect)

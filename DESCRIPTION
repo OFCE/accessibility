@@ -39,5 +39,6 @@ Imports:
   tidyselect,
   utils,
   tidytransit,
-  assertthat
+  assertthat,
+  terra
   
