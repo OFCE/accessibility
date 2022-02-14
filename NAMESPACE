@@ -3,6 +3,7 @@
 export(choisir_jour_transit)
 export(choix_jour)
 export(dt2r)
+export(get_line)
 export(get_setup_r5)
 export(idINS2point)
 export(idINS2square)
