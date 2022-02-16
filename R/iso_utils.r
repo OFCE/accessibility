@@ -562,3 +562,11 @@ ttm_idINS <- function(ttm, resolution=200) {
   tt[, toId :=NULL]
   return(tt)
 }
+
+ksplit <- function(data, k) {
+  if(is.null(nrow(data)))
+    n <- length(data)
+  else
+    n <- nrow(data)
+  split(data, ceiling(1:n/(n/k)))
+}
