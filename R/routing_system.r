@@ -87,6 +87,7 @@ r5_ttm <- function(o, d, tmax, routing)
     origins = o,
     destinations = d,
     mode=routing$mode,
+    mode_egress = routing$mode_egress,
     departure_datetime = routing$departure_datetime,
     max_walk_dist = routing$max_walk_dist,
     max_trip_duration = tmax+1,
@@ -94,6 +95,7 @@ r5_ttm <- function(o, d, tmax, routing)
     percentiles = routing$percentile,
     walk_speed = routing$walk_speed,
     bike_speed = routing$bike_speed,
+    max_bike_dist = routing$max_bike_dist,
     max_rides = routing$max_rides,
     max_lts = routing$max_lts,
     n_threads = routing$n_threads,
@@ -173,12 +175,12 @@ r5_di <- function(o, d, tmax, routing) {
       drop_geometry=is.null(routing$elevation))
     })
   res <- purrr::transpose(res)
-  res$result <- rbindlist(res$result)
-  if("geometry"%in%names(res$result$))
-    res$result <- st_as_sf(res$result)
-  res$error <- compact(res$error)
+  res$result <- data.table::rbindlist(res$result)
+  if("geometry"%in%names(res$result))
+    res$result <- sf::st_as_sf(res$result)
+  res$error <- purrr::compact(res$error)
   if(length(res$error)==0) res$error <- NULL
-  logger::log_debug("calcul de distances ({round(as.numeric(Sys.time()-tt), 2)} s. {nrow(od)} paires)")
+  logger::log_debug("calcul de distances ({round(as.numeric(Sys.time()-tt), 2)} s. {nrow(o)*nrow(d)} paires)")
 
   if(is.null(res$error)) {
     if(nrow(res$result)>0) {
@@ -484,8 +486,9 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 routing_setup_r5 <- function(path,
                              date="17-12-2019 8:00:00",
                              mode=c("WALK", "TRANSIT"),
-                             montecarlo=10L,
-                             max_walk_dist= Inf,
+                             montecarlo = 10L,
+                             max_walk_dist = Inf,
+                             max_bike_dist = Inf,
                              time_window=1L,
                              percentiles=50L,
                              walk_speed = 5.0,
@@ -538,8 +541,13 @@ routing_setup_r5 <- function(path,
     time_window = as.integer(time_window),
     departure_datetime = as.POSIXct(date, format = "%d-%m-%Y %H:%M:%S", tz=Sys.timezone()),
     mode = mode,
+    egress_mode = case_when(
+      "TRANSIT"%in%mode ~ "WALK",
+      "CAR"%in%mode ~ "CAR",
+      "BICYCLE"%in%mode ~ "BICYCLE"),
     percentiles = percentiles,
     max_walk_dist = max_walk_dist,
+    max_bike_dist = max_bike_dist,
     walk_speed = walk_speed,
     bike_speed = bike_speed,
     max_rides = max_rides,

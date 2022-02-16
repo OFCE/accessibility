@@ -10,17 +10,19 @@ routing_setup_r5(
   mode = c("WALK", "TRANSIT"),
   montecarlo = 10L,
   max_walk_dist = Inf,
+  max_bike_dist = Inf,
   time_window = 1L,
   percentiles = 50L,
   walk_speed = 5,
   bike_speed = 12,
   max_lts = 2,
-  max_rides = 5L,
+  max_rides = ifelse("TRANSIT" \%in\% mode, 3L, 1L),
   use_elevation = FALSE,
   elevation = NULL,
   dfMaxLength = 10,
   overwrite = FALSE,
   n_threads = 4L,
+  max_rows = 5000,
   jMem = "12G",
   di = FALSE,
   quick_setup = FALSE
@@ -47,7 +49,7 @@ routing_setup_r5(
 
 \item{max_lts}{stress maximal à vélo (de 1 enfant à 4 toutes routes), 2 par défaut}
 
-\item{max_rides}{nombre maximal de changements de transport.}
+\item{max_rides}{nombre maximal de changements de transport}
 
 \item{use_elevation}{le routing est effectué en utilisant l'information de dénivelé. Pas sûr que cela fonctionne.}
 
@@ -59,6 +61,8 @@ elevatr::get_elev_raster est un bon moyen de le générer. Fonctionne même si o
 \item{overwrite}{Regénére le network.dat même si il est présent}
 
 \item{n_threads}{nombre de threads}
+
+\item{max_rows}{nombre maximale de lignes passées à detailled_itirenaries}
 
 \item{jMem}{taille mémoire vive, plus le nombre de threads est élevé, plus la mémoire doit être importante}
 

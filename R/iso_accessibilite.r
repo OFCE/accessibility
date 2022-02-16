@@ -151,6 +151,9 @@ iso_accessibilite <- function(
       routing$elevation_data <- NULL
       access <- furrr::future_map(workable_ous, function(gs) {
         logger::log_threshold(lt)
+        logger::log_layout(logger::layout_glue_generator(
+          format = "{level} [{pid}] [{format(time, \"%Y-%m-%d %H:%M:%S\")}] {msg}"))
+
         logger::log_appender(logger::appender_file(logfile))
         routing <- routing$core_init(routing)
         purrr::map(gs, function(g) {

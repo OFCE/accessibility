@@ -11,24 +11,18 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Depends:
   data.table,
-  sf,
-  rJava
+  sf
 Imports:  
   checkmate,
   dplyr,
   fasterize,
-  furrr,
-  future,
   glue,
   logger,
   lubridate,
   matrixStats,
-  osrm,
-  otpr,
   progressr,
   purrr,
   qs,
-  r5r,
   raster,
   rdist,
   rlang,
@@ -38,5 +32,11 @@ Imports:
   tidyselect,
   tidytransit,
   assertthat,
+  rJava,
   terra
-  
+Suggests:
+  future,
+  furrr,
+  r5r,
+  osrm,
+  otpr
