@@ -1,0 +1,238 @@
+SUCCESS [2022-02-15 18:05:08] Calcul accessibilite version 2
+SUCCESS [2022-02-15 18:05:08] $type
+SUCCESS [2022-02-15 18:05:08] [1] "r5_di"
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $di
+SUCCESS [2022-02-15 18:05:08] [1] TRUE
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $path
+SUCCESS [2022-02-15 18:05:08] C:\Users\timbe\Dropbox\Applications\nuvolos.cloud\ofce\accessibilite\master\la rochelle/r5
+SUCCESS [2022-02-15 18:05:08] FALSE
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $string
+SUCCESS [2022-02-15 18:05:08] r5_di routing CAR_PARK sur C:\Users\timbe\Dropbox\Applications\nuvolos.cloud\ofce\accessibilite\master\la rochelle/r5 a 2022-02-15 18:04:50
+SUCCESS [2022-02-15 18:05:08] FALSE
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $core
+SUCCESS [2022-02-15 18:05:08] [1] "Java-Object{org.ipea.r5r.R5RCore@11359e3d}"
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $montecarlo
+SUCCESS [2022-02-15 18:05:08] [1] 10
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $time_window
+SUCCESS [2022-02-15 18:05:08] [1] 1
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $departure_datetime
+SUCCESS [2022-02-15 18:05:08] [1] "2022-03-09 08:00:00 UTC"
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $mode
+SUCCESS [2022-02-15 18:05:08] [1] "CAR_PARK"
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $percentiles
+SUCCESS [2022-02-15 18:05:08] [1] 50
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $max_walk_dist
+SUCCESS [2022-02-15 18:05:08] [1] Inf
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $walk_speed
+SUCCESS [2022-02-15 18:05:08] [1] 5
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $bike_speed
+SUCCESS [2022-02-15 18:05:08] [1] 12
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $max_rides
+SUCCESS [2022-02-15 18:05:08] [1] 1
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $max_lts
+SUCCESS [2022-02-15 18:05:08] [1] 2
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $use_elevation
+SUCCESS [2022-02-15 18:05:08] [1] FALSE
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $elevation
+SUCCESS [2022-02-15 18:05:08] NULL
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $dfMaxLength
+SUCCESS [2022-02-15 18:05:08] [1] 10
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $elevation_data
+SUCCESS [2022-02-15 18:05:08] NULL
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $max_rows
+SUCCESS [2022-02-15 18:05:08] [1] 2500
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $n_threads
+SUCCESS [2022-02-15 18:05:08] [1] 16
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $future
+SUCCESS [2022-02-15 18:05:08] [1] TRUE
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $jMem
+SUCCESS [2022-02-15 18:05:08] [1] "12G"
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $r5r_jar
+SUCCESS [2022-02-15 18:05:08] [1] "C:/Users/timbe/RLibs/4.1.2/r5r/jar/r5r_0_6_0.jar"
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $r5_jar
+SUCCESS [2022-02-15 18:05:08] character(0)
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] $core_init
+SUCCESS [2022-02-15 18:05:08] function(routing){
+SUCCESS [2022-02-15 18:05:08]       options(java.parameters = glue::glue('-Xmx{routing$jMem}'))
+SUCCESS [2022-02-15 18:05:08]       rJava::.jinit(silent=TRUE)
+SUCCESS [2022-02-15 18:05:08]       r5r::stop_r5()
+SUCCESS [2022-02-15 18:05:08]       rJava::.jgc(R.gc = TRUE)
+SUCCESS [2022-02-15 18:05:08]       options(r5r.montecarlo_draws = routing$montecarlo)
+SUCCESS [2022-02-15 18:05:08]       core <- r5r::setup_r5(data_path = routing$path, verbose=FALSE,
+SUCCESS [2022-02-15 18:05:08]                             use_elevation=routing$use_elevation)
+SUCCESS [2022-02-15 18:05:08]       out <- routing
+SUCCESS [2022-02-15 18:05:08]       out$core <- core
+SUCCESS [2022-02-15 18:05:08]       if(!is.null(routing$elevation))
+SUCCESS [2022-02-15 18:05:08]         out$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation))
+SUCCESS [2022-02-15 18:05:08]       return(out)
+SUCCESS [2022-02-15 18:05:08]     }
+SUCCESS [2022-02-15 18:05:08] <environment: 0x00000270489c6408>
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] 
+SUCCESS [2022-02-15 18:05:08] tmax:120
+SUCCESS [2022-02-15 18:05:08] pdt:1
+SUCCESS [2022-02-15 18:05:08] chunk:10M
+SUCCESS [2022-02-15 18:05:08] resolution:200
+SUCCESS [2022-02-15 18:05:08] out:200
+SUCCESS [2022-02-15 18:05:08] les variables sont emplois
+SUCCESS [2022-02-15 18:05:08] taille:85.9M gr:9 res_gr:12800
+SUCCESS [2022-02-15 18:05:08] 5.4k ou, 15.8k quoi
+SUCCESS [2022-02-15 18:05:08] 16 carreaux, 8 subsampling
+SUCCESS [2022-02-15 18:05:08] future:TRUE, 1 workers
+DEBUG [2022-02-15 18:05:12] [1] aog:N2636800E3481600 8 168
+DEBUG [2022-02-15 18:05:12] iso_ttm:100 8 160
+DEBUG [2022-02-15 18:05:12] 
+DEBUG [2022-02-15 18:05:12] result:0
+WARN [2022-02-15 18:05:12] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2636800E3481600 ou_id:17,80,86,94,168,280,340,465 ttm_ou vide
+WARN [2022-02-15 18:05:12] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:12] [1] aog:N2636800E3468800 8 259
+DEBUG [2022-02-15 18:05:12] iso_ttm:100 8 251
+DEBUG [2022-02-15 18:05:12] 
+DEBUG [2022-02-15 18:05:12] result:0
+WARN [2022-02-15 18:05:12] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2636800E3468800 ou_id:72,99,227,232,313,347,426,450 ttm_ou vide
+WARN [2022-02-15 18:05:12] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:12] [1] aog:N2636800E3456000 8 42
+DEBUG [2022-02-15 18:05:12] iso_ttm:100 8 34
+DEBUG [2022-02-15 18:05:12] 
+DEBUG [2022-02-15 18:05:12] result:0
+WARN [2022-02-15 18:05:12] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2636800E3456000 ou_id:138,140,146,173,222,265,286,358 ttm_ou vide
+WARN [2022-02-15 18:05:12] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:12] [1] aog:N2636800E3494400 8 1
+DEBUG [2022-02-15 18:05:12] [1] ttm_ou:0
+DEBUG [2022-02-15 18:05:12] 
+DEBUG [2022-02-15 18:05:12] iso_ttm:123 1 15781
+DEBUG [2022-02-15 18:05:12] 
+DEBUG [2022-02-15 18:05:12] result:0
+WARN [2022-02-15 18:05:12] [1] carreau:N2636800E3494400 ou_id:458 erreur ttm_0 list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2636800E3494400 ou_id:458 erreur ttm_0 list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2636800E3494400 ou_id:458 erreur ttm_0 list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2636800E3494400 ou_id:458 erreur ttm_0 list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2636800E3494400 ou_id:458 erreur ttm_0 list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2636800E3494400 ou_id:458 erreur ttm_0 list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2636800E3494400 ou_id:458 erreur ttm_0 list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2636800E3494400 ou_id:458 ttm_0 vide
+WARN [2022-02-15 18:05:12] la matrice des distances entre les ancres et les opportunites est vide
+DEBUG [2022-02-15 18:05:12] [1] aog:N2624000E3468800 8 666
+DEBUG [2022-02-15 18:05:12] iso_ttm:100 8 658
+DEBUG [2022-02-15 18:05:12] 
+DEBUG [2022-02-15 18:05:12] result:0
+WARN [2022-02-15 18:05:12] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2624000E3468800 ou_id:729,1116,1554,1659,1828,2604,2691,2820 ttm_ou vide
+WARN [2022-02-15 18:05:12] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:12] [1] aog:N2624000E3481600 8 535
+DEBUG [2022-02-15 18:05:12] iso_ttm:100 8 527
+DEBUG [2022-02-15 18:05:12] 
+DEBUG [2022-02-15 18:05:12] result:0
+WARN [2022-02-15 18:05:12] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2624000E3481600 ou_id:564,589,887,891,1220,1224,1255,1522 ttm_ou vide
+WARN [2022-02-15 18:05:12] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:12] [1] aog:N2624000E3494400 8 71
+DEBUG [2022-02-15 18:05:12] iso_ttm:100 8 63
+DEBUG [2022-02-15 18:05:12] 
+DEBUG [2022-02-15 18:05:12] result:0
+WARN [2022-02-15 18:05:12] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:12] [1] carreau:N2624000E3494400 ou_id:782,921,1092,1574,1709,1964,2182,2323 ttm_ou vide
+WARN [2022-02-15 18:05:12] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:12] [1] aog:N2624000E3456000 8 1121
+DEBUG [2022-02-15 18:05:12] iso_ttm:100 8 1113
+DEBUG [2022-02-15 18:05:13] 
+DEBUG [2022-02-15 18:05:13] result:0
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] [1] carreau:N2624000E3456000 ou_id:1376,1591,1691,1998,2329,2677,2717,2852 ttm_ou vide
+WARN [2022-02-15 18:05:13] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:13] [1] aog:N2611200E3456000 8 640
+DEBUG [2022-02-15 18:05:13] iso_ttm:100 8 632
+DEBUG [2022-02-15 18:05:13] 
+DEBUG [2022-02-15 18:05:13] result:0
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] [1] carreau:N2611200E3456000 ou_id:3008,3162,3275,3285,3972,4159,4252,4338 ttm_ou vide
+WARN [2022-02-15 18:05:13] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:13] [1] aog:N2611200E3468800 8 768
+DEBUG [2022-02-15 18:05:13] iso_ttm:100 8 760
+DEBUG [2022-02-15 18:05:13] 
+DEBUG [2022-02-15 18:05:13] result:0
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] [1] carreau:N2611200E3468800 ou_id:2933,3761,3983,4068,4077,4103,4492,4496 ttm_ou vide
+WARN [2022-02-15 18:05:13] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:13] [1] aog:N2611200E3481600 8 545
+DEBUG [2022-02-15 18:05:13] iso_ttm:100 8 537
+DEBUG [2022-02-15 18:05:13] 
+DEBUG [2022-02-15 18:05:13] result:0
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] [1] carreau:N2611200E3481600 ou_id:3124,3129,3848,3906,3907,4360,4401,4715 ttm_ou vide
+WARN [2022-02-15 18:05:13] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:13] [1] aog:N2611200E3494400 8 281
+DEBUG [2022-02-15 18:05:13] iso_ttm:100 8 273
+DEBUG [2022-02-15 18:05:13] 
+DEBUG [2022-02-15 18:05:13] result:0
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] [1] carreau:N2611200E3494400 ou_id:3744,3912,4466,4719,4753,4851,4858,4882 ttm_ou vide
+WARN [2022-02-15 18:05:13] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:13] [1] aog:N2598400E3456000 8 23
+DEBUG [2022-02-15 18:05:13] iso_ttm:100 5 18
+DEBUG [2022-02-15 18:05:13] 
+DEBUG [2022-02-15 18:05:13] result:0
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] [1] carreau:N2598400E3456000 ou_id:5099,5240,5256,5275,5294 ttm_ou vide
+WARN [2022-02-15 18:05:13] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:13] [1] aog:N2598400E3468800 8 51
+DEBUG [2022-02-15 18:05:13] iso_ttm:100 8 43
+DEBUG [2022-02-15 18:05:13] 
+DEBUG [2022-02-15 18:05:13] result:0
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] [1] carreau:N2598400E3468800 ou_id:5106,5109,5121,5124,5143,5166,5167,5218 ttm_ou vide
+WARN [2022-02-15 18:05:13] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:13] [1] aog:N2598400E3481600 8 236
+DEBUG [2022-02-15 18:05:13] iso_ttm:100 8 228
+DEBUG [2022-02-15 18:05:13] 
+DEBUG [2022-02-15 18:05:13] result:0
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] [1] carreau:N2598400E3481600 ou_id:5193,5205,5211,5223,5259,5367,5397,5414 ttm_ou vide
+WARN [2022-02-15 18:05:13] la matrice des distances interne au carreau est vide
+DEBUG [2022-02-15 18:05:13] [1] aog:N2598400E3494400 8 39
+DEBUG [2022-02-15 18:05:13] iso_ttm:100 8 31
+DEBUG [2022-02-15 18:05:13] 
+DEBUG [2022-02-15 18:05:13] result:0
+WARN [2022-02-15 18:05:13] erreur de routeur ttm_ou list(message = "object 'access_mode' not found", call = paste0(access_mode, collapse = ";"))
+WARN [2022-02-15 18:05:13] [1] carreau:N2598400E3494400 ou_id:5116,5117,5199,5214,5230,5272,5300,5311 ttm_ou vide
+WARN [2022-02-15 18:05:13] la matrice des distances interne au carreau est vide
+SUCCESS [2022-02-15 18:05:13] r5_di routing CAR_PARK sur C:\Users\timbe\Dropbox\Applications\nuvolos.cloud\ofce\accessibilite\master\la rochelle/r5 a 2022-02-15 18:04:50 en 6s - 0 routes - 14.8M routes(brut)/s - 0 routes/s - 100% reduction

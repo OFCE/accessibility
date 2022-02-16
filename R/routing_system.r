@@ -145,34 +145,13 @@ safe_r5_di <- purrr::safely(r5r::detailed_itineraries)
 #'
 #' @import data.table
 r5_di <- function(o, d, tmax, routing) {
-  o <- o[, .(id,lon,lat)]
-  d <- d[, .(id,lon,lat)]
-  od <- CJ(o = o$id, d=d$id)
-  oCJ <- data.table(id=od$o)
-  dCJ <- data.table(id=od$d)
+  o <- o[, .(id=as.character(id),lon,lat)]
+  d <- d[, .(id=as.character(id),lon,lat)]
+  od <- ksplit(CJ(o = o$id, d=d$id), k=max(1,ceiling(nrow(o)*nrow(d)/routing$max_rows)))
   tt <- Sys.time()
-  res <- safe_r5_di(
-    r5r_core = routing$core,
-    origins = o[oCJ, on="id"],
-    destinations = d[dCJ, on="id"],
-    mode=routing$mode,
-    mode_egress="WALK",
-    departure_datetime = routing$departure_datetime,
-    max_walk_dist = routing$max_walk_dist,
-    max_bike_dist = Inf,
-    max_trip_duration = tmax+1,
-    walk_speed = routing$walk_speed,
-    bike_speed = routing$bike_speed,
-    max_rides = routing$max_rides,
-    max_lts = routing$max_lts,
-    shortest_path= TRUE,
-    n_threads = routing$n_threads,
-    verbose=FALSE,
-    progress=FALSE,
-    drop_geometry=is.null(routing$elevation))
-  logger::log_debug("calcul de distances ({round(as.numeric(Sys.time()-tt), 2)} s.)")
-  if(!is.null(res$error)) {
-    gc()
+  res <- map(od, function(od_element) {
+    oCJ <- data.table(id=od_element$o)
+    dCJ <- data.table(id=od_element$d)
     res <- safe_r5_di(
       r5r_core = routing$core,
       origins = o[oCJ, on="id"],
@@ -192,9 +171,13 @@ r5_di <- function(o, d, tmax, routing) {
       verbose=FALSE,
       progress=FALSE,
       drop_geometry=is.null(routing$elevation))
-    if(!is.null(res$error))
-      logger::log_warn("error r5::travel_time_matrix, give an empty matrix after 2 attempts")
-  }
+    })
+  res <- purrr::transpose(res)
+  res$result <- rbindlist(res$result)
+  res$error <- compact(res$error)
+  if(length(res$error)==0) res$error <- NULL
+  logger::log_debug("calcul de distances ({round(as.numeric(Sys.time()-tt), 2)} s. {nrow(od)} paires)")
+
   if(is.null(res$error)) {
     if(nrow(res$result)>0) {
       if(!is.null(routing$elevation)) {
@@ -205,10 +188,10 @@ r5_di <- function(o, d, tmax, routing) {
         tt <- Sys.time()
         pp <- sf::st_coordinates(
           sf::st_cast(
-          sf::st_segmentize(
-            st_geometry(res$result),
-            dfMaxLength = routing$dfMaxLength),
-          "MULTIPOINT"))
+            sf::st_segmentize(
+              st_geometry(res$result),
+              dfMaxLength = routing$dfMaxLength),
+            "MULTIPOINT"))
         elvts <- data.table(id = pp[,3], h = terra::extract(routing$elevation_data, pp[, 1:2]))
         setnames(elvts, "h.elevation", "h")
         elvts[, h:= nafill(h, type="locf")]
@@ -476,14 +459,15 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 #' @param overwrite Regénére le network.dat même si il est présent
 #' @param date date Date où seront simulées les routes
 #' @param mode mode de transport, par défaut c("WALK", "TRANSIT"), voir r5r ou r5 pour les autres modes
-#' @param montecarlo nombre de tirages montecarlo par défaut 1, mais n'est plus utilisé (voir r5r::time_travel_matrix )
+#' @param montecarlo nombre de tirages montecarlo par minutes de time_windows par défaut 10
 #' @param max_walk_dist distance maximale à pied
 #' @param time_window par défaut, 1. fenêtre pour l'heure de départ en minutes
 #' @param percentiles par défaut, 50., retourne les percentiles de temps de trajet (montecarlo)
 #' @param walk_speed vitesse piéton
 #' @param bike_speed vitesse vélo
 #' @param max_lts stress maximal à vélo (de 1 enfant à 4 toutes routes), 2 par défaut
-#' @param max_rides nombre maximal de changements de transport.
+#' @param max_rides nombre maximal de changements de transport
+#' @param max_rows nombre maximale de lignes passées à detailled_itirenaries
 #' @param n_threads nombre de threads
 #' @param jMem taille mémoire vive, plus le nombre de threads est élevé, plus la mémoire doit être importante
 #' @param quick_setup dans le cas où le core existe déjà, il n'est pas recréer, plus rapide donc, par défaut, FALSE
@@ -498,19 +482,20 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 routing_setup_r5 <- function(path,
                              date="17-12-2019 8:00:00",
                              mode=c("WALK", "TRANSIT"),
-                             montecarlo=1L,
+                             montecarlo=10L,
                              max_walk_dist= Inf,
                              time_window=1L,
                              percentiles=50L,
                              walk_speed = 5.0,
                              bike_speed = 12.0,
                              max_lts= 2,
-                             max_rides= 5L,
+                             max_rides= ifelse("TRANSIT"%in%mode, 3L, 1L),
                              use_elevation = FALSE,
                              elevation = NULL,
                              dfMaxLength = 10,
                              overwrite = FALSE,
                              n_threads= 4L,
+                             max_rows=5000,
                              jMem = "12G",
                              di = FALSE,
                              quick_setup = FALSE)
@@ -537,7 +522,7 @@ routing_setup_r5 <- function(path,
   }
 
 
-  core$setNumberOfMonteCarloDraws(as.integer(montecarlo))
+  options(r5r.montecarlo_draws = montecarlo)
   setup <- get_setup_r5(data_path = path)
   mtnt <- lubridate::now()
   type <- ifelse(di, "r5_di", "r5")
@@ -561,6 +546,7 @@ routing_setup_r5 <- function(path,
     elevation = elevation,
     dfMaxLength = dfMaxLength,
     elevation_data = if(is.null(elevation)) NULL else terra::rast(str_c(path, "/", elevation)),
+    max_rows = max_rows,
     n_threads = as.integer(n_threads),
     future = TRUE,
     jMem = jMem,
@@ -571,13 +557,13 @@ routing_setup_r5 <- function(path,
       rJava::.jinit(silent=TRUE)
       r5r::stop_r5()
       rJava::.jgc(R.gc = TRUE)
+      options(r5r.montecarlo_draws = routing$montecarlo)
       core <- r5r::setup_r5(data_path = routing$path, verbose=FALSE,
                             use_elevation=routing$use_elevation)
       out <- routing
       out$core <- core
       if(!is.null(routing$elevation))
         out$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation))
-
       return(out)
     })
 }

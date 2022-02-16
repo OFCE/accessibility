@@ -8,7 +8,7 @@ routing_setup_r5(
   path,
   date = "17-12-2019 8:00:00",
   mode = c("WALK", "TRANSIT"),
-  montecarlo = 1L,
+  montecarlo = 10L,
   max_walk_dist = Inf,
   time_window = 1L,
   percentiles = 50L,
@@ -33,7 +33,7 @@ routing_setup_r5(
 
 \item{mode}{mode de transport, par défaut c("WALK", "TRANSIT"), voir r5r ou r5 pour les autres modes}
 
-\item{montecarlo}{nombre de tirages montecarlo par défaut 1, mais n'est plus utilisé (voir r5r::time_travel_matrix )}
+\item{montecarlo}{nombre de tirages montecarlo par minutes de time_windows par défaut 10}
 
 \item{max_walk_dist}{distance maximale à pied}
 
