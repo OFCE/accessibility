@@ -174,6 +174,8 @@ r5_di <- function(o, d, tmax, routing) {
     })
   res <- purrr::transpose(res)
   res$result <- rbindlist(res$result)
+  if("geometry"%in%names(res$result$))
+    res$result <- st_as_sf(res$result)
   res$error <- compact(res$error)
   if(length(res$error)==0) res$error <- NULL
   logger::log_debug("calcul de distances ({round(as.numeric(Sys.time()-tt), 2)} s. {nrow(od)} paires)")
