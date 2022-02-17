@@ -13,7 +13,7 @@ iso_accessibilite(
   routing = "r5",
   tmax = 10L,
   pdt = 1L,
-  chunk = 5e+07,
+  chunk = 1e+07,
   future = FALSE,
   out = ifelse(is.finite(resolution), resolution, "raster"),
   ttm_out = FALSE,

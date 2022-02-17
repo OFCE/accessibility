@@ -299,6 +299,7 @@ ttm_on_closest <- function(ppou, s_ou, quoi, ttm_0, les_ou, tmax, routing, grdeo
     cibles_ok <- ttm_0[fromId==ppou&travel_time<=tmax+marge][["toId"]]
     if(length(cibles_ok)>0)
     {
+
       ttm <- iso_ttm(o = ss_ou, d = quoi[cibles_ok], tmax=tmax+1, routing=routing)
       if(is.null(ttm$error))
         if(nrow(ttm$result)>0)
@@ -472,10 +473,7 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
           }
           else
           {
-            out_names <- intersect(
-              names(ttm),
-              c("fromId", "toId", "travel_time", "distance", "deniv", "deniv_pos", "legs"))
-            ttm_d <- ttm[, ..out_names]
+            ttm_d <- ttm
           }
           logger::log_success("carreau:{groupe} {speed_log}")
         }

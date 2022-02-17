@@ -99,8 +99,10 @@ r5_ttm <- function(o, d, tmax, routing)
     max_rides = routing$max_rides,
     max_lts = routing$max_lts,
     n_threads = routing$n_threads,
+    breakdown = routing$breakdown,
     verbose=FALSE,
     progress=FALSE)
+
   if(!is.null(res$error))
   {
     gc()
@@ -173,7 +175,7 @@ r5_di <- function(o, d, tmax, routing) {
       verbose=FALSE,
       progress=FALSE,
       drop_geometry=is.null(routing$elevation))
-    })
+  })
   res <- purrr::transpose(res)
   res$result <- data.table::rbindlist(res$result)
   if("geometry"%in%names(res$result))
@@ -471,6 +473,7 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 #' @param bike_speed vitesse vélo
 #' @param max_lts stress maximal à vélo (de 1 enfant à 4 toutes routes), 2 par défaut
 #' @param max_rides nombre maximal de changements de transport
+#' @param breakdown renvoe des détails sur le trajet, moins détaillé que di
 #' @param max_rows nombre maximale de lignes passées à detailled_itirenaries
 #' @param n_threads nombre de threads
 #' @param jMem taille mémoire vive, plus le nombre de threads est élevé, plus la mémoire doit être importante
@@ -495,6 +498,7 @@ routing_setup_r5 <- function(path,
                              bike_speed = 12.0,
                              max_lts= 2,
                              max_rides= ifelse("TRANSIT"%in%mode, 3L, 1L),
+                             breakdown = FALSE,
                              use_elevation = FALSE,
                              elevation = NULL,
                              dfMaxLength = 10,
@@ -514,16 +518,16 @@ routing_setup_r5 <- function(path,
     msg = "incorrect transport mode")
 
   mode_string <- stringr::str_c(mode, collapse = "&")
-  r5r::stop_r5()
   #rJava::.jgc(R.gc = TRUE)
   rJava::.jinit(force.init = TRUE, silent=TRUE) #modif du code ci-dessus (MP)
+
   if(quick_setup)
     core <- quick_setup_r5(data_path = path)
   else {
-    out <- capture.output(
-      core <- r5r::setup_r5(data_path = path, verbose=FALSE,
-                            use_elevation=use_elevation, overwrite = overwrite)
-    )
+    r5r::stop_r5()
+    core <- r5r::setup_r5(
+      data_path = path, verbose=FALSE,
+      use_elevation=use_elevation, overwrite = overwrite)
   }
 
 
@@ -541,10 +545,11 @@ routing_setup_r5 <- function(path,
     time_window = as.integer(time_window),
     departure_datetime = as.POSIXct(date, format = "%d-%m-%Y %H:%M:%S", tz=Sys.timezone()),
     mode = mode,
-    egress_mode = case_when(
-      "TRANSIT"%in%mode ~ "WALK",
-      "CAR"%in%mode ~ "CAR",
-      "BICYCLE"%in%mode ~ "BICYCLE"),
+    mode_egress = case_when(
+      "TRANSIT" %in% mode ~ "WALK",
+      "CAR" %in% mode ~ "CAR",
+      "BICYCLE" %in% mode ~ "BICYCLE",
+      TRUE ~ "WALK"),
     percentiles = percentiles,
     max_walk_dist = max_walk_dist,
     max_bike_dist = max_bike_dist,
@@ -557,6 +562,7 @@ routing_setup_r5 <- function(path,
     dfMaxLength = dfMaxLength,
     elevation_data = if(is.null(elevation)) NULL else terra::rast(str_c(path, "/", elevation)),
     max_rows = max_rows,
+    breakdown = breakdown,
     n_threads = as.integer(n_threads),
     future = TRUE,
     jMem = jMem,

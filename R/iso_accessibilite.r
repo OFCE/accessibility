@@ -51,7 +51,7 @@ iso_accessibilite <- function(
   routing = "r5",                         # défini le moteur de routage
   tmax = 10L,                        # en minutes
   pdt = 1L,
-  chunk = 50000000,                   # paquet envoyé
+  chunk = 10000000,                   # paquet envoyé
   future = FALSE,
   out = ifelse(is.finite(resolution), resolution, "raster"),
   ttm_out = FALSE,
