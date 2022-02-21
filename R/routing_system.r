@@ -7,16 +7,14 @@
 #' @param routing système de routing
 iso_ttm <- function(o, d, tmax, routing)
 {
-  logger::log_debug("iso_ttm:{tmax} {nrow(o)} {nrow(d)}")
   r <- switch(routing$type,
               "r5" = r5_ttm(o, d, tmax, routing),
               "r5_di" = r5_di(o, d, tmax, routing),
               "otpv1" = otpv1_ttm(o, d, tmax, routing),
               "osrm" = osrm_ttm(o, d, tmax, routing),
               "dt"= dt_ttm(o, d, tmax, routing),
-              "euclidean" = euc_ttm(o, d, tmax, routing))
-  logger::log_debug("result:{nrow(r$result)}")
-
+              "euclidean" = euc_ttm(o, d, tmax, routing),
+              "dodgr" = dodgr_ttm(o, d, tmax, routing))
   r
 }
 
@@ -30,7 +28,8 @@ safe_ttm <- function(routing)
          "otpv1" = otpv1_ttm,
          "osrm" = osrm_ttm,
          "dt"= dt_ttm,
-         "euclidean" = euc_ttm)
+         "euclidean" = euc_ttm,
+         "dodgr" = dodgr)
 }
 
 #' définit le type du routeur
@@ -48,7 +47,8 @@ delayRouting <- function(delay, routing)
            res},
          "otpv1" = {routing}, # to do
          "osrm" = {routing}, # no departure time
-         "data.table"= {routing}) # to do
+         "data.table"= {routing},
+         "dodgr"= {routing}) # rien to do
 }
 
 #' wrapper pour travel_time_matrix
@@ -171,7 +171,7 @@ r5_di <- function(o, d, tmax, routing) {
       verbose=FALSE,
       progress=FALSE,
       drop_geometry=is.null(routing$elevation))
-    })
+  })
   res <- purrr::transpose(res)
   res$result <- rbindlist(res$result)
   if("geometry"%in%names(res$result$))
@@ -684,4 +684,136 @@ OTP_server <- function(router="IDF1", port=8008, memory="8G", rep)
       connected <- is.null(connection$error)}
   }
   connection$result
+}
+
+#' setup du système de routing de dodgr
+#'
+#' Cette fonction met en place ce qui est nécessaire pour lancer dodgr
+#' A partir d'un fichier de réseau (au format silicate, téléchargé par overpass, voir download_dodgr_data)
+#' le setup fabrique le weighted_streetnetwork à partir d'un profile par mode de transport
+#' Ce fichier est enregistré est peut être ensuite utilisé pour calculer les distances ou les temps de parcours
+#'
+#' @param path path Chemin d'accès au dossier contenant le réseau
+#' @param overwrite Regénére le reseau même si il est présent
+#' @param date date Date où seront simulées les routes (non utilisé)
+#' @param mode mode de transport, par défaut "CAR" (possible (BICYCLE, WALK,...))
+#' @param walk_speed vitesse piéton
+#' @param bike_speed vitesse vélo
+#' @param n_threads nombre de threads
+#' @param use_elevation le routing est effectué en utilisant l'information de dénivelé. Pas sûr que cela fonctionne.
+#' @param elevation nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
+#'                  elevatr::get_elev_raster est un bon moyen de le générer. Fonctionne même si on n'utilise pas les élévations dans le routing
+#' @param dfMaxLength longueur en mètre des segments pour la discrétization
+#'
+#' @export
+routing_setup_dodgr <- function(path,
+                                date="17-12-2019 8:00:00",
+                                mode="CAR",
+                                walk_speed = 5.0,
+                                bike_speed = 12.0,
+                                max_lts= 2,
+                                use_elevation = FALSE,
+                                elevation = NULL,
+                                dfMaxLength = 10,
+                                overwrite = FALSE,
+                                n_threads= 4L,
+                                quick_setup = FALSE)
+{
+  env <- parent.frame()
+  path <- glue::glue(path, .envir = env)
+  asserthat::assert_that(require("dodgr"))
+  assertthat::assert_that(
+    mode%in%c("CAR", "BICYCLE", "WALK", "bicycle", "foot", "goods",
+              "hgv", "horse", "moped",
+              "motorcar", "motorcycle", "psv", "wheelchair"),
+    msg = "incorrect transport mode")
+  mode <- case_when(mode=="CAR"~"motorcar",
+                    mode=="BICYCLE"~"bicycle",
+                    mode=="WALK"~"foot")
+  mtnt <- lubridate::now()
+  type <- "dodgr"
+  list(
+    type = type,
+    path = path,
+    string = glue::glue("{type} routing {mode} sur {path} a {mtnt}"),
+    departure_datetime = as.POSIXct(date, format = "%d-%m-%Y %H:%M:%S", tz=Sys.timezone()),
+    mode = mode,
+    walk_speed = walk_speed,
+    bike_speed = bike_speed,
+    max_rides = max_rides,
+    max_lts=max_lts,
+    use_elevation = use_elevation,
+    elevation = elevation,
+    dfMaxLength = dfMaxLength,
+    elevation_data = if(is.null(elevation)) NULL else terra::rast(str_c(path, "/", elevation)),
+    max_rows = max_rows,
+    n_threads = as.integer(n_threads),
+    future = TRUE,
+    core_init = function(routing){
+      options(java.parameters = glue::glue('-Xmx{routing$jMem}'))
+      rJava::.jinit(silent=TRUE)
+      r5r::stop_r5()
+      rJava::.jgc(R.gc = TRUE)
+      options(r5r.montecarlo_draws = routing$montecarlo)
+      core <- r5r::setup_r5(data_path = routing$path, verbose=FALSE,
+                            use_elevation=routing$use_elevation)
+      out <- routing
+      out$core <- core
+      if(!is.null(routing$elevation))
+        out$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation))
+      return(out)
+    })
+}
+
+dodgr_ttm <- function(o, d, tmax, routing)
+{
+  o <- o[, .(id=as.character(id),lon,lat)]
+  d <- d[, .(id=as.character(id),lon,lat)]
+  res <- quiet_r5_ttm(
+    r5r_core = routing$core,
+    origins = o,
+    destinations = d,
+    mode=routing$mode,
+    departure_datetime = routing$departure_datetime,
+    max_walk_dist = routing$max_walk_dist,
+    max_trip_duration = tmax+1,
+    time_window = as.integer(routing$time_window),
+    percentiles = routing$percentile,
+    walk_speed = routing$walk_speed,
+    bike_speed = routing$bike_speed,
+    max_rides = routing$max_rides,
+    max_lts = routing$max_lts,
+    n_threads = routing$n_threads,
+    verbose=FALSE,
+    progress=FALSE)
+  if(!is.null(res$error))
+  {
+    gc()
+    res <- safe_r5_ttm(
+      r5r_core = routing$core,
+      origins = o,
+      destinations = d,
+      mode=routing$mode,
+      departure_datetime = routing$departure_datetime,
+      max_walk_dist = routing$max_walk_dist,
+      max_trip_duration = tmax+1,
+      time_window = as.integer(routing$time_window),
+      percentiles = routing$percentile,
+      walk_speed = routing$walk_speed,
+      bike_speed = routing$bike_speed,
+      max_rides = routing$max_rides,
+      n_threads = routing$n_threads,
+      verbose=FALSE,
+      progress=FALSE)
+    if(is.null(res$error)) logger::log_warn("second r5::travel_time_matrix ok")
+  }
+
+  if (is.null(res$error)&&nrow(res$result)>0)
+    res$result[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId), travel_time=as.integer(travel_time))]
+  else
+  {
+    logger::log_warn("error r5::travel_time_matrix, give an empty matrix after 2 attemps")
+    res$result <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric())
+  }
+  res
 }
