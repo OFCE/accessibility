@@ -509,6 +509,7 @@ routing_setup_r5 <- function(path,
                              di = FALSE,
                              quick_setup = FALSE)
 {
+  assertthat::assert_that(require("r5r"), msg="r5r est nécessaire, install.packages('r5r')")
   env <- parent.frame()
   path <- glue::glue(path, .envir = env)
   assertthat::assert_that(

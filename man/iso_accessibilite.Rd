@@ -62,6 +62,8 @@ Par défaut, la sortie est une liste de bricks (ensemble de rasters). Chaque él
 \code{iso_accessibilite} calcule l'accessibilité à des aménités définies sur une carte (sous forme de sf) et
 renvoie un raster à une certaine résolution. Le calcul des distances isochroniques est organisé par secteurs et
 est majoré pour évacuer des calculs inutiles entre secteurs éloignés.
+}
+\details{
 Les étapes du calcul peuvent être enregistrées pour ne pas repartir de zéro si le calcul plante en cours de route.
 l'algorithme fonctionne comme cela :
 \enumerate{

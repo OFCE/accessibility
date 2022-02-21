@@ -3,6 +3,7 @@
 #' \code{iso_accessibilite} calcule l'accessibilité à des aménités définies sur une carte (sous forme de sf) et
 #' renvoie un raster à une certaine résolution. Le calcul des distances isochroniques est organisé par secteurs et
 #' est majoré pour évacuer des calculs inutiles entre secteurs éloignés.
+#'
 #' Les étapes du calcul peuvent être enregistrées pour ne pas repartir de zéro si le calcul plante en cours de route.
 #' l'algorithme fonctionne comme cela :
 #' 1. découpe les groupes d'origines
@@ -61,7 +62,8 @@ iso_accessibilite <- function(
 {
   start_time <- Sys.time()
 
-
+  if(future)
+    assertthat::assert_that(require("furrr"), msg="furrr est nécessaire, install.packages('furrr')")
 
   dir.create(glue::glue("{logs}/logs"), showWarnings = FALSE, recursive = TRUE)
   timestamp <- lubridate::stamp("15-01-20 10h08.05", orders = "dmy HMS", quiet = TRUE) (lubridate::now(tzone = "Europe/Paris"))
