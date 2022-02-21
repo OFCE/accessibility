@@ -299,6 +299,7 @@ ttm_on_closest <- function(ppou, s_ou, quoi, ttm_0, les_ou, tmax, routing, grdeo
     cibles_ok <- ttm_0[fromId==ppou&travel_time<=tmax+marge][["toId"]]
     if(length(cibles_ok)>0)
     {
+
       ttm <- iso_ttm(o = ss_ou, d = quoi[cibles_ok], tmax=tmax+1, routing=routing)
       if(is.null(ttm$error))
         if(nrow(ttm$result)>0)
@@ -373,11 +374,11 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
   spid <- get_pid(pids)
 
   s_ou <- ou_4326[gr==groupe, .(id, lon, lat, x, y)]
-  logger::log_debug("{spid} aog:{groupe} {k} {nrow(s_ou)}")
+  logger::log_debug("aog:{groupe} {k} {nrow(s_ou)}")
 
   if(t2d && is.in.dir(groupe, dir))
   {
-    logger::log_success("{spid} carreau:{groupe} dossier:{dir}")
+    logger::log_success("carreau:{groupe} dossier:{dir}")
     return(data.table(file = stringr::str_c(dir, "/", groupe, ".rda")))
   }
 
@@ -403,12 +404,12 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
       {
         delay <- 0
       }
-      logger::log_debug("{spid} ttm_ou:{nrow(ttm_ou$result)}")
+      logger::log_debug("ttm_ou:{nrow(ttm_ou$result)}")
 
       # on filtre les cibles qui ne sont pas trop loin selon la distance euclidienne
       quoi_f <- minimax_euclid(from=ttm_ou$les_ou, to=quoi_4326, dist=vmaxmode(routing$mode)*(tmax+delay))
 
-      logger::log_debug("{spid} quoi_f:{nrow(quoi_f)}")
+      logger::log_debug("quoi_f:{nrow(quoi_f)}")
 
       # distances entre les ancres et les cibles
       if(any(quoi_f))
@@ -421,7 +422,7 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
 
       if(!is.null(ttm_0$error))
       {
-        logger::log_warn("{spid} carreau:{groupe} ou_id:{les_ou_s} erreur ttm_0 {ttm_0$error}")
+        logger::log_warn("carreau:{groupe} ou_id:{les_ou_s} erreur ttm_0 {ttm_0$error}")
         ttm_0 <- data.table()
       }
       else
@@ -431,7 +432,7 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
       {
         pproches <- sort(unique(s_ou$closest))
         ttm_0[ , npea:=nrow(quoi_4326)] [, npep:=length(unique(toId)), by=fromId]
-        logger::log_debug("{spid} toc {nrow(ttm_0)}")
+        logger::log_debug("toc {nrow(ttm_0)}")
 
         if(!is.null(pproches))
         {
@@ -455,10 +456,11 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
           npea <- sum(paires_fromId$npea)
           npep <- sum(paires_fromId$npep)
 
-          speed_log <- stringr::str_c(length(pproches),
-                                     " ancres ", f2si2(npea),
-                                     "@",f2si2(npea/dtime),"p/s demandees, ",
-                                     f2si2(npep),"@",f2si2(npep/dtime), "p/s retenues")
+          speed_log <- stringr::str_c(
+            length(pproches),
+            " ancres ", f2si2(npea),
+            "@",f2si2(npea/dtime),"p/s demandees, ",
+            f2si2(npep),"@",f2si2(npep/dtime), "p/s retenues")
 
           if(!ttm_out)
           {
@@ -471,30 +473,27 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
           }
           else
           {
-            out_names <- intersect(
-              names(ttm),
-              c("fromId", "toId", "travel_time", "distance", "deniv", "deniv_pos", "legs"))
-            ttm_d <- ttm[, ..out_names]
+            ttm_d <- ttm
           }
-          logger::log_success("{spid} carreau:{groupe} {speed_log}")
+          logger::log_success("carreau:{groupe} {speed_log}")
         }
         else
         {
           ttm_d <- NULL
-          logger::log_warn("{spid} carreau:{groupe} ttm vide")
+          logger::log_warn("carreau:{groupe} ttm vide")
         }
       } # close nrow(ttm_0)>0
       else # nrow(ttm_0)==0
       {
         time <- tictoc::toc(quiet=TRUE)
-        logger::log_warn("{spid} carreau:{groupe} ou_id:{les_ou_s} ttm_0 vide")
+        logger::log_warn("carreau:{groupe} ou_id:{les_ou_s} ttm_0 vide")
         logger::log_warn("la matrice des distances entre les ancres et les opportunites est vide")
         ttm_d <- NULL
       }
     }
     else  # nrow(ttm_ou)==0
     {
-      logger::log_warn("{spid} carreau:{groupe} ou_id:{les_ou_s} ttm_ou vide")
+      logger::log_warn("carreau:{groupe} ou_id:{les_ou_s} ttm_ou vide")
       logger::log_warn("la matrice des distances interne au carreau est vide")
       ttm_d <- NULL}
   }

@@ -3,6 +3,7 @@
 #' \code{iso_accessibilite} calcule l'accessibilité à des aménités définies sur une carte (sous forme de sf) et
 #' renvoie un raster à une certaine résolution. Le calcul des distances isochroniques est organisé par secteurs et
 #' est majoré pour évacuer des calculs inutiles entre secteurs éloignés.
+#'
 #' Les étapes du calcul peuvent être enregistrées pour ne pas repartir de zéro si le calcul plante en cours de route.
 #' l'algorithme fonctionne comme cela :
 #' 1. découpe les groupes d'origines
@@ -51,7 +52,7 @@ iso_accessibilite <- function(
   routing = "r5",                         # défini le moteur de routage
   tmax = 10L,                        # en minutes
   pdt = 1L,
-  chunk = 50000000,                   # paquet envoyé
+  chunk = 10000000,                   # paquet envoyé
   future = FALSE,
   out = ifelse(is.finite(resolution), resolution, "raster"),
   ttm_out = FALSE,
@@ -61,7 +62,8 @@ iso_accessibilite <- function(
 {
   start_time <- Sys.time()
 
-
+  if(future)
+    assertthat::assert_that(require("furrr"), msg="furrr est nécessaire, install.packages('furrr')")
 
   dir.create(glue::glue("{logs}/logs"), showWarnings = FALSE, recursive = TRUE)
   timestamp <- lubridate::stamp("15-01-20 10h08.05", orders = "dmy HMS", quiet = TRUE) (lubridate::now(tzone = "Europe/Paris"))
@@ -151,6 +153,9 @@ iso_accessibilite <- function(
       routing$elevation_data <- NULL
       access <- furrr::future_map(workable_ous, function(gs) {
         logger::log_threshold(lt)
+        logger::log_layout(logger::layout_glue_generator(
+          format = "{level} [{pid}] [{format(time, \"%Y-%m-%d %H:%M:%S\")}] {msg}"))
+
         logger::log_appender(logger::appender_file(logfile))
         routing <- routing$core_init(routing)
         purrr::map(gs, function(g) {
