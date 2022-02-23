@@ -174,7 +174,7 @@ r5_di <- function(o, d, tmax, routing) {
   })
   res <- purrr::transpose(res)
   res$result <- rbindlist(res$result)
-  if("geometry"%in%names(res$result$))
+  if("geometry"%in%names(res$result))
     res$result <- st_as_sf(res$result)
   res$error <- compact(res$error)
   if(length(res$error)==0) res$error <- NULL
@@ -713,7 +713,7 @@ routing_setup_dodgr <- function(path,
 {
   env <- parent.frame()
   path <- glue::glue(path, .envir = env)
-  asserthat::assert_that(require("dodgr"))
+  rlang::check_installed("dodgr", reason="requis pour le routage")
   assertthat::assert_that(
     mode%in%c("CAR", "BICYCLE", "WALK", "bicycle", "foot", "goods",
               "hgv", "horse", "moped",
@@ -722,16 +722,14 @@ routing_setup_dodgr <- function(path,
   mode <- case_when(mode=="CAR"~"motorcar",
                     mode=="BICYCLE"~"bicycle",
                     mode=="WALK"~"foot")
-  RcppParallel::setThreadOptions(numThreads = as.interger(n_threads))
-  # dans le path on s'attend à 1 fichier sc_osm
-  # si possible en format silicate
-  # voir download_dodgr_osm
-  loff <- list.files(path=path, pattern = "*.sc_osm")
+  RcppParallel::setThreadOptions(numThreads = as.integer(n_threads))
+  # dans le path on s'attend à 1 fichier sfosm
+  loff <- list.files(path=path, pattern = "*.sfosm")
   if(length(loff)>1)
     message("Attention, il y a plusieurs candidats de réseaux dans le dossier {path}" |> glue::glue())
-  graph_name <- stringr::str_c(stringr::str_remove(loff[[1]], "\\..*"), ".", mode, ".dodgrnet")
+  graph_name <- stringr::str_c(stringr::str_remove(loff[[1]], "\\.[:alpha:]*$"), ".", mode, ".dodgrnet")
   graph_name <- glue::glue("{path}/{graph_name}")
-  if(file.exist(graph_name)&!overwrite) {
+  if(file.exists(graph_name)&!overwrite) {
     graph <- dodgr::dodgr_load_streetnet(graph_name)
   } else {
     osm_network <- qs::qread(str_c(path, "/", loff[[1]]))
@@ -744,18 +742,12 @@ routing_setup_dodgr <- function(path,
     type = type,
     path = path,
     graph = graph,
+    distances = distances,
+    turn_penalty = turn_penalty,
     graph_name = graph_name,
     string = glue::glue("{type} routing {mode} sur {path} a {mtnt}"),
     departure_datetime = as.POSIXct(date, format = "%d-%m-%Y %H:%M:%S", tz=Sys.timezone()),
     mode = mode,
-    walk_speed = walk_speed,
-    bike_speed = bike_speed,
-    max_rides = max_rides,
-    max_lts = max_lts,
-    use_elevation = use_elevation,
-    elevation = elevation,
-    dfMaxLength = dfMaxLength,
-    elevation_data = if(is.null(elevation)) NULL else terra::rast(str_c(path, "/", elevation)),
     n_threads = as.integer(n_threads),
     future = TRUE,
     core_init = function(routing){

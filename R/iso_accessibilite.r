@@ -63,7 +63,7 @@ iso_accessibilite <- function(
   start_time <- Sys.time()
 
   if(future)
-    assertthat::assert_that(require("furrr"), msg="furrr est nécessaire, install.packages('furrr')")
+    rlang::check_installed("furrr", reason="furrr est nécessaire pou rles cacluls en parallèle")
 
   dir.create(glue::glue("{logs}/logs"), showWarnings = FALSE, recursive = TRUE)
   timestamp <- lubridate::stamp("15-01-20 10h08.05", orders = "dmy HMS", quiet = TRUE) (lubridate::now(tzone = "Europe/Paris"))
