@@ -96,6 +96,7 @@ r5_ttm <- function(o, d, tmax, routing)
     bike_speed = routing$bike_speed,
     max_rides = routing$max_rides,
     max_lts = routing$max_lts,
+    breakdown = routing$breakdown,
     n_threads = routing$n_threads,
     verbose=FALSE,
     progress=FALSE)
@@ -116,6 +117,7 @@ r5_ttm <- function(o, d, tmax, routing)
       bike_speed = routing$bike_speed,
       max_rides = routing$max_rides,
       n_threads = routing$n_threads,
+      breakdown = routing$breakdown,
       verbose=FALSE,
       progress=FALSE)
     if(is.null(res$error)) logger::log_warn("second r5::travel_time_matrix ok")
@@ -378,16 +380,19 @@ dt_ttm <- function(o, d, tmax, routing)
 #' @param use_elevation par défaut, FALSE
 #' @param overwrite par défaut, FALSE
 #'
-#' @import rJava
 #' @export
 quick_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
                             use_elevation = FALSE, overwrite = FALSE) {
+
+  rlang::check_installed("rJava", reason = "rJava est nécessaire pour r5r")
+  rlang::check_installed("r5r", reason = "r5r est nécessaire pour ce calcul")
+
   checkmate::assert_directory_exists(data_path)
   checkmate::assert_logical(verbose)
   checkmate::assert_logical(temp_dir)
   checkmate::assert_logical(use_elevation)
   checkmate::assert_logical(overwrite)
-  .jinit()
+  rJave::.jinit()
   data_path <- path.expand(data_path)
 
   any_network <- length(grep("network.dat", list.files(data_path))) > 0
@@ -422,17 +427,20 @@ quick_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 #' @param use_elevation par défaut, FALSE
 #' @param overwrite par défaut, FALSE
 #'
-#' @import rJava
 #'
 #' @export
 get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
                           use_elevation = FALSE, overwrite = FALSE) {
+
+  rlang::check_installed("rJava", reason = "rJava est nécessaire pour r5r")
+  rlang::check_installed("r5r", reason = "r5r est nécessaire pour ce calcul")
+
   checkmate::assert_directory_exists(data_path)
   checkmate::assert_logical(verbose)
   checkmate::assert_logical(temp_dir)
   checkmate::assert_logical(use_elevation)
   checkmate::assert_logical(overwrite)
-  .jinit()
+  rJava::.jinit()
   data_path <- path.expand(data_path)
   any_network <- length(grep("network.dat", list.files(data_path))) > 0
 
@@ -478,7 +486,6 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 #' @param elevation nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
 #'                  elevatr::get_elev_raster est un bon moyen de le générer. Fonctionne même si on n'utilise pas les élévations dans le routing
 #' @param dfMaxLength longueur en mètre des segments pour la discrétization
-#' @import rJava
 #'
 #' @export
 routing_setup_r5 <- function(path,
@@ -495,6 +502,7 @@ routing_setup_r5 <- function(path,
                              use_elevation = FALSE,
                              elevation = NULL,
                              dfMaxLength = 10,
+                             breakdown = FALSE,
                              overwrite = FALSE,
                              n_threads= 4L,
                              max_rows=5000,
@@ -504,6 +512,8 @@ routing_setup_r5 <- function(path,
 {
   env <- parent.frame()
   path <- glue::glue(path, .envir = env)
+  rlang::check_installed("rJava", reason = "rJava est nécessaire pour r5r")
+  rlang::check_installed("r5r", reason = "r5r est nécessaire pour ce calcul")
   assertthat::assert_that(
     all(mode%in%c('TRAM', 'SUBWAY', 'RAIL', 'BUS',
                   'FERRY', 'CABLE_CAR', 'GONDOLA', 'FUNICULAR',
@@ -511,9 +521,10 @@ routing_setup_r5 <- function(path,
     msg = "incorrect transport mode")
 
   mode_string <- stringr::str_c(mode, collapse = "&")
+  rJava::.jinit(force.init = TRUE, silent=TRUE) #modif du code ci-dessus (MP)
   r5r::stop_r5()
   #rJava::.jgc(R.gc = TRUE)
-  rJava::.jinit(force.init = TRUE, silent=TRUE) #modif du code ci-dessus (MP)
+
   if(quick_setup)
     core <- quick_setup_r5(data_path = path)
   else {
@@ -546,7 +557,9 @@ routing_setup_r5 <- function(path,
     max_lts = max_lts,
     use_elevation = use_elevation,
     elevation = elevation,
+    pkg = c("r5r", "rJava"),
     dfMaxLength = dfMaxLength,
+    breakdown = breakdown,
     elevation_data = if(is.null(elevation)) NULL else terra::rast(str_c(path, "/", elevation)),
     max_rows = max_rows,
     n_threads = as.integer(n_threads),
@@ -554,6 +567,10 @@ routing_setup_r5 <- function(path,
     jMem = jMem,
     r5r_jar = setup$r5r_jar,
     r5_jar = setup$r5_jar,
+    future_routing = function(routing) {
+      rout <- routing
+      rout$elevation_data <- NULL
+      return(rout)},
     core_init = function(routing){
       options(java.parameters = glue::glue('-Xmx{routing$jMem}'))
       rJava::.jinit(silent=TRUE)
@@ -632,6 +649,7 @@ routing_setup_osrm <- function(
     osrm.server = glue::glue("http://localhost:{server}/"),
     osrm.profile = profile,
     future = TRUE,
+    pkg = "osrm",
     mode = switch(profile,
                   driving="CAR",
                   walk="WALK",
@@ -698,6 +716,7 @@ OTP_server <- function(router="IDF1", port=8008, memory="8G", rep)
 #' @param mode string, mode de transport, par défaut "CAR" (possible (BICYCLE, WALK,...))
 #' @param turn_penalty booléen, applique une pénalité pour les turns
 #' @param distances booléen, calcule les distances en prime
+#' @param wt_profile_file string, chemin vers le fichier des profils (écrit avec \code{dodgr::write_dodgr_wt_profile})
 #' @param overwrite booléen, Regénére le reseau même si il est présent
 #' @param n_threads entier, nombre de threads
 #' @param overwrite reconstruit le réseau dodgr à partir de la source OSM
@@ -708,6 +727,7 @@ routing_setup_dodgr <- function(path,
                                 mode="CAR",
                                 turn_penalty = FALSE,
                                 distances = FALSE,
+                                wt_profile_file = NULL,
                                 n_threads= 4L,
                                 overwrite = FALSE)
 {
@@ -730,11 +750,12 @@ routing_setup_dodgr <- function(path,
   graph_name <- stringr::str_c(stringr::str_remove(loff[[1]], "\\.[:alpha:]*$"), ".", mode, ".dodgrnet")
   graph_name <- glue::glue("{path}/{graph_name}")
   if(file.exists(graph_name)&!overwrite) {
-    graph <- dodgr::dodgr_load_streetnet(graph_name)
+    graph <- qs::qread(graph_name, nthreads=4)
+    message("dodgr network en cache")
   } else {
-    osm_network <- qs::qread(str_c(path, "/", loff[[1]]))
-    graph <- dodgr::weight_streetnet(osm_network, wt_profile=mode, turn_penalty = turn_penalty)
-    dodgr::dodgr_save_streetnet(graph, graph_name)
+    osm_network <- qs::qread(str_c(path, "/", loff[[1]]), nthreads=4)
+    graph <- dodgr::weight_streetnet(osm_network, wt_profile=mode, wt_profile_file = wt_profile_file, turn_penalty = turn_penalty)
+    qs::qsave(graph, graph_name, nthreads=4)
   }
   mtnt <- lubridate::now()
   type <- "dodgr"
@@ -743,6 +764,7 @@ routing_setup_dodgr <- function(path,
     path = path,
     graph = graph,
     distances = distances,
+    pkg = "dodgr",
     turn_penalty = turn_penalty,
     graph_name = graph_name,
     string = glue::glue("{type} routing {mode} sur {path} a {mtnt}"),
@@ -750,14 +772,20 @@ routing_setup_dodgr <- function(path,
     mode = mode,
     n_threads = as.integer(n_threads),
     future = TRUE,
+    future_routing = function(routing) {
+      rout <- routing
+      rout$graph <- NULL
+      rout$elevation_data <- NULL
+      return(rout)
+    },
     core_init = function(routing){
       RcppParallel::setThreadOptions(numThreads = routing$n_threads)
       # refresh le graph à partir du disque en cas de multicore
-      out <- routing
-      out$graph <- dodgr::dodgr_load_streetnet(routing$graph_name)
+      rout <- routing
+      rout$graph <- qs::qread(routing$graph_name, nthreads=4)
       if(!is.null(routing$elevation))
-        out$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation))
-      return(out)
+        rout$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation))
+      return(rout)
     })
 }
 
@@ -769,12 +797,11 @@ dodgr_ttm <- function(o, d, tmax, routing)
     graph = routing$graph,
     from = o,
     to = d,
-    shortest=FALSE,
-    parallel = TRUE)
+    shortest=FALSE)
   temps <- data.table(temps, keep.rownames = TRUE)
   temps[, fromId:=rn |> as.integer()] [, rn:=NULL]
   temps <- melt(temps, id.vars="fromId", variable.name="toId", value.name = "travel_time", variable.factor = FALSE)
-  temps <- temps[travel_time<=tmax,]
+  temps <- temps[travel_time<=tmax*60,]
   if(routing$distances) {
     dist <- dodgr::dodgr_distances(
       graph = routing$graph,
@@ -788,12 +815,13 @@ dodgr_ttm <- function(o, d, tmax, routing)
     temps <- merge(temps, dist, by=c("fromId", "toId"), all.x=TRUE, all.y=FALSE)
   }
   erreur <- NULL
+
   if (nrow(temps)>0)
     temps[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId), travel_time=as.integer(travel_time/60))]
   else
   {
     erreur <- "dodgr::travel_time_matrix empty"
-    temps <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric(), distance=nueric())
+    temps <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric(), distance=numeric())
     logger::log_warn(erreur)
   }
   return(list(result=temps, error=erreur))
