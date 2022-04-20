@@ -10,6 +10,7 @@ routing_setup_dodgr(
   mode = "CAR",
   turn_penalty = FALSE,
   distances = FALSE,
+  wt_profile_file = NULL,
   n_threads = 4L,
   overwrite = FALSE
 )
@@ -24,6 +25,8 @@ routing_setup_dodgr(
 \item{turn_penalty}{booléen, applique une pénalité pour les turns}
 
 \item{distances}{booléen, calcule les distances en prime}
+
+\item{wt_profile_file}{string, chemin vers le fichier des profils (écrit avec \code{dodgr::write_dodgr_wt_profile})}
 
 \item{n_threads}{entier, nombre de threads}
 
