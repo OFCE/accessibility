@@ -1,4 +1,4 @@
-# Cette fonction transforme un raster avec des couches donnant pour des temps donnés 
+# Cette fonction transforme un raster avec des couches donnant pour des temps donnés
 # en un raster layer qui donne les temps pour un seuil donné
 # le seuil doit être donc atteint sur les couches (ou cela renverra NA)
 
@@ -13,6 +13,19 @@ isAraster <- function(x)
   return((class(x)[1]=="RasterLayer" || class(x)[1]=="RasterBrick" || class(x)[1]=="RasterStack"))
 }
 
+#' Transforme des isochrones en temps d'accès
+#'
+#' Cette fonction transforme un raster avec des couches donnant pour des temps donnés des opportunités atteintes
+# en un raster layer qui donne les temps pour un seuil d'opportunité donné
+# le seuil doit être donc atteint sur les couches (ou cela renverra NA)
+#'
+#' @param isoraster le raster en entrée
+#' @param seuils les seuils pour la sortie
+#'
+#' @return un raster avec autant de couches que d'éléments dans seuils
+#' @export
+#'
+#'
 iso2time <- function(isoraster, seuils=median(raster::cellStats(isoraster, median)))
 {
   checkmate::assert(checkmate::checkMultiClass(isoraster, c("RasterLayer", "RasterBrick", "RasterStack")))
@@ -35,17 +48,17 @@ iso2time <- function(isoraster, seuils=median(raster::cellStats(isoraster, media
     out <- c(NA)
     length(out) <- nrow
     out[nnas] <- (.x-y_moins)/(y_plus-y_moins)*(isotimes[cc_plus[nnas]]-isotimes[cc_moins[nnas]])+isotimes[cc_moins[nnas]]
-    out[nnas] [y_moins>=y_plus] <- NA   
+    out[nnas] [y_moins>=y_plus] <- NA
     res <- raster::raster(isoraster)
     values(res) <- out
     res
   })
-  rr <- brick(rr)
+  rr <- raster::brick(rr)
   names(rr) <- stringr::str_c(
     "to",
-    uf2si2(seuils, rounding=FALSE, unit="multi")
+    ofce::uf2si2(seuils, rounding=FALSE, unit="multi")
     )
-  rr  
+  rr
 }
 
 iso2time_dt <- function(isodt, seuils=median(cellStats(isodt, median)), exclude=1)
@@ -69,7 +82,7 @@ iso2time_dt <- function(isodt, seuils=median(cellStats(isodt, median)), exclude=
     out <- c(NA)
     length(out) <- nrow
     out[nnas] <- (.x-y_moins)/(y_plus-y_moins)*(isotimes[cc_plus[nnas]]-isotimes[cc_moins[nnas]])+isotimes[cc_moins[nnas]]
-    out[nnas] [y_moins>=y_plus] <- NA   
+    out[nnas] [y_moins>=y_plus] <- NA
     out
   })
   names(rr) <- stringr::str_c("to",
