@@ -30,14 +30,13 @@ iso2time <- function(isoraster, seuils=median(raster::cellStats(isoraster, media
 {
   checkmate::assert(checkmate::checkMultiClass(isoraster, c("RasterLayer", "RasterBrick", "RasterStack")))
   seuils <- unique(seuils)
- isotimes <- names(isoraster) %>%
+  isotimes <- names(isoraster) %>%
     stringr::str_extract("[:digit:]+") %>%
     as.numeric()
-  mm <- isoraster %>%
-    as.matrix()
+  mm <- raster::as.matrix(isoraster)
   ncol <- ncol(mm)
   nrow <- nrow(mm)
-   rr <- purrr::map(seuils, ~ {
+  rr <- purrr::map(seuils, ~ {
     cc_moins <- max.col(mm<=.x, ties.method = "last")
     cc_plus <- max.col(mm>=.x, ties.method = "first")
     nnas <- !is.na(cc_moins)
@@ -50,14 +49,14 @@ iso2time <- function(isoraster, seuils=median(raster::cellStats(isoraster, media
     out[nnas] <- (.x-y_moins)/(y_plus-y_moins)*(isotimes[cc_plus[nnas]]-isotimes[cc_moins[nnas]])+isotimes[cc_moins[nnas]]
     out[nnas] [y_moins>=y_plus] <- NA
     res <- raster::raster(isoraster)
-    values(res) <- out
+    raster::values(res) <- out
     res
   })
   rr <- raster::brick(rr)
   names(rr) <- stringr::str_c(
     "to",
     ofce::uf2si2(seuils, rounding=FALSE, unit="multi")
-    )
+  )
   rr
 }
 
@@ -86,7 +85,7 @@ iso2time_dt <- function(isodt, seuils=median(cellStats(isodt, median)), exclude=
     out
   })
   names(rr) <- stringr::str_c("to",
-    uf2si2(seuils, rounding=FALSE, unit="multi"))
+                              uf2si2(seuils, rounding=FALSE, unit="multi"))
   setDT(rr)
   cbind(isodt[,(exclude),  with=FALSE], rr)
 }
