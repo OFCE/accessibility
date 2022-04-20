@@ -63,7 +63,7 @@ iso_accessibilite <- function(
   start_time <- Sys.time()
 
   if(future)
-    assertthat::assert_that(require("furrr"), msg="furrr est nécessaire, install.packages('furrr')")
+    rlang::check_installed("furrr", reason="furrr est nécessaire pou rles cacluls en parallèle")
 
   dir.create(glue::glue("{logs}/logs"), showWarnings = FALSE, recursive = TRUE)
   timestamp <- lubridate::stamp("15-01-20 10h08.05", orders = "dmy HMS", quiet = TRUE) (lubridate::now(tzone = "Europe/Paris"))
@@ -140,6 +140,8 @@ iso_accessibilite <- function(
   nw <- future::nbrOfWorkers()
   logger::log_success("future:{future}, {nw} workers")
 
+  packages <- c("data.table", "logger", "stringr", "glue", "terra", "qs", routing$pkg)
+
   if(routing$future & future) {
     if(!is.null(routing$core_init)) {
       pl <- future::plan()
@@ -150,7 +152,7 @@ iso_accessibilite <- function(
       lt <- logger::log_threshold()
       splittage <- seq(0,length(ou_gr)-1) %/% ceiling(length(ou_gr)/nw)
       workable_ous <- split(ou_gr, splittage)
-      routing$elevation_data <- NULL
+      routing <- routing$future_routing(routing)
       access <- furrr::future_map(workable_ous, function(gs) {
         logger::log_threshold(lt)
         logger::log_layout(logger::layout_glue_generator(
@@ -165,7 +167,7 @@ iso_accessibilite <- function(
         })
       }, .options=furrr::furrr_options(seed=TRUE,
                                        stdout=FALSE ,
-                                       packages=c("data.table", "logger", "stringr", "glue", "r5r", "rJava", "terra"))) |>
+                                       packages=packages)) |>
         purrr::flatten()
     }
     else {
@@ -175,7 +177,7 @@ iso_accessibilite <- function(
         1:nw,
         ~future:::session_uuid()[[1]])
       lt <- logger::log_threshold()
-      routing$elevation_data <- NULL
+      routing <- routing$future_routing(routing)
       access <- furrr::future_map(
         ou_gr,
         function(g) {
@@ -185,7 +187,7 @@ iso_accessibilite <- function(
           rrouting <- get_routing(routing, g)
           access_on_groupe(g, ou_4326, quoi_4326, rrouting, k, tmax, opp_var, ttm_out, pids, dir, t2d=table2disk)
         },
-        .options=furrr::furrr_options(seed=TRUE, stdout=FALSE, packages=c("data.table", "logger", "stringr", "glue", "r5r", "terra")))
+        .options=furrr::furrr_options(seed=TRUE, stdout=FALSE, packages=packages))
     }}
   else {
     pids <- future:::session_uuid()[[1]]

@@ -1,6 +1,6 @@
 Package: accessibility
 Title: Calculating accessibility to amenities
-Version: 0.2
+Version: 0.3
 Authors@R: c(
       person("Xavier", "Timbeau", email = "xavier.timbeau@sciencespo.fr", role = c("aut", "cre")),
       person("Maxime", "Parodi", email = "maxime.parodi@sciencespo.fr", role = c("aut")))

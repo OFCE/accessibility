@@ -19,6 +19,7 @@ routing_setup_r5(
   use_elevation = FALSE,
   elevation = NULL,
   dfMaxLength = 10,
+  breakdown = FALSE,
   overwrite = FALSE,
   n_threads = 4L,
   max_rows = 5000,
