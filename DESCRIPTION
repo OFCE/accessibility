@@ -32,12 +32,12 @@ Imports:
   tidyselect,
   tidytransit,
   assertthat,
-  terra
+  terra,
+  r5r
 Suggests:
   future,
   furrr,
   rJava,
-  r5r,
   osrm,
   otpr,
   dodgr

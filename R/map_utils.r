@@ -167,7 +167,7 @@ dt2r <- function(dt, resolution=NULL, idINS="idINS")
     idINS <- "idINS"
     res <- resolution
   }
-  xy <- idINS2point(dt$idINS, resolution = res)
+  xy <- idINS2point(dt[[idINS]], resolution = res)
   dt[, `:=`(x=xy[,1], y=xy[,2])]
   rref <- raster_ref(dt, resolution = res, crs=3035)
   cells <- raster::cellFromXY(rref, xy)
