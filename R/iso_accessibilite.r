@@ -44,7 +44,7 @@
 #'
 
 iso_accessibilite <- function(
-  quoi,                            # sf avec des variables numériques qui vont être aggrégées
+  quoi,                            # sf avec des variables numériques qui vont être agrégées
   ou = NULL,                         # positions sur lesquelles sont calculés les accessibilités (si NULL, sur une grille)
   res_quoi = Inf,                    # projection éventuelle des lieux sur une grille
   resolution = ifelse(is.null(ou), 200, Inf),
@@ -140,7 +140,7 @@ iso_accessibilite <- function(
   nw <- future::nbrOfWorkers()
   logger::log_success("future:{future}, {nw} workers")
 
-  packages <- c("data.table", "logger", "stringr", "glue", "terra", "qs", routing$pkg)
+  packages <- c("data.table", "logger", "stringr", "glue", "raster", "terra", "qs", routing$pkg)
 
   if(routing$future & future) {
     if(!is.null(routing$core_init)) {
