@@ -545,13 +545,14 @@ minimax_euclid <- function(from, to, dist)
 #' @return un data.table avec les paires o-d et les temps en fonction du mode
 #' @export
 #'
+
 ttm_idINS <- function(ttm, resolution=200) {
   require("data.table")
   from <- ttm$fromId[, .(id, fromidINS = idINS3035(x,y, resolution = resolution))]
   to <- ttm$toId[, .(id, toidINS = idINS3035(x,y, resolution = resolution))]
   tt <- ttm$time_table
   if(length(tt)>1)
-    tt <- rbindlist(tt, use.names=TRUE)
+    tt <- rbindlist(tt, use.names=TRUE, fill = TRUE)
   else
     if("list"%in%class(tt))
       tt <- tt[[1]]
