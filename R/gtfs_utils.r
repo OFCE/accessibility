@@ -91,7 +91,7 @@ get_plage_in_calendar <- function(gtfs) {
                         max.date = max(gtfs[["calendar_dates"]]$date, na.rm = TRUE))
   } else {
     plage <- data.frame(min.date = min(gtfs[["calendar"]]$start_date, na.rm = TRUE),
-                        max.date = max(gtfs[["calendar"]]$start_date, na.rm = TRUE))
+                        max.date = max(gtfs[["calendar"]]$end_date, na.rm = TRUE))
   }
   return(plage)
 }
