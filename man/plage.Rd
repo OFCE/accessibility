@@ -9,9 +9,6 @@ plage(directory)
 \arguments{
 \item{directory}{Répertoire du GTFS}
 }
-\value{
-
-}
 \description{
 Lit un GTFS et renvoie la plage de dates commune
 aux différents réseaux du GTFS
