@@ -184,7 +184,7 @@ r5_di <- function(o, d, tmax, routing) {
 
   if(is.null(res$error)) {
     if(nrow(res$result)>0) {
-      if(!is.null(routing$elevation)) {
+      if(!is.null(routing$elevation_tif)) {
         # on discretise par pas de 10m pour le calcul des dénivelés
         # ca va plus vite que la version LINESTRING (x10)
         # avec un zoom à 13 les carreaux font 5x5m
@@ -483,8 +483,9 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 #' @param quick_setup dans le cas où le core existe déjà, il n'est pas recréer, plus rapide donc, par défaut, FALSE
 #' @param di renvoie des itinéraires détaillés (distance, nombre de branche) en perdant le montecarlo et au prix d'une plus grande lenteur
 #' @param use_elevation le routing est effectué en utilisant l'information de dénivelé. Pas sûr que cela fonctionne.
-#' @param elevation nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
+#' @param elevation_tif nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
 #'                  elevatr::get_elev_raster est un bon moyen de le générer. Fonctionne même si on n'utilise pas les élévations dans le routing
+#' @param elevation méthode de clcul (NONE, TOBLER, )
 #' @param dfMaxLength longueur en mètre des segments pour la discrétization
 #'
 #' @export
@@ -500,7 +501,8 @@ routing_setup_r5 <- function(path,
                              max_lts= 2,
                              max_rides= ifelse("TRANSIT"%in%mode, 3L, 1L),
                              use_elevation = FALSE,
-                             elevation = NULL,
+                             elevation_tif = NULL,
+                             elevation = "NONE",
                              dfMaxLength = 10,
                              breakdown = FALSE,
                              overwrite = FALSE,
@@ -530,7 +532,7 @@ routing_setup_r5 <- function(path,
   else {
     out <- capture.output(
       core <- r5r::setup_r5(data_path = path, verbose=FALSE,
-                            use_elevation=use_elevation, overwrite = overwrite)
+                            elevation=elevation, overwrite = overwrite)
     )
   }
 
@@ -556,11 +558,11 @@ routing_setup_r5 <- function(path,
     max_rides = max_rides,
     max_lts = max_lts,
     use_elevation = use_elevation,
-    elevation = elevation,
+    elevation_tif = elevation_tif,
     pkg = c("r5r", "rJava"),
     dfMaxLength = dfMaxLength,
     breakdown = breakdown,
-    elevation_data = if(is.null(elevation)) NULL else terra::rast(str_c(path, "/", elevation)),
+    elevation_data = if(is.null(elevation_tif)) NULL else terra::rast(str_c(path, "/", elevation)),
     max_rows = max_rows,
     n_threads = as.integer(n_threads),
     future = TRUE,
@@ -581,7 +583,7 @@ routing_setup_r5 <- function(path,
                             use_elevation=routing$use_elevation)
       out <- routing
       out$core <- core
-      if(!is.null(routing$elevation))
+      if(!is.null(routing$elevation_tif))
         out$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation))
       return(out)
     })

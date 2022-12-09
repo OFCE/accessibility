@@ -1,6 +1,6 @@
 Package: accessibility
 Title: Calculating accessibility to amenities
-Version: 0.3
+Version: 0.3.1
 Authors@R: c(
       person("Xavier", "Timbeau", email = "xavier.timbeau@sciencespo.fr", role = c("aut", "cre")),
       person("Maxime", "Parodi", email = "maxime.parodi@sciencespo.fr", role = c("aut")))
@@ -8,7 +8,7 @@ Description: The package is a wrapper of a routing system to calculate accessibi
 License: CeCILL-B
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
 Depends:
   data.table,
   sf
@@ -33,7 +33,7 @@ Imports:
   tidytransit,
   assertthat,
   terra,
-  r5r
+  r5r (>= 0.7.90000)
 Suggests:
   future,
   furrr,

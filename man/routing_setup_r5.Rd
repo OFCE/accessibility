@@ -17,7 +17,8 @@ routing_setup_r5(
   max_lts = 2,
   max_rides = ifelse("TRANSIT" \%in\% mode, 3L, 1L),
   use_elevation = FALSE,
-  elevation = NULL,
+  elevation_tif = NULL,
+  elevation = "NONE",
   dfMaxLength = 10,
   breakdown = FALSE,
   overwrite = FALSE,
@@ -53,8 +54,10 @@ routing_setup_r5(
 
 \item{use_elevation}{le routing est effectué en utilisant l'information de dénivelé. Pas sûr que cela fonctionne.}
 
-\item{elevation}{nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
+\item{elevation_tif}{nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
 elevatr::get_elev_raster est un bon moyen de le générer. Fonctionne même si on n'utilise pas les élévations dans le routing}
+
+\item{elevation}{méthode de clcul (NONE, TOBLER, )}
 
 \item{dfMaxLength}{longueur en mètre des segments pour la discrétization}
 
