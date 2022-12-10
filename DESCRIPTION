@@ -2,7 +2,7 @@ Package: accessibility
 Title: Calculating accessibility to amenities
 Version: 0.3.1
 Authors@R: c(
-      person("Xavier", "Timbeau", email = "xavier.timbeau@sciencespo.fr", role = c("aut", "main")),
+      person("Xavier", "Timbeau", email = "xavier.timbeau@sciencespo.fr", role = c("aut", "cre")),
       person("Maxime", "Parodi", email = "maxime.parodi@sciencespo.fr", role = c("aut")))
 Description: The package is a wrapper of a routing system to calculate accessibility. It creates chunks of positions and amenities to manage the calculations and do parallel computations.
 License: CeCILL-B
