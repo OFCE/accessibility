@@ -11,7 +11,7 @@ routing_setup_otpv1(
   rep,
   date = "12-17-2019 8:00:00",
   mode = c("WALK", "TRANSIT"),
-  max_walk_dist = 2000,
+  max_walk_time = 30,
   precisionMeters = 50
 )
 }
@@ -28,7 +28,7 @@ routing_setup_otpv1(
 
 \item{mode}{mode de transit, par défaut c("WALK", "TRANSIT").}
 
-\item{max_walk_dist}{distance maximale à pied, par défaut 2000m.}
+\item{max_walk_time}{temps maximal à pied}
 
 \item{precisionMeters}{précision demandée au serveur, par défaut 50m.}
 }

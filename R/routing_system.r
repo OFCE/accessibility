@@ -88,7 +88,7 @@ r5_ttm <- function(o, d, tmax, routing)
     destinations = d,
     mode=routing$mode,
     departure_datetime = routing$departure_datetime,
-    max_walk_dist = routing$max_walk_dist,
+    max_walk_time = routing$max_walk_time,
     max_trip_duration = tmax+1,
     time_window = as.integer(routing$time_window),
     percentiles = routing$percentile,
@@ -109,7 +109,7 @@ r5_ttm <- function(o, d, tmax, routing)
       destinations = d,
       mode=routing$mode,
       departure_datetime = routing$departure_datetime,
-      max_walk_dist = routing$max_walk_dist,
+      max_walk_time = routing$max_walk_time,
       max_trip_duration = tmax+1,
       time_window = as.integer(routing$time_window),
       percentiles = routing$percentile,
@@ -161,8 +161,8 @@ r5_di <- function(o, d, tmax, routing) {
       mode=routing$mode,
       mode_egress="WALK",
       departure_datetime = routing$departure_datetime,
-      max_walk_dist = routing$max_walk_dist,
-      max_bike_dist = Inf,
+      max_walk_time = routing$max_walk_time,
+      max_bike_time = Inf,
       max_trip_duration = tmax+1,
       walk_speed = routing$walk_speed,
       bike_speed = routing$bike_speed,
@@ -470,7 +470,7 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 #' @param date date Date où seront simulées les routes
 #' @param mode mode de transport, par défaut c("WALK", "TRANSIT"), voir r5r ou r5 pour les autres modes
 #' @param montecarlo nombre de tirages montecarlo par minutes de time_windows par défaut 10
-#' @param max_walk_dist distance maximale à pied
+#' @param max_walk_time temps maximal à pied
 #' @param time_window par défaut, 1. fenêtre pour l'heure de départ en minutes
 #' @param percentiles par défaut, 50., retourne les percentiles de temps de trajet (montecarlo)
 #' @param walk_speed vitesse piéton
@@ -493,7 +493,7 @@ routing_setup_r5 <- function(path,
                              date="17-12-2019 8:00:00",
                              mode=c("WALK", "TRANSIT"),
                              montecarlo=10L,
-                             max_walk_dist= Inf,
+                             max_walk_time= Inf,
                              time_window=1L,
                              percentiles=50L,
                              walk_speed = 5.0,
@@ -552,7 +552,7 @@ routing_setup_r5 <- function(path,
     departure_datetime = as.POSIXct(date, format = "%d-%m-%Y %H:%M:%S", tz=Sys.timezone()),
     mode = mode,
     percentiles = percentiles,
-    max_walk_dist = max_walk_dist,
+    max_walk_time = max_walk_time,
     walk_speed = walk_speed,
     bike_speed = bike_speed,
     max_rides = max_rides,
@@ -597,7 +597,7 @@ routing_setup_r5 <- function(path,
 #' @param rep chemin du repertoire.
 #' @param date date des trajets.
 #' @param mode mode de transit, par défaut c("WALK", "TRANSIT").
-#' @param max_walk_dist distance maximale à pied, par défaut 2000m.
+#' @param max_walk_time temps maximal à pied
 #' @param precisionMeters précision demandée au serveur, par défaut 50m.
 #'
 #' @export
@@ -608,7 +608,7 @@ routing_setup_otpv1 <- function(
   rep,
   date="12-17-2019 8:00:00",
   mode=c("WALK", "TRANSIT"),
-  max_walk_dist= 2000,
+  max_walk_time= 30,
   precisionMeters=50)
 {
   s_now <- lubridate::now()

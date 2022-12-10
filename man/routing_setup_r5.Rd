@@ -9,7 +9,7 @@ routing_setup_r5(
   date = "17-12-2019 8:00:00",
   mode = c("WALK", "TRANSIT"),
   montecarlo = 10L,
-  max_walk_dist = Inf,
+  max_walk_time = Inf,
   time_window = 1L,
   percentiles = 50L,
   walk_speed = 5,
@@ -38,7 +38,7 @@ routing_setup_r5(
 
 \item{montecarlo}{nombre de tirages montecarlo par minutes de time_windows par défaut 10}
 
-\item{max_walk_dist}{distance maximale à pied}
+\item{max_walk_time}{temps maximal à pied}
 
 \item{time_window}{par défaut, 1. fenêtre pour l'heure de départ en minutes}
 
