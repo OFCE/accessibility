@@ -562,7 +562,15 @@ routing_setup_r5 <- function(path,
     pkg = c("r5r", "rJava"),
     dfMaxLength = dfMaxLength,
     breakdown = breakdown,
+<<<<<<< HEAD
     elevation_data = if(is.null(elevation_tif)) NULL else terra::rast(str_c(path, "/", elevation_tif)),
+=======
+<<<<<<< HEAD
+    elevation_data = if(is.null(elevation_tif)) NULL else terra::rast(str_c(path, "/", elevation_tif)),
+=======
+    elevation_data = if(is.null(elevation_tif)) NULL else terra::rast(str_c(path, "/", elevation)),
+>>>>>>> 4fb3fd45ccb4b9282c1e9c6748746d6a650ba68b
+>>>>>>> 05e21aa31627f54235ce7d9e457526e8eb4b52a1
     max_rows = max_rows,
     n_threads = as.integer(n_threads),
     future = TRUE,
@@ -584,7 +592,15 @@ routing_setup_r5 <- function(path,
       out <- routing
       out$core <- core
       if(!is.null(routing$elevation_tif))
+<<<<<<< HEAD
         out$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation_tif))
+=======
+<<<<<<< HEAD
+        out$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation_tif))
+=======
+        out$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation))
+>>>>>>> 4fb3fd45ccb4b9282c1e9c6748746d6a650ba68b
+>>>>>>> 05e21aa31627f54235ce7d9e457526e8eb4b52a1
       return(out)
     })
 }
