@@ -172,7 +172,7 @@ r5_di <- function(o, d, tmax, routing) {
       n_threads = routing$n_threads,
       verbose=FALSE,
       progress=FALSE,
-      drop_geometry=is.null(routing$elevation))
+      drop_geometry=is.null(routing$elevation_tif))
   })
   res <- purrr::transpose(res)
   res$result <- rbindlist(res$result)
@@ -197,7 +197,7 @@ r5_di <- function(o, d, tmax, routing) {
               dfMaxLength = routing$dfMaxLength),
             "MULTIPOINT"))
         elvts <- data.table(id = pp[,3], h = terra::extract(routing$elevation_data, pp[, 1:2]))
-        setnames(elvts, "h.elevation", "h")
+        setnames(elvts, "h.layer", "h")
         elvts[, h:= nafill(h, type="locf")]
         elvts[, dh:= h-shift(h, type="lag", fill=0), by="id"]
         deniv <- elvts[, .(deniv=sum(dh), deniv_pos=sum(dh[dh>0])), by="id"]
@@ -208,6 +208,7 @@ r5_di <- function(o, d, tmax, routing) {
         resdi <- as.data.table(res$result)
         resdi[, `:=`(deniv=NA, deniv_pos=NA)]
       }
+      setnames(resdi, c("to_id", "from_id"), c("toId", "fromId"))
       resdi <- resdi[ , .(travel_time = as.integer(sum(total_duration)),
                           distance = sum(distance),
                           deniv = sum(deniv),
