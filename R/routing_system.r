@@ -147,9 +147,12 @@ safe_r5_di <- purrr::safely(r5r::detailed_itineraries)
 #'
 #' @import data.table
 r5_di <- function(o, d, tmax, routing) {
+  gc()
   o <- o[, .(id=as.character(id),lon,lat)]
   d <- d[, .(id=as.character(id),lon,lat)]
-  od <- ksplit(CJ(o = o$id, d=d$id), k=max(1,ceiling(nrow(o)*nrow(d)/routing$max_rows)))
+  od <- ksplit(
+    CJ(o = o$id, d=d$id),
+    k=max(1,ceiling(nrow(o)*nrow(d)/routing$max_rows)))
   tt <- Sys.time()
   res <- map(od, function(od_element) {
     oCJ <- data.table(id=od_element$o)
@@ -199,8 +202,8 @@ r5_di <- function(o, d, tmax, routing) {
         elvts <- data.table(id = pp[,3], h = terra::extract(routing$elevation_data, pp[, 1:2]))
         setnames(elvts, "h.layer", "h")
         elvts[, h:= nafill(h, type="locf")]
-        elvts[, dh:= h-shift(h, type="lag", fill=0), by="id"]
-        deniv <- elvts[, .(deniv=sum(dh), deniv_pos=sum(dh[dh>0])), by="id"]
+        elvts[, dh:= h-shift(h, type="lag", fill=NA), by="id"]
+        deniv <- elvts[, .(deniv=sum(dh, na.rm=TRUE), deniv_pos=sum(dh[dh>0], na.rm=TRUE)), by="id"]
         deniv[, id:=NULL]
         logger::log_debug("calcul d'élévation ({round(as.numeric(Sys.time()-tt), 2)} s.)")
         resdi <- cbind(as.data.table(st_drop_geometry(res$result)), deniv)
@@ -603,14 +606,14 @@ routing_setup_r5 <- function(path,
 #'
 #' @export
 routing_setup_otpv1 <- function(
-  router,
-  port=8000,
-  memory="8G",
-  rep,
-  date="12-17-2019 8:00:00",
-  mode=c("WALK", "TRANSIT"),
-  max_walk_time= 30,
-  precisionMeters=50)
+    router,
+    port=8000,
+    memory="8G",
+    rep,
+    date="12-17-2019 8:00:00",
+    mode=c("WALK", "TRANSIT"),
+    max_walk_time= 30,
+    precisionMeters=50)
 {
   s_now <- lubridate::now()
   mode_string <- stringr::str_c(mode, collapse = "&")
@@ -641,9 +644,9 @@ routing_setup_otpv1 <- function(
 #'
 #' @export
 routing_setup_osrm <- function(
-  server=5000,
-  profile="driving",
-  future=TRUE)
+    server=5000,
+    profile="driving",
+    future=TRUE)
 {
   s_now <- lubridate::now()
   list(
@@ -666,7 +669,7 @@ routing_setup_osrm <- function(
 #'
 #' @export
 routing_setup_euc <- function(
-  mode="WALK", speed=5)
+    mode="WALK", speed=5)
 {
   s_now <- lubridate::now()
   list(
