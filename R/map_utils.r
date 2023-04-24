@@ -49,7 +49,7 @@ idINS2point <- function(ids, resolution=NULL)
   m
 }
 
-#' Crée idINS à partir de coordonnées.
+#' Crée idINS à partir de coordonnées. Ne fonctionne que dans les hémisphères nord et est
 #'
 #' @param x Ou un vecteur de la coordonnée x, ou un df avec les colonnes x et y.
 #' @param y vecteur de la coordonnée y, si nécessaire. NULL par défaut.

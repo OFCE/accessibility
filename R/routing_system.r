@@ -486,10 +486,9 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 #' @param jMem taille mémoire vive, plus le nombre de threads est élevé, plus la mémoire doit être importante
 #' @param quick_setup dans le cas où le core existe déjà, il n'est pas recréer, plus rapide donc, par défaut, FALSE
 #' @param di renvoie des itinéraires détaillés (distance, nombre de branche) en perdant le montecarlo et au prix d'une plus grande lenteur
-#' @param use_elevation le routing est effectué en utilisant l'information de dénivelé. Pas sûr que cela fonctionne.
 #' @param elevation_tif nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
 #'                  elevatr::get_elev_raster est un bon moyen de le générer. Fonctionne même si on n'utilise pas les élévations dans le routing
-#' @param elevation méthode de clcul (NONE, TOBLER, )
+#' @param elevation méthode de clcul (NONE, TOBLER, MINETTI )
 #' @param dfMaxLength longueur en mètre des segments pour la discrétization
 #'
 #' @export
@@ -504,7 +503,6 @@ routing_setup_r5 <- function(path,
                              bike_speed = 12.0,
                              max_lts= 2,
                              max_rides= ifelse("TRANSIT"%in%mode, 3L, 1L),
-                             use_elevation = FALSE,
                              elevation_tif = NULL,
                              elevation = "NONE",
                              dfMaxLength = 10,
@@ -561,7 +559,7 @@ routing_setup_r5 <- function(path,
     bike_speed = bike_speed,
     max_rides = max_rides,
     max_lts = max_lts,
-    use_elevation = use_elevation,
+    elevation = elevation,
     elevation_tif = elevation_tif,
     pkg = c("r5r", "rJava"),
     dfMaxLength = dfMaxLength,
@@ -584,7 +582,7 @@ routing_setup_r5 <- function(path,
       rJava::.jgc(R.gc = TRUE)
       options(r5r.montecarlo_draws = routing$montecarlo)
       core <- r5r::setup_r5(data_path = routing$path, verbose=FALSE,
-                            use_elevation=routing$use_elevation)
+                            elevation=routing$elevation)
       out <- routing
       out$core <- core
       if(!is.null(routing$elevation_tif))
