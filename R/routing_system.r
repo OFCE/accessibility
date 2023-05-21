@@ -96,7 +96,6 @@ r5_ttm <- function(o, d, tmax, routing)
     bike_speed = routing$bike_speed,
     max_rides = routing$max_rides,
     max_lts = routing$max_lts,
-    breakdown = routing$breakdown,
     n_threads = routing$n_threads,
     verbose=FALSE,
     progress=FALSE)
@@ -117,14 +116,13 @@ r5_ttm <- function(o, d, tmax, routing)
       bike_speed = routing$bike_speed,
       max_rides = routing$max_rides,
       n_threads = routing$n_threads,
-      breakdown = routing$breakdown,
       verbose=FALSE,
       progress=FALSE)
     if(is.null(res$error)) logger::log_warn("second r5::travel_time_matrix ok")
   }
 
   if (is.null(res$error)&&nrow(res$result)>0)
-    res$result[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId), travel_time=as.integer(travel_time))]
+    res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(travel_time_p50))]
   else
   {
     logger::log_warn("error r5::travel_time_matrix, give an empty matrix after 2 attemps")
