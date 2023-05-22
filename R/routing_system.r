@@ -198,9 +198,9 @@ r5_di <- function(o, d, tmax, routing) {
               dfMaxLength = routing$dfMaxLength),
             "MULTIPOINT"))
         elvts <- data.table(id = pp[,3], h = terra::extract(routing$elevation_data, pp[, 1:2]))
-        setnames(elvts, "h.layer", "h")
+        setnames(elvts, "h.elevation", "h")
         elvts[, h:= nafill(h, type="locf")]
-        elvts[, dh:= h-shift(h, type="lag", fill=NA), by="id"]
+        elvts[, dh:= h-data.table::shift(h, type="lag", fill=NA), by="id"]
         deniv <- elvts[, .(deniv=sum(dh, na.rm=TRUE), deniv_pos=sum(dh[dh>0], na.rm=TRUE)), by="id"]
         deniv[, id:=NULL]
         logger::log_debug("calcul d'élévation ({round(as.numeric(Sys.time()-tt), 2)} s.)")
