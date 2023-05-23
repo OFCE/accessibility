@@ -179,6 +179,7 @@ r5_ettm <- function(o, d, tmax, routing)
     max_rides = routing$max_rides,
     max_lts = routing$max_lts,
     n_threads = routing$n_threads,
+    breakdown = TRUE,
     verbose=FALSE,
     progress=FALSE)
   if(!is.null(res$error))
@@ -198,6 +199,7 @@ r5_ettm <- function(o, d, tmax, routing)
       bike_speed = routing$bike_speed,
       max_rides = routing$max_rides,
       n_threads = routing$n_threads,
+      breakdown = TRUE,
       verbose=FALSE,
       progress=FALSE)
     if(is.null(res$error)) logger::log_warn("second r5::travel_time_matrix ok")
