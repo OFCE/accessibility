@@ -9,6 +9,7 @@ iso_ttm <- function(o, d, tmax, routing)
 {
   r <- switch(routing$type,
               "r5" = r5_ttm(o, d, tmax, routing),
+              "r5_ext" = r5_ettm(o, d, tmax, routing),
               "r5_di" = r5_di(o, d, tmax, routing),
               "otpv1" = otpv1_ttm(o, d, tmax, routing),
               "osrm" = osrm_ttm(o, d, tmax, routing),
@@ -121,6 +122,87 @@ r5_ttm <- function(o, d, tmax, routing)
     if(is.null(res$error)) logger::log_warn("second r5::travel_time_matrix ok")
   }
 
+  if (is.null(res$error)&&nrow(res$result)>0)
+    res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(travel_time_p50))]
+  else
+  {
+    logger::log_warn("error r5::travel_time_matrix, give an empty matrix after 2 attemps")
+    res$result <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric())
+  }
+  res
+}
+
+
+#' wrapper pour expanded_travel_time_matrix
+#'
+#' @param ... cf r5r::travel_time_matrix
+safe_r5_ettm <- purrr::safely(r5r::expanded_travel_time_matrix)
+
+#' fonction de récupération
+#'
+#' @inheritParams r5r::expanded_travel_time_matrix
+#'
+
+quiet_r5_ettm <- function(...) {
+  utils::capture.output(
+    r <- safe_r5_ettm(...),
+    file=NULL,
+    type=c("output", "message"),
+    split = FALSE, append = TRUE)
+  r
+}
+
+#' calcul du temps de trajet avec r5
+#'
+#' @param o origine
+#' @param d destination
+#' @param tmax temps max pour le trajet
+#' @param routing système de routing
+#'
+#' @import data.table
+r5_ettm <- function(o, d, tmax, routing)
+{
+  o <- o[, .(id=as.character(id),lon,lat)]
+  d <- d[, .(id=as.character(id),lon,lat)]
+  res <- quiet_r5_ettm(
+    r5r_core = routing$core,
+    origins = o,
+    destinations = d,
+    mode=routing$mode,
+    departure_datetime = routing$departure_datetime,
+    max_walk_time = routing$max_walk_time,
+    max_trip_duration = tmax+1,
+    time_window = as.integer(routing$time_window),
+    percentiles = routing$percentile,
+    walk_speed = routing$walk_speed,
+    bike_speed = routing$bike_speed,
+    max_rides = routing$max_rides,
+    max_lts = routing$max_lts,
+    n_threads = routing$n_threads,
+    verbose=FALSE,
+    progress=FALSE)
+  if(!is.null(res$error))
+  {
+    gc()
+    res <- safe_r5_ttm(
+      r5r_core = routing$core,
+      origins = o,
+      destinations = d,
+      mode=routing$mode,
+      departure_datetime = routing$departure_datetime,
+      max_walk_time = routing$max_walk_time,
+      max_trip_duration = tmax+1,
+      time_window = as.integer(routing$time_window),
+      percentiles = routing$percentile,
+      walk_speed = routing$walk_speed,
+      bike_speed = routing$bike_speed,
+      max_rides = routing$max_rides,
+      n_threads = routing$n_threads,
+      verbose=FALSE,
+      progress=FALSE)
+    if(is.null(res$error)) logger::log_warn("second r5::travel_time_matrix ok")
+  }
+  
   if (is.null(res$error)&&nrow(res$result)>0)
     res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(travel_time_p50))]
   else
@@ -484,6 +566,7 @@ get_setup_r5 <- function (data_path, verbose = FALSE, temp_dir = FALSE,
 #' @param jMem taille mémoire vive, plus le nombre de threads est élevé, plus la mémoire doit être importante
 #' @param quick_setup dans le cas où le core existe déjà, il n'est pas recréer, plus rapide donc, par défaut, FALSE
 #' @param di renvoie des itinéraires détaillés (distance, nombre de branche) en perdant le montecarlo et au prix d'une plus grande lenteur
+#' @param ext renvoie une travel_time_matrix plus détaillée  si di = FALSE (utilise le fonction expanded_travel_time_matrix de r5r au lieu de travel_time_matrix)
 #' @param elevation_tif nom du fichier raster (WGS84) des élévations en mètre, en passant ce paramètre, on calcule le dénivelé positif.
 #'                  elevatr::get_elev_raster est un bon moyen de le générer. Fonctionne même si on n'utilise pas les élévations dans le routing
 #' @param elevation méthode de clcul (NONE, TOBLER, MINETTI )
@@ -509,6 +592,7 @@ routing_setup_r5 <- function(path,
                              n_threads= 4L,
                              max_rows=5000,
                              jMem = "12G",
+                             ext = FALSE,
                              di = FALSE,
                              quick_setup = FALSE)
 {
@@ -540,7 +624,9 @@ routing_setup_r5 <- function(path,
   options(r5r.montecarlo_draws = montecarlo)
   setup <- get_setup_r5(data_path = path)
   mtnt <- lubridate::now()
-  type <- ifelse(di, "r5_di", "r5")
+  type <- case_when(di ~ "r5_di",
+                    ext & !di ~ "r5_ext",
+                    TRUE ~ "r5")
   list(
     type = type,
     di = di,
