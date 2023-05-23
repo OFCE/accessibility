@@ -131,6 +131,87 @@ r5_ttm <- function(o, d, tmax, routing)
   res
 }
 
+
+#' wrapper pour extended_travel_time_matrix
+#'
+#' @param ... cf r5r::travel_time_matrix
+safe_r5_ettm <- purrr::safely(r5r::extended_travel_time_matrix)
+
+#' fonction de récupération
+#'
+#' @inheritParams r5r::extended_travel_time_matrix
+#'
+
+quiet_r5_ettm <- function(...) {
+  utils::capture.output(
+    r <- safe_r5_ettm(...),
+    file=NULL,
+    type=c("output", "message"),
+    split = FALSE, append = TRUE)
+  r
+}
+
+#' calcul du temps de trajet avec r5
+#'
+#' @param o origine
+#' @param d destination
+#' @param tmax temps max pour le trajet
+#' @param routing système de routing
+#'
+#' @import data.table
+r5_ettm <- function(o, d, tmax, routing)
+{
+  o <- o[, .(id=as.character(id),lon,lat)]
+  d <- d[, .(id=as.character(id),lon,lat)]
+  res <- quiet_r5_ettm(
+    r5r_core = routing$core,
+    origins = o,
+    destinations = d,
+    mode=routing$mode,
+    departure_datetime = routing$departure_datetime,
+    max_walk_time = routing$max_walk_time,
+    max_trip_duration = tmax+1,
+    time_window = as.integer(routing$time_window),
+    percentiles = routing$percentile,
+    walk_speed = routing$walk_speed,
+    bike_speed = routing$bike_speed,
+    max_rides = routing$max_rides,
+    max_lts = routing$max_lts,
+    n_threads = routing$n_threads,
+    verbose=FALSE,
+    progress=FALSE)
+  if(!is.null(res$error))
+  {
+    gc()
+    res <- safe_r5_ttm(
+      r5r_core = routing$core,
+      origins = o,
+      destinations = d,
+      mode=routing$mode,
+      departure_datetime = routing$departure_datetime,
+      max_walk_time = routing$max_walk_time,
+      max_trip_duration = tmax+1,
+      time_window = as.integer(routing$time_window),
+      percentiles = routing$percentile,
+      walk_speed = routing$walk_speed,
+      bike_speed = routing$bike_speed,
+      max_rides = routing$max_rides,
+      n_threads = routing$n_threads,
+      verbose=FALSE,
+      progress=FALSE)
+    if(is.null(res$error)) logger::log_warn("second r5::travel_time_matrix ok")
+  }
+  
+  if (is.null(res$error)&&nrow(res$result)>0)
+    res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(travel_time_p50))]
+  else
+  {
+    logger::log_warn("error r5::travel_time_matrix, give an empty matrix after 2 attemps")
+    res$result <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric())
+  }
+  res
+}
+
 #' wrapper pour detailed_itineraries
 #'
 #' @inheritParams r5r::detailed_itineraries
