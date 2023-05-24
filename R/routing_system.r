@@ -173,7 +173,6 @@ r5_ettm <- function(o, d, tmax, routing)
     max_walk_time = routing$max_walk_time,
     max_trip_duration = tmax+1,
     time_window = as.integer(routing$time_window),
-    percentiles = routing$percentile,
     walk_speed = routing$walk_speed,
     bike_speed = routing$bike_speed,
     max_rides = routing$max_rides,
