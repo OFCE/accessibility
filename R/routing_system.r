@@ -185,7 +185,7 @@ r5_ettm <- function(o, d, tmax, routing)
   if(!is.null(res$error))
   {
     gc()
-    res <- safe_r5_ttm(
+    res <- safe_r5_ettm(
       r5r_core = routing$core,
       origins = o,
       destinations = d,
