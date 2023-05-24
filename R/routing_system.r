@@ -205,7 +205,7 @@ r5_ettm <- function(o, d, tmax, routing)
   }
   
   if (is.null(res$error)&&nrow(res$result)>0)
-    res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(total_time), n_rides, access_time, wait_time, ride_time, transfer_time, egress_time)]
+    res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(total_time), n_rides = as.integer(n_rides), access_time = as.integer(access_time), wait_time = as.integer(wait_time), ride_time = as.integer(ride_time), transfer_time = as.integer(transfer_time), egress_time = as.integer(egress_time))]
   else
   {
     logger::log_warn("error r5r::expanded_travel_time_matrix, give an empty matrix after 2 attemps")

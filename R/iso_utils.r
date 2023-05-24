@@ -398,7 +398,7 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
                                      tt = min(travel_time)),
                                  by=toId][, id:=toId][, toId:=NULL]
         s_ou <- merge(s_ou, closest, by="id")
-        delay <- max(s_ou[["tt"]])
+        delay <- max(s_ou[["tt"]], na.rm = TRUE)
       }
       else
       {
