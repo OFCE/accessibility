@@ -92,25 +92,37 @@ message(
   "jour retenu: \n{lubridate::wday(jour_du_transit, label = TRUE, abbr = FALSE)} {jour_du_transit}" |> glue())
 
 # ---- CALCUL DE L'ACCESSIBILITE ----
-## transit --------------
-# penser à mettre 16vCPU
 
 future::plan("multisession", workers=1)
+# 
+# r5_transit <- routing_setup_r5(path = localr5, 
+#                                date=jour_du_transit,
+#                                n_threads = 16, 
+#                                ext = TRUE,
+#                                elevation = "NONE")
 
-r5_transit <- routing_setup_r5(path = localr5, 
-                               date=jour_du_transit,
-                               n_threads = 16, 
-                               di = TRUE,
-                               elevation = "NONE")
 
 
-r5_bike <- routing_setup_r5(path = localr5, date=jour_du_transit, n_threads = 16, mode = "BICYCLE",
+r5 <- routing_setup_r5(path = localr5, date=jour_du_transit, n_threads = 16, mode = "CAR",
+                          elevation = "NONE",
+                          overwrite = TRUE,
+                          max_rows = 50000,
+                          elevation_tif = "elevation.tif", # calcule les dénivelés si di est true
+                          max_rides=1)
+r5_di <- routing_setup_r5(path = localr5, date=jour_du_transit, n_threads = 16, mode = "CAR",
+                          elevation = "NONE",
+                          overwrite = TRUE,
+                          di = TRUE, # Nécessaire pour les distances !
+                          max_rows = 50000,
+                          elevation_tif = "elevation.tif", # calcule les dénivelés si di est true
+                          max_rides=1)
+r5_ext <- routing_setup_r5(path = localr5, date=jour_du_transit, n_threads = 16, mode = "CAR",
                             elevation = "NONE",
                             overwrite = TRUE,
-                            di = TRUE, # Nécessaire pour les distances !
-                            max_rows = 50000, 
+                            ext = TRUE, # Nécessaire pour les distances !
+                            max_rows = 50000,
                             elevation_tif = "elevation.tif", # calcule les dénivelés si di est true
-                            max_rides=1) 
+                            max_rides=1)
 
 # iso_transit_dt <- iso_accessibilite(quoi = opportunites,
 #                                     ou = c200.scot3,
@@ -130,7 +142,7 @@ ou <- les_individus                         # positions sur lesquelles sont calc
 res_quoi = Inf                   # projection éventuelle des lieux sur une grille
 resolution = 200
 var_quoi = "individuals"# si projection fonction d'agrégation
-routing = r5_bike                        # défini le moteur de routage
+routing = r5_ext                # défini le moteur de routage
 tmax = 120                        # en minutes
 pdt = 1
 chunk = 10000000              # paquet envoyé
@@ -235,6 +247,7 @@ if (table2disk){
 
 fct_purr <- function(g) {
   rrouting <- get_routing(routing, g)
+  
   ## Fonction access_to_groupe
   t2d <- table2disk
   spid <- get_pid(pids)
@@ -263,7 +276,7 @@ fct_purr <- function(g) {
     les_ou <- s_ou[des_iou]
     les_autres_ou <- s_ou[-des_iou]
     # on calcule les distances entre les points choisis (ancres) et les autres
-    ttm_ou <- iso_ttm(o = les_ou, d = les_autres_ou, tmax=100, routing=routing)
+    ttm_ou <- iso_ttm(o = les_ou, d = les_autres_ou, tmax=100, routing= routing_sans_elevation)
     if(!is.null(ttm_ou$error))
     {
       logger::log_warn("erreur de routeur ttm_ou {ttm_ou$error}")
@@ -272,6 +285,9 @@ fct_purr <- function(g) {
     }
     ttm_ou$les_ou_s <- stringr::str_c(les_ou$id, collapse=",")
     ttm_ou$les_ou <- les_ou
+    
+    ## FIN select_ancres()
+    
     
     les_ou_s <- ttm_ou$les_ou_s
     print(is.null(ttm_ou$error))
@@ -283,19 +299,18 @@ fct_purr <- function(g) {
                                      tt = min(travel_time)),
                                  by=toId][, id:=toId][, toId:=NULL]
         s_ou <- merge(s_ou, closest, by="id")
-        delay <- max(s_ou[["tt"]])
+        delay <- max(s_ou[["tt"]], na.rm = TRUE)
       }
       else
       {
         delay <- 0
       }
       logger::log_debug("ttm_ou:{nrow(ttm_ou$result)}")
-      
       # on filtre les cibles qui ne sont pas trop loin selon la distance euclidienne
       quoi_f <- minimax_euclid(from=ttm_ou$les_ou, to=quoi_4326, dist=vmaxmode(rrouting$mode)*(tmax+delay))
-      
+
       logger::log_debug("quoi_f:{nrow(quoi_f)}")
-      
+
       # distances entre les ancres et les cibles
       if(any(quoi_f)){
         ttm_0 <- iso_ttm(o = ttm_ou$les_ou,
@@ -422,8 +437,9 @@ logger::log_layout(logger::layout_glue_generator(
 logger::log_appender(logger::appender_file(logfile))
 routing <- routing$core_init(routing)
 
-fct_purr(a1)
-
+a <- r5r::travel_time_matrix(r5r_core = r5$core, origins = les_individus, destinations = les_opportunites, mode = "CAR")
+a_ext <- r5r::expanded_travel_time_matrix(r5r_core = r5_ext$core, origins = les_individus, destinations = les_opportunites, mode = "CAR", breakdown = TRUE)
+a_di <- r5r::detailed_itineraries(r5r_core = r5_di$core, origins = les_individus, destinations = les_opportunites, mode = "CAR", all_to_all = TRUE)
 # ## --- ACCESS ET LE RESTE ------ -----
 # 
 # access <- furrr::future_map(workable_ous, function(gs) {

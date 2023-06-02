@@ -9,8 +9,11 @@ iso_ttm <- function(o, d, tmax, routing)
 {
   r <- switch(routing$type,
               "r5" = r5_ttm(o, d, tmax, routing),
+              "r5_cong" = r5_ttm(o, d, tmax, routing),
               "r5_ext" = r5_ettm(o, d, tmax, routing),
+              "r5_cong" = r5_ttm(o, d, tmax, routing),
               "r5_di" = r5_di(o, d, tmax, routing),
+              "r5_cong" = r5_ttm(o, d, tmax, routing),
               "otpv1" = otpv1_ttm(o, d, tmax, routing),
               "osrm" = osrm_ttm(o, d, tmax, routing),
               "dt"= dt_ttm(o, d, tmax, routing),
@@ -201,11 +204,14 @@ r5_ettm <- function(o, d, tmax, routing)
       breakdown = TRUE,
       verbose=FALSE,
       progress=FALSE)
-    if(is.null(res$error)) logger::log_warn("second r5::travel_time_matrix ok")
+    if(is.null(res$error)) logger::log_warn("second r5r::expanded_travel_time_matrix ok")
   }
   
-  if (is.null(res$error)&&nrow(res$result)>0)
-    res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(total_time), n_rides = as.integer(n_rides), access_time = as.integer(access_time), wait_time = as.integer(wait_time), ride_time = as.integer(ride_time), transfer_time = as.integer(transfer_time), egress_time = as.integer(egress_time))]
+  if (is.null(res$error)&&nrow(res$result)>0){
+    res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(total_time),
+                      n_rides = as.integer(n_rides), access_time = as.integer(access_time), wait_time = as.integer(wait_time),
+                      ride_time = as.integer(ride_time), transfer_time = as.integer(transfer_time))]
+    }
   else
   {
     logger::log_warn("error r5r::expanded_travel_time_matrix, give an empty matrix after 2 attemps")
@@ -239,6 +245,7 @@ r5_di <- function(o, d, tmax, routing) {
     oCJ <- data.table(id=od_element$o)
     dCJ <- data.table(id=od_element$d)
     res <- safe_r5_di(
+      all_to_all = TRUE,
       r5r_core = routing$core,
       origins = o[oCJ, on="id"],
       destinations = d[dCJ, on="id"],
