@@ -290,7 +290,11 @@ routing_setup_dodgr <- function(path,
       rout <- routing
       rout$graph <- qs::qread(routing$graph_name, nthreads=4)
       dodgr_dir <- stringr::str_c(rout$path, '/dodgr_files/')
-
+      dodgr_tmp <- list.files(
+        dodgr_dir,
+        pattern = "^dodgr",
+        full.names = TRUE)
+      file.copy(dodgr_tmp, tempdir())
       if(!is.null(routing$elevation))
         rout$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation))
       return(rout)
