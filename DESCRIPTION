@@ -1,6 +1,6 @@
 Package: accessibility
 Title: Calculating accessibility to amenities
-Version: 0.3.1
+Version: 0.3.2
 Authors@R: c(
       person("Xavier", "Timbeau", email = "xavier.timbeau@sciencespo.fr", role = c("aut", "cre")),
       person("Maxime", "Parodi", email = "maxime.parodi@sciencespo.fr", role = c("aut")))
@@ -40,4 +40,5 @@ Suggests:
   rJava,
   osrm,
   otpr,
-  dodgr
+  dodgr,
+  osmdata
