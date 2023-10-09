@@ -324,7 +324,6 @@ iso_accessibilite <- function(
           r_xy <- merge(r_xy, ids, by="fromId")[, fromId:=NULL]
           raster::readAll(r3035::dt2r(r_xy, resolution=outr))
         })})
-
   }
 
   dtime <- as.numeric(Sys.time()) - as.numeric(start_time)
