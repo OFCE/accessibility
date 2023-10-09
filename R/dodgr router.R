@@ -220,17 +220,15 @@ routing_setup_dodgr <- function(path,
   graph_name <- glue::glue("{path}/{graph_name}")
   dodgr_dir <- stringr::str_c(path, '/dodgr_files/')
   
-  if(file.exists(graph_name)&
-     file.exists(dodgr_dir)&
-     !overwrite) {
+  if(file.exists(graph_name)!overwrite) {
     
-    graph <- dodgr::dodgr_load_streetnet(graph_name)
-    # dodgr_tmp <- list.files(
-    #   dodgr_dir,
-    #   pattern = "^dodgr",
-    #   full.names = TRUE)
-    # 
-    # file.copy(dodgr_tmp, tempdir())
+    graph <- qs::qread(graph_name, nthreads=4)
+    dodgr_tmp <- list.files(
+      dodgr_dir,
+      pattern = "^dodgr",
+      full.names = TRUE)
+    
+    file.copy(dodgr_tmp, tempdir())
     
     message("dodgr network en cache")
     
@@ -260,13 +258,13 @@ routing_setup_dodgr <- function(path,
       cli::cli_alert_info("Déduplication")
       graph <- dodgr::dodgr_deduplicate_graph(graph)
     }
-    dodgr::dodgr_save_streetnet(graph, filename = graph_name)
+    qs::qsave(graph, graph_name, nthreads=4)
     # dodgr a besoin des fichiers créés à cette étape
-    # dodgr_tmp <- list.files(tempdir(),
-    #                         pattern = "^dodgr",
-    #                         full.names = TRUE)
-    # dir.create(dodgr_dir)
-    # file.copy(from  = dodgr_tmp, to = dodgr_dir, overwrite = TRUE)
+    dodgr_tmp <- list.files(tempdir(),
+                            pattern = "^dodgr",
+                            full.names = TRUE)
+    dir.create(dodgr_dir)
+    file.copy(from  = dodgr_tmp, to = dodgr_dir, overwrite = TRUE)
   }
   mtnt <- lubridate::now()
   type <- "dodgr"
@@ -295,13 +293,13 @@ routing_setup_dodgr <- function(path,
       RcppParallel::setThreadOptions(numThreads = routing$n_threads)
       # refresh le graph à partir du disque en cas de multicore
       rout <- routing
-      rout$graph <- dodgr::dodgr_load_streetnet(routing$graph_name)
-      # dodgr_dir <- stringr::str_c(rout$path, '/dodgr_files/')
-      # dodgr_tmp <- list.files(
-      #   dodgr_dir,
-      #   pattern = "^dodgr",
-      #   full.names = TRUE)
-      # file.copy(dodgr_tmp, tempdir())
+      rout$graph <- qs::qread(routing$graph_name, nthreads=4)
+      dodgr_dir <- stringr::str_c(rout$path, '/dodgr_files/')
+      dodgr_tmp <- list.files(
+        dodgr_dir,
+        pattern = "^dodgr",
+        full.names = TRUE)
+      file.copy(dodgr_tmp, tempdir())
       if(!is.null(routing$elevation))
         rout$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation))
       return(rout)
