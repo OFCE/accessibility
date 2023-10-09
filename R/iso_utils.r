@@ -204,7 +204,7 @@ iso_split_ou <- function(ou, quoi, chunk=NULL, routing, tmax=60)
   }
   Nous <- out_ou[, .N, by=gr]
   Nous <- rlang::set_names(Nous$N, Nous$gr)
-  logger::log_success("taille:{ofce::f2si2(size)} gr:{f2si2(ngr)} res_gr:{resolution}")
+  logger::log_success("taille:{ofce::f2si2(size)} gr:{ofce::f2si2(ngr)} res_gr:{resolution}")
   list(ou=out_ou, ou_gr=ou_gr, resINS=resolution, subsampling=subsampling, Nous=Nous)
 }
 
@@ -461,7 +461,7 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
           
           speed_log <- stringr::str_c(
             length(pproches),
-            " ancres ", f2si2(npea),
+            " ancres ", ofce::f2si2(npea),
             "@",ofce::f2si2(npea/dtime),"p/s demandees, ",
             ofce::f2si2(npep),"@",ofce::f2si2(npep/dtime), "p/s retenues")
           
