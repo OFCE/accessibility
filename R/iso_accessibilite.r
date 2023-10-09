@@ -75,7 +75,7 @@ iso_accessibilite <- function(
   logger::log_success("")
   logger::log_success("tmax:{tmax}")
   logger::log_success("pdt:{pdt}")
-  logger::log_success("chunk:{f2si2(chunk)}")
+  logger::log_success("chunk:{ofce::f2si2(chunk)}")
   logger::log_success("resolution:{resolution}")
 
   logger::log_success("out:{out}")
@@ -123,7 +123,7 @@ iso_accessibilite <- function(
   ou_4326 <- groupes$ou
   ou_gr <- groupes$ou_gr
   k <- groupes$subsampling
-  logger::log_success("{f2si2(nrow(ou_4326))} ou, {f2si2(nrow(quoi_4326))} quoi")
+  logger::log_success("{ofce::f2si2(nrow(ou_4326))} ou, {f2si2(nrow(quoi_4326))} quoi")
   logger::log_success("{length(ou_gr)} carreaux, {k} subsampling")
 
   if (table2disk)
@@ -210,7 +210,7 @@ iso_accessibilite <- function(
       access <- purrr::map(set_names(access$file, access_names),~{
         tt <- qs::qread(.x, nthreads=4)
         if(is.null(tt)) return(NULL)
-        tt[, .(fromId, toId, travel_time)]
+        # tt[, .(fromId, toId, travel_time)]
         setkey(tt, fromId)
         setindex(tt, toId)
         tt
@@ -218,6 +218,40 @@ iso_accessibilite <- function(
       # if(length(access)>1)
       #   access <- rbindlist(access, use.names = TRUE)
     }
+    
+    fromId <- ou_4326[, .(id, lon, lat, x, y, gr)]
+    setindex(fromId, id)
+    toId <- quoi_4326[, .(id, lon, lat, x, y)]
+    setindex(toId, id)
+    autre_from <- stringr::str_detect(names(access[[1]]), "^fromId[:alpha:]+")
+    autre_to <- stringr::str_detect(names(access[[1]]), "^toId[:alpha:]+")
+    if(any(autre_from)) {
+      alt_from <- names(access[[1]])[autre_from]
+      alt_to <- names(access[[1]])[autre_to]
+      ids <- map(access, ~{
+        from <- .x |> distinct(across(c("fromId", alt_from))) |> 
+          rename(id = fromId, idalt = {{alt_from}})
+        to <- .x |> distinct(across(c("toId", alt_to))) |> 
+          rename(id = toId, idalt =  {{alt_to}})
+        list(from = from, to = to)
+      })
+      ids <- purrr::transpose(ids)
+      from_alt <- bind_rows(ids$from) |>
+        distinct(id, .keep_all = TRUE) |>
+        arrange(id) |> 
+        setDT()
+      to_alt <- bind_rows(ids$to) |>
+        distinct(id, .keep_all = TRUE) |> 
+        arrange(id) |> 
+        setDT()
+      fromId <- left_join(fromId, from_alt, by="id")
+      toId <- left_join(toId, to_alt, by="id")
+      cols <- setdiff(names(access[[1]]), c("fromIdalt","toIdalt"))
+      access <- map(access, ~{
+        .x[ , .SD, .SDcols = cols]
+      })
+    }
+    
     npaires <- sum(map_dbl(access, nrow))
     res <- list(
       type = "dt",
@@ -225,7 +259,7 @@ iso_accessibilite <- function(
       origin_string = routing$string,
       string = glue::glue("matrice de time travel {routing$type} precalculee"),
       time_table = access,
-      fromId = ou_4326[, .(id, lon, lat, x, y, gr)],
+      fromId = fromId,
       toId = quoi_4326[, .(id, lon, lat, x, y)],
       groupes = ou_gr,
       resolution = groupes$resINS,
@@ -282,13 +316,13 @@ iso_accessibilite <- function(
       raster = {
         message("...rasterization")
         ttn <- paste0("iso",tt, "m")
-        ids <- idINS3035(ou_4326$x, ou_4326$y, resolution = outr)
+        ids <- r3035::idINS3035(ou_4326$x, ou_4326$y, resolution = outr)
         ids <- data.table(fromId = ou_4326$id, idINS200 = ids)
         purrr::map(opp_var, function(v) {
           r_xy <- data.table::dcast(access_c, fromId~temps, value.var=v)
           names(r_xy) <- c("fromId", ttn)
           r_xy <- merge(r_xy, ids, by="fromId")[, fromId:=NULL]
-          raster::readAll(dt2r(r_xy, resolution=outr))
+          raster::readAll(r3035::dt2r(r_xy, resolution=outr))
         })})
 
   }
@@ -298,7 +332,7 @@ iso_accessibilite <- function(
   tmn <- second2str(dtime)
   speed_b <- npaires_brut / dtime
   speed <- npaires / dtime
-  mtime <- glue::glue("{tmn} - {f2si2(npaires)} routes - {f2si2(speed_b)} routes(brut)/s - {f2si2(speed)} routes/s - {signif(red,2)}% reduction")
+  mtime <- glue::glue("{tmn} - {ofce::f2si2(npaires)} routes - {ofce::f2si2(speed_b)} routes(brut)/s - {ofce::f2si2(speed)} routes/s - {signif(red,2)}% reduction")
   message(mtime)
   logger::log_success("{routing$string} en {mtime}")
   attr(res, "routing") <- glue::glue("{routing$string} en {mtime}")

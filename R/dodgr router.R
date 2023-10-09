@@ -13,7 +13,7 @@
 #'
 #'
 download_osmsc <- function(box, workers = 1, .progress = TRUE) {
-
+  
   rlang::check_installed("osmdata", reason = "pour utiliser download_sc`")
   require(osmdata, quietly = TRUE)
   tictoc::tic()
@@ -33,41 +33,41 @@ download_osmsc <- function(box, workers = 1, .progress = TRUE) {
         bboxl <- append (bboxl, list (b))}}
     return(bboxl)
   }
-
+  
   bbox <- box |> matrix(nrow = 2, dimnames = list(list("x","y"), list("min", "max")))
   queue <- split_bbox(bbox, grid=max(1,round(sqrt(2*workers))))
   fts <- c("\"highway\"", "\"restriction\"", "\"access\"",
            "\"bicycle\"", "\"foot\"", "\"motorcar\"", "\"motor_vehicle\"",
            "\"vehicle\"", "\"toll\"")
-
+  
   saved_plan <- future::plan()
   future::plan("multisession", workers = workers)
   osm <- furrr::future_map(queue, ~{
     local_q <- list(.x)
-
+    
     result <- list()
     split <- 0
     while(length (local_q) > 0) {
-
+      
       opres <- NULL
       opres <- try ({
         opq (bbox = local_q[[1]], timeout = 25) |>
           add_osm_features(features = fts) |>
           osmdata_sc(quiet = TRUE)
       })
-
+      
       if (class(opres)[1] != "try-error") {
         result <- append(result, list (opres))
         local_q <- local_q[-1]
       } else {
         bboxnew <- split_bbox(local_q[[1]])
-
+        
         queue <- append(bboxnew, local_q[-1])
       }
     }
-
+    
     final <- do.call (c, result)
-
+    
   },
   .progress=.progress,
   .options = furrr::furrr_options(seed=TRUE))
@@ -77,7 +77,7 @@ download_osmsc <- function(box, workers = 1, .progress = TRUE) {
   dtime <- (time$toc - time$tic)
   cli::cli_alert_success(
     "OSM silcate téléchargé: {dtime%/%60}m {round(dtime-60*dtime%/%60)}s {signif(lobstr::obj_size(osm)/1024/1024, 3)} Mb")
-
+  
   return(osm)
 }
 
@@ -96,7 +96,7 @@ download_osmsc <- function(box, workers = 1, .progress = TRUE) {
 #'
 #'
 download_osmsf <- function(box, workers = 1, .progress = TRUE, trim= FALSE) {
-
+  
   rlang::check_installed("osmdata", reason = "pour utiliser download_sf`")
   require(osmdata, quietly = TRUE)
   tictoc::tic()
@@ -117,23 +117,23 @@ download_osmsf <- function(box, workers = 1, .progress = TRUE, trim= FALSE) {
     return(bboxl)}
   bbox <- box |> matrix(nrow = 2, dimnames = list(list("x","y"), list("min", "max")))
   queue <- split_bbox(bbox, grid=max(1,workers%/%2))
-
+  
   saved_plan <- future::plan()
   future::plan("multisession", workers = workers)
-
+  
   osm <- furrr::future_map(queue, ~{
     local_q <- list(.x)
-
+    
     result <- list()
     split <- 0
     while(length (local_q) > 0) {
-
+      
       opres <- NULL
       opres <- try ({
         opq (bbox = local_q[[1]], timeout = 25) |>
           add_osm_feature(key = "highway") |>
           osmdata_sf(quiet = TRUE)})
-
+      
       if (class(opres)[1] != "try-error") {
         opres <- opres |>
           osm_poly2line()
@@ -145,15 +145,15 @@ download_osmsf <- function(box, workers = 1, .progress = TRUE, trim= FALSE) {
         local_q <- local_q[-1]
       } else {
         bboxnew <- split_bbox(local_q[[1]])
-
+        
         queue <- append(bboxnew, local_q[-1])
       }
     }
-
+    
     final <- do.call (c, result)
-
+    
   }, .progress=.progress, .options = furrr::furrr_options(seed=TRUE))
-
+  
   future::plan(saved_plan)
   osm <- do.call(c, osm)
   if(trim)
@@ -182,6 +182,8 @@ download_osmsf <- function(box, workers = 1, .progress = TRUE, trim= FALSE) {
 #' @param overwrite booléen, Regénére le reseau même si il est présent
 #' @param n_threads entier, nombre de threads
 #' @param overwrite reconstruit le réseau dodgr à partir de la source OSM
+#' @param contract applique la fonction de contraction de graphe (défaut FALSE) déconseillé si turn_penalty est employé
+#' @param deduplicate applique la fonction de déduplication de graphe (défaut TRUE)
 #'
 #' @export
 routing_setup_dodgr <- function(path,
@@ -191,7 +193,9 @@ routing_setup_dodgr <- function(path,
                                 distances = FALSE,
                                 wt_profile_file = NULL,
                                 n_threads= 4L,
-                                overwrite = FALSE)
+                                overwrite = FALSE,
+                                contract = FALSE,
+                                deduplicate = TRUE)
 {
   env <- parent.frame()
   path <- glue::glue(path, .envir = env)
@@ -215,44 +219,47 @@ routing_setup_dodgr <- function(path,
     stringr::str_remove(loff[[1]], "\\.[:alpha:]*$"), ".", mode, ".dodgrnet")
   graph_name <- glue::glue("{path}/{graph_name}")
   dodgr_dir <- stringr::str_c(path, '/dodgr_files/')
-
+  
   if(file.exists(graph_name)&
      file.exists(dodgr_dir)&
      !overwrite) {
-
+    
     graph <- qs::qread(graph_name, nthreads=4)
     dodgr_tmp <- list.files(
       dodgr_dir,
       pattern = "^dodgr",
       full.names = TRUE)
-
+    
     file.copy(dodgr_tmp, tempdir())
-
+    
     message("dodgr network en cache")
-
+    
   } else {
-
+    
     dodgr_tmp <- list.files(
       tempdir(),
       pattern = "^dodgr",
       full.names=TRUE)
     file.remove(dodgr_tmp)
-
+    
     osm_network <- qs::qread(str_c(path, "/", loff[[1]]), nthreads=4)
-
+    
     dodgr::dodgr_cache_off()
-
+    
     cli::cli_alert_info("Création du streetnet")
     graph <- dodgr::weight_streetnet(
       osm_network,
       wt_profile = mode,
       wt_profile_file = wt_profile_file,
       turn_penalty = turn_penalty)
-    cli::cli_alert_info("Contraction")
-    graph <- dodgr::dodgr_contract_graph(graph)
-    cli::cli_alert_info("Déduplication")
-    graph <- dodgr::dodgr_deduplicate_graph(graph)
-
+    if(contract) {
+      cli::cli_alert_info("Contraction")
+      graph <- dodgr::dodgr_contract_graph(graph)
+    }
+    if(deduplicate) {
+      cli::cli_alert_info("Déduplication")
+      graph <- dodgr::dodgr_deduplicate_graph(graph)
+    }
     qs::qsave(graph, graph_name, nthreads=4)
     # dodgr a besoin des fichiers créés à cette étape
     dodgr_tmp <- list.files(tempdir(),
@@ -312,6 +319,9 @@ dodgr_ttm <- function(o, d, tmax, routing)
     from = m_o,
     to = m_d,
     shortest=FALSE)
+  o_names <- dimnames(temps)
+  names(o_names[[1]]) <- o$id
+  names(o_names[[2]]) <- d$id
   dimnames(temps) <- list(o$id, d$id)
   temps <- data.table(temps, keep.rownames = TRUE)
   temps[, fromId:=rn |> as.integer()] [, rn:=NULL]
@@ -321,6 +331,8 @@ dodgr_ttm <- function(o, d, tmax, routing)
                 value.name = "travel_time",
                 variable.factor = FALSE)
   temps <- temps[travel_time<=tmax*60,]
+  temps[, `:=`(fromIdalt = o_names[[1]][as.character(fromId)],
+               toIdalt = o_names[[2]][as.character(toId)])]
   if(routing$distances) {
     dist <- dodgr::dodgr_distances(
       graph = routing$graph,
@@ -335,7 +347,7 @@ dodgr_ttm <- function(o, d, tmax, routing)
     temps <- merge(temps, dist, by=c("fromId", "toId"), all.x=TRUE, all.y=FALSE)
   }
   erreur <- NULL
-
+  
   if (nrow(temps)>0)
     temps[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId), travel_time=as.integer(travel_time/60))]
   else

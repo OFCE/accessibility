@@ -20,23 +20,23 @@ iso_ouetquoi_4326 <- function(ou, quoi, res_ou, res_quoi, opp_var, fun_quoi="mea
   {
     if(!is.finite(res_quoi))
       res_quoi <- resolution
-
+    
     if("sfc_POINT" %in% class(sf::st_geometry(quoi)))
     {
       rf <- 1
       qxy <- quoi  |>
         sf::st_transform(3035) |>
         sf::st_coordinates()
-      qins <- idINS3035(qxy, resolution = res_quoi, resinstr = FALSE)
+      qins <- r3035::idINS3035(qxy, resolution = res_quoi, resinstr = FALSE)
       qag <- quoi|>
         sf::st_drop_geometry()  |>
         as.data.frame() |>
         as.data.table()
       qag <- qag[, id:=qins] [, lapply(.SD, function(x) sum(x, na.rm=TRUE)), by=id, .SDcols=opp_var]
-      qag[, geometry:=idINS2square(qag$id, resolution=res_quoi)]
+      qag[, geometry:=r3035::idINS2square(qag$id, resolution=res_quoi)]
       quoi <- sf::st_as_sf(qag)
     }
-
+    
     quoi <- quoi |> sf::st_transform(3035)
     quoi_surf <- sf::st_area(quoi) |> as.numeric()
     gc()
@@ -57,7 +57,7 @@ iso_ouetquoi_4326 <- function(ou, quoi, res_ou, res_quoi, opp_var, fun_quoi="mea
             if(rf>1)
               rref <- raster::disaggregate(raster_ref(quoi, resolution), fact=rf)
             else
-              rref <- raster_ref(quoi, resolution)
+              rref <- r3035::raster_ref(quoi, resolution)
             un_raster <-
               fasterize::fasterize(
                 quoi |> dplyr::mutate(field = get(.x) * facteur),
@@ -69,7 +69,7 @@ iso_ouetquoi_4326 <- function(ou, quoi, res_ou, res_quoi, opp_var, fun_quoi="mea
               un_raster <- raster::aggregate(un_raster, fact = rf, fun = fonction)
             un_raster
           }))
-
+    
     xy_3035 <- raster::coordinates(rr_3035)
     quoi_3035 <- data.table(rr_3035 |> as.data.frame(),
                             x=xy_3035[,1] |> round(),
@@ -79,7 +79,7 @@ iso_ouetquoi_4326 <- function(ou, quoi, res_ou, res_quoi, opp_var, fun_quoi="mea
       purrr::map(opp_var, ~{
         xx <- quoi_4326[[.x]]
         (!is.na(xx)) & (xx!=0)
-        }),
+      }),
       `|`)
     quoi_4326 <- quoi_4326[keep, ]
     xy_3035 <-quoi_4326[, .(x,y)] |> as.matrix()
@@ -102,11 +102,11 @@ iso_ouetquoi_4326 <- function(ou, quoi, res_ou, res_quoi, opp_var, fun_quoi="mea
                    y= xy_3035[,2]|> round())]
   quoi_4326[, id := .I]
   setkey(quoi_4326, id)
-
+  
   if (is.null(ou))
   {
     # pas de ou, on le prend égal à quoi en forme
-    ou_3035 <- raster_ref(quoi|>  sf::st_transform(3035), resolution = res_ou)
+    ou_3035 <- r3035::raster_ref(quoi|>  sf::st_transform(3035), resolution = res_ou)
     ncells <- 1:(ou_3035@ncols * ou_3035@nrows)
     xy_3035 <-  raster::xyFromCell(ou_3035, ncells)
     xy_4326 <- sf::sf_project(xy_3035, from = sf::st_crs(3035), to = sf::st_crs(4326))
@@ -124,7 +124,10 @@ iso_ouetquoi_4326 <- function(ou, quoi, res_ou, res_quoi, opp_var, fun_quoi="mea
     {
       # pas de points mais une résolution, on crée la grille
       ou_3035 <- ou|> sf::st_transform(3035)
-      rr_3035 <- fasterize::fasterize(ou_3035|>  sf::st_sf(), raster_ref(ou_3035, res_ou), fun = "any")
+      rr_3035 <- fasterize::fasterize(
+        ou_3035|>  sf::st_sf(),
+        r3035::raster_ref(ou_3035, res_ou),
+        fun = "any")
       xy_3035 <- raster::xyFromCell(rr_3035, which(raster::values(rr_3035) == 1))
       xy_4326 <- sf::sf_project(xy_3035, from = sf::st_crs(3035), to = sf::st_crs(4326))
       ou_4326 <- data.table(lon = xy_4326[, 1],
@@ -144,10 +147,10 @@ iso_ouetquoi_4326 <- function(ou, quoi, res_ou, res_quoi, opp_var, fun_quoi="mea
                             y = xy_3035[, 2] |> round())
     }
   }
-
+  
   ou_4326[, id := .I]
   setkey(ou_4326, id)
-
+  
   list(ou_4326=ou_4326, quoi_4326=quoi_4326)
 }
 
@@ -169,13 +172,13 @@ iso_split_ou <- function(ou, quoi, chunk=NULL, routing, tmax=60)
   mou <- ou[sample(.N, n), .(x,y)] |> as.matrix()
   mquoi <- quoi[, .(x,y)] |> as.matrix()
   nquoi <- median(matrixStats::rowSums2(rdist::cdist(mou, mquoi) <= vmaxmode(routing$mode)*tmax))
-
+  
   size <- as.numeric(nrow(ou)) * as.numeric(nquoi)
   bbox <- matrix(c(xmax=max(ou$lon), xmin=min(ou$lon), ymax=max(ou$lat), ymin= min(ou$lat)), nrow=2)
   bbox <- sf::sf_project(pts=bbox, from=sf::st_crs(4326), to=sf::st_crs(3035))
   surf <- (bbox[1,1]-bbox[2,1])*(bbox[1,2]-bbox[2,2])
   n_t <- if(is.null(routing$n_threads)) 1 else routing$n_threads
-
+  
   if(!is.null(routing$groupes))
   {
     ngr <- length(routing$groupes)
@@ -189,19 +192,19 @@ iso_split_ou <- function(ou, quoi, chunk=NULL, routing, tmax=60)
   {
     ngr <- min(max(8, round(size/chunk)), round(size/1000)) # au moins 8 groupes, au plus des morceaux de 1k
     resolution <- 12.5*2^floor(max(0,log2(sqrt(surf/ngr)/12.5)))
-
+    
     subsampling <- min(max(n_t,floor(resolution/(0.1*tmax*vmaxmode(routing$mode)))),8)
-
-    idINS <- idINS3035(ou$x, ou$y, resolution, resinstr = FALSE)
+    
+    idINS <- r3035::idINS3035(ou$x, ou$y, resolution, resinstr = FALSE)
     uidINS <- unique(idINS)
-
+    
     out_ou <- ou
     out_ou[, `:=`(gr=idINS)]
     ou_gr <- rlang::set_names(as.character(unique(out_ou$gr)))
   }
   Nous <- out_ou[, .N, by=gr]
   Nous <- rlang::set_names(Nous$N, Nous$gr)
-  logger::log_success("taille:{f2si2(size)} gr:{f2si2(ngr)} res_gr:{resolution}")
+  logger::log_success("taille:{ofce::f2si2(size)} gr:{f2si2(ngr)} res_gr:{resolution}")
   list(ou=out_ou, ou_gr=ou_gr, resINS=resolution, subsampling=subsampling, Nous=Nous)
 }
 
@@ -210,7 +213,7 @@ iso_split_ou <- function(ou, quoi, chunk=NULL, routing, tmax=60)
 #' @param routing système de routing.
 #' @param groupe ??
 get_routing <- function(routing, groupe) {
-
+  
   if(is.null(routing$groupes))
     return(routing)
   file <- routing$time_table[[groupe]]
@@ -219,9 +222,9 @@ get_routing <- function(routing, groupe) {
     routing$time_table <- data.table::fread(file)
   else
     routing$time_table <- qs::qread(file, nthreads=4)
-
+  
   routing$groupes=groupe
-
+  
   routing
 }
 
@@ -238,7 +241,7 @@ vmaxmode <- function(mode)
     "BIKE" %in% mode ~ 12/60*1000,
     "WALK" %in% mode ~ 5/60*1000,
     TRUE ~ 60/60*1000) # vitesse en metres par minute
-
+  
   vitesse
 }
 
@@ -249,12 +252,12 @@ vmaxmode <- function(mode)
 #' @param routing ??
 select_ancres <- function(s_ou, k, routing)
 {
-   if(nrow(s_ou)<=1)
+  if(nrow(s_ou)<=1)
     return(list(les_ou=s_ou,
                 les_ou_s=s_ou$id,
                 error=NULL,
                 result=data.table()))
-
+  
   des_iou <- sample.int(nrow(s_ou), max(1,min(nrow(s_ou)%/%4, k)), replace=FALSE) |> sort()
   les_ou <- s_ou[des_iou]
   les_autres_ou <- s_ou[-des_iou]
@@ -299,7 +302,7 @@ ttm_on_closest <- function(ppou, s_ou, quoi, ttm_0, les_ou, tmax, routing, grdeo
     cibles_ok <- ttm_0[fromId==ppou&travel_time<=tmax+marge][["toId"]]
     if(length(cibles_ok)>0)
     {
-
+      
       ttm <- iso_ttm(o = ss_ou, d = quoi[cibles_ok], tmax=tmax+1, routing=routing)
       if(is.null(ttm$error))
         if(nrow(ttm$result)>0)
@@ -372,16 +375,16 @@ is.in.dir <- function(groupe, dir)
 access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_var, ttm_out, pids, dir, t2d)
 {
   spid <- get_pid(pids)
-
+  
   s_ou <- ou_4326[gr==groupe, .(id, lon, lat, x, y)]
   logger::log_debug("aog:{groupe} {k} {nrow(s_ou)}")
-
+  
   if(t2d && is.in.dir(groupe, dir))
   {
     logger::log_success("carreau:{groupe} dossier:{dir}")
     return(data.table(file = stringr::str_c(dir, "/", groupe, ".rda")))
   }
-
+  
   if(is.null(routing$ancres))
   {
     tictoc::tic()
@@ -389,7 +392,7 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
     routing_sans_elevation$elevation <- NULL
     ttm_ou <- select_ancres(s_ou, k, routing_sans_elevation)
     les_ou_s <- ttm_ou$les_ou_s
-
+    
     if(is.null(ttm_ou$error))
     {
       if(nrow(ttm_ou$result)>0)
@@ -405,12 +408,12 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
         delay <- 0
       }
       logger::log_debug("ttm_ou:{nrow(ttm_ou$result)}")
-
+      
       # on filtre les cibles qui ne sont pas trop loin selon la distance euclidienne
       quoi_f <- minimax_euclid(from=ttm_ou$les_ou, to=quoi_4326, dist=vmaxmode(routing$mode)*(tmax+delay))
-
+      
       logger::log_debug("quoi_f:{nrow(quoi_f)}")
-
+      
       # distances entre les ancres et les cibles
       if(any(quoi_f))
         ttm_0 <- iso_ttm(o = ttm_ou$les_ou,
@@ -419,7 +422,7 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
                          routing=routing)
       else
         ttm_0 <- list(error=NULL, result=data.table())
-
+      
       if(!is.null(ttm_0$error))
       {
         logger::log_warn("carreau:{groupe} ou_id:{les_ou_s} erreur ttm_0 {ttm_0$error}")
@@ -427,13 +430,13 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
       }
       else
         ttm_0 <- ttm_0$result
-
+      
       if(nrow(ttm_0)>0)
       {
         pproches <- sort(unique(s_ou$closest))
         ttm_0[ , npea:=nrow(quoi_4326)] [, npep:=length(unique(toId)), by=fromId]
         logger::log_debug("toc {nrow(ttm_0)}")
-
+        
         if(!is.null(pproches))
         {
           # boucle sur les ancres
@@ -446,22 +449,22 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
         }
         else
           ttm <- ttm_0
-
+        
         time <- tictoc::toc(quiet = TRUE)
         dtime <- (time$toc - time$tic)
-
+        
         if(nrow(ttm)> 0)
         {
           paires_fromId <- ttm[, .(npep=npep[[1]], npea=npea[[1]]), by=fromId]
           npea <- sum(paires_fromId$npea)
           npep <- sum(paires_fromId$npep)
-
+          
           speed_log <- stringr::str_c(
             length(pproches),
             " ancres ", f2si2(npea),
-            "@",f2si2(npea/dtime),"p/s demandees, ",
-            f2si2(npep),"@",f2si2(npep/dtime), "p/s retenues")
-
+            "@",ofce::f2si2(npea/dtime),"p/s demandees, ",
+            ofce::f2si2(npep),"@",ofce::f2si2(npep/dtime), "p/s retenues")
+          
           if(!ttm_out)
           {
             ttm_d <- merge(ttm, quoi_4326, by.x="toId", by.y="id", all.x=TRUE)
@@ -507,7 +510,7 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
     ttm_d2 <- ttm_d1[, .(npea=.N, npep=.N), by=fromId] [, gr:=groupe]
     ttm_d <- merge(ttm_d, ttm_d2, by="fromId")
   }
-
+  
   if(t2d)
   {
     file <- stringr::str_c(dir,"/", groupe, ".rda")
@@ -548,8 +551,8 @@ minimax_euclid <- function(from, to, dist)
 
 ttm_idINS <- function(ttm, resolution=200) {
   require("data.table")
-  from <- ttm$fromId[, .(id, fromidINS = idINS3035(x,y, resolution = resolution))]
-  to <- ttm$toId[, .(id, toidINS = idINS3035(x,y, resolution = resolution))]
+  from <- ttm$fromId[, .(id, fromidINS = r3035::idINS3035(x,y, resolution = resolution))]
+  to <- ttm$toId[, .(id, toidINS = r3035::idINS3035(x,y, resolution = resolution))]
   tt <- ttm$time_table
   if(length(tt)>1)
     tt <- rbindlist(tt, use.names=TRUE, fill = TRUE)

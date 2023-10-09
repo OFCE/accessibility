@@ -85,7 +85,7 @@ iso2time_dt <- function(isodt, seuils=median(cellStats(isodt, median)), exclude=
     out
   })
   names(rr) <- stringr::str_c("to",
-                              uf2si2(seuils, rounding=FALSE, unit="multi"))
+                              ofce::uf2si2(seuils, rounding=FALSE, unit="multi"))
   setDT(rr)
   cbind(isodt[,(exclude),  with=FALSE], rr)
 }
