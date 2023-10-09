@@ -12,7 +12,9 @@ routing_setup_dodgr(
   distances = FALSE,
   wt_profile_file = NULL,
   n_threads = 4L,
-  overwrite = FALSE
+  overwrite = FALSE,
+  contract = FALSE,
+  deduplicate = TRUE
 )
 }
 \arguments{
@@ -31,6 +33,10 @@ routing_setup_dodgr(
 \item{n_threads}{entier, nombre de threads}
 
 \item{overwrite}{reconstruit le réseau dodgr à partir de la source OSM}
+
+\item{contract}{applique la fonction de contraction de graphe (défaut FALSE) déconseillé si turn_penalty est employé}
+
+\item{deduplicate}{applique la fonction de déduplication de graphe (défaut TRUE)}
 }
 \description{
 Cette fonction met en place ce qui est nécessaire pour lancer dodgr

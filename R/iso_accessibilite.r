@@ -123,7 +123,7 @@ iso_accessibilite <- function(
   ou_4326 <- groupes$ou
   ou_gr <- groupes$ou_gr
   k <- groupes$subsampling
-  logger::log_success("{ofce::f2si2(nrow(ou_4326))} ou, {f2si2(nrow(quoi_4326))} quoi")
+  logger::log_success("{ofce::f2si2(nrow(ou_4326))} ou, {ofce::f2si2(nrow(quoi_4326))} quoi")
   logger::log_success("{length(ou_gr)} carreaux, {k} subsampling")
 
   if (table2disk)
