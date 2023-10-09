@@ -260,7 +260,7 @@ iso_accessibilite <- function(
       string = glue::glue("matrice de time travel {routing$type} precalculee"),
       time_table = access,
       fromId = fromId,
-      toId = quoi_4326[, .(id, lon, lat, x, y)],
+      toId = toId,
       groupes = ou_gr,
       resolution = groupes$resINS,
       res_ou = resolution,
