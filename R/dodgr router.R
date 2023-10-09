@@ -220,7 +220,7 @@ routing_setup_dodgr <- function(path,
   graph_name <- glue::glue("{path}/{graph_name}")
   dodgr_dir <- stringr::str_c(path, '/dodgr_files/')
   
-  if(file.exists(graph_name)!overwrite) {
+  if(file.exists(graph_name)&!overwrite) {
     
     graph <- dodgr::dodgr_load_streetnet(graph_name)
     # dodgr_tmp <- list.files(
