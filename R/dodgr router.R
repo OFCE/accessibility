@@ -356,3 +356,24 @@ dodgr_ttm <- function(o, d, tmax, routing)
   }
   return(list(result=temps, error=erreur))
 }
+
+load_street_network <- function(filename) {
+  dodgr_dir <- stringr::str_c(dirname(filename), '/dodgr_files/')
+  dodgr_tmp <- list.files(
+    dodgr_dir,
+    pattern = "^dodgr",
+    full.names = TRUE)
+  file.copy(dodgr_tmp, tempdir())
+  qs::qread(filename, nthreads = 4)
+}
+
+save_street_network <- function(graph, filename) {
+  qs::qsave(graph, filename = filename, nthreads = 4, preset= "fast")
+  # dodgr a besoin des fichiers créés à cette étape
+  dodgr_tmp <- list.files(tempdir(),
+                           pattern = "^dodgr",
+                           full.names = TRUE)
+  dodgr_dir <- stringr::str_c(dirname(filename), "/dodgr_files")
+  dir.create(dodgr_dir)
+  file.copy(from  = dodgr_tmp, to = dodgr_dir, overwrite = TRUE)
+}
