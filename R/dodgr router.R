@@ -76,7 +76,7 @@ download_osmsc <- function(box, workers = 1, .progress = TRUE) {
   time <- tictoc::toc(log = TRUE, quiet = TRUE)
   dtime <- (time$toc - time$tic)
   cli::cli_alert_success(
-    "OSM silcate téléchargé: {dtime%/%60}m {round(dtime-60*dtime%/%60)}s {signif(lobstr::obj_size(osm)/1024/1024, 3)} Mb")
+    "OSM silicate téléchargé: {dtime%/%60}m {round(dtime-60*dtime%/%60)}s {signif(lobstr::obj_size(osm)/1024/1024, 3)} Mb")
   
   return(osm)
 }
