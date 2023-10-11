@@ -17,6 +17,12 @@ download_osmsc <- function(box, workers = 1, .progress = TRUE) {
   rlang::check_installed("osmdata", reason = "pour utiliser download_sc`")
   require(osmdata, quietly = TRUE)
   tictoc::tic()
+  
+  dir.create(glue::glue("logs"), showWarnings = FALSE, recursive = TRUE)
+  timestamp <- lubridate::stamp("15-01-20 10h08.05", orders = "dmy HMS", quiet = TRUE) (lubridate::now(tzone = "Europe/Paris"))
+  logfile <- glue::glue("logs/download_osmsc.{timestamp}.log")
+  logger::log_appender(logger::appender_file(logfile))
+  
   split_bbox <- function (bbox, grid = 2, eps = 0.05) {
     xmin <- bbox ["x", "min"]
     ymin <- bbox ["y", "min"]
@@ -35,6 +41,8 @@ download_osmsc <- function(box, workers = 1, .progress = TRUE) {
   }
   
   bbox <- box |> matrix(nrow = 2, dimnames = list(list("x","y"), list("min", "max")))
+  logger::log_success("bbox {box}")
+  
   queue <- split_bbox(bbox, grid=max(1,round(sqrt(2*workers))))
   fts <- c("\"highway\"", "\"restriction\"", "\"access\"",
            "\"bicycle\"", "\"foot\"", "\"motorcar\"", "\"motor_vehicle\"",
@@ -43,6 +51,7 @@ download_osmsc <- function(box, workers = 1, .progress = TRUE) {
   saved_plan <- future::plan()
   future::plan("multisession", workers = workers)
   osm <- furrr::future_map(queue, ~{
+    logger::log_appender(logger::appender_file(logfile))
     local_q <- list(.x)
     
     result <- list()
@@ -57,11 +66,14 @@ download_osmsc <- function(box, workers = 1, .progress = TRUE) {
       })
       
       if (class(opres)[1] != "try-error") {
+        logger::log_success("downloaded après {split} split")
         result <- append(result, list (opres))
         local_q <- local_q[-1]
       } else {
-        bboxnew <- split_bbox(local_q[[1]])
+        split <- split + 1
+        logger::log_info("{opres} split ({split})")
         
+        bboxnew <- split_bbox(local_q[[1]])
         queue <- append(bboxnew, local_q[-1])
       }
     }
