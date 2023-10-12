@@ -14,7 +14,10 @@
 #'
 download_osmsc <- function(box, workers = 1, .progress = TRUE) {
   
-  rlang::check_installed("osmdata", reason = "pour utiliser download_sc`")
+  rlang::check_installed(
+    "osmdata", 
+    version="0.2.5.005", 
+    reason = "pour utiliser download_sc, il faut au moins la version 0.2.5.005 sir github ropensci/osmdata")
   require(osmdata, quietly = TRUE)
   tictoc::tic()
   
@@ -234,7 +237,7 @@ routing_setup_dodgr <- function(path,
   
   if(file.exists(graph_name)&!overwrite) {
     
-    graph <- dodgr::dodgr_load_streetnet(graph_name)
+    graph <- load_street_network(graph_name)
     # dodgr_tmp <- list.files(
     #   dodgr_dir,
     #   pattern = "^dodgr",
@@ -270,7 +273,7 @@ routing_setup_dodgr <- function(path,
       cli::cli_alert_info("Déduplication")
       graph <- dodgr::dodgr_deduplicate_graph(graph)
     }
-    dodgr::dodgr_save_streetnet(graph, filename = graph_name)
+    save_street_network(graph, filename = graph_name)
     # dodgr a besoin des fichiers créés à cette étape
     # dodgr_tmp <- list.files(tempdir(),
     #                         pattern = "^dodgr",
@@ -305,7 +308,7 @@ routing_setup_dodgr <- function(path,
       RcppParallel::setThreadOptions(numThreads = routing$n_threads)
       # refresh le graph à partir du disque en cas de multicore
       rout <- routing
-      rout$graph <- dodgr::dodgr_load_streetnet(routing$graph_name)
+      rout$graph <- load_street_network(routing$graph_name)
       # dodgr_dir <- stringr::str_c(rout$path, '/dodgr_files/')
       # dodgr_tmp <- list.files(
       #   dodgr_dir,
@@ -380,7 +383,7 @@ load_street_network <- function(filename) {
 }
 
 save_street_network <- function(graph, filename) {
-  qs::qsave(graph, filename = filename, nthreads = 4, preset= "fast")
+  qs::qsave(graph, file = filename, nthreads = 4, preset= "fast")
   # dodgr a besoin des fichiers créés à cette étape
   dodgr_tmp <- list.files(tempdir(),
                            pattern = "^dodgr",
