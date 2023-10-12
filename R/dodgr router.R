@@ -218,7 +218,7 @@ routing_setup_dodgr <- function(path,
               "motorcar", "motorcycle", "psv",
               "wheelchair"),
     msg = "incorrect transport mode")
-  mode <- case_when(mode=="CAR"~"motorcar",
+  mode <- dplyr::case_when(mode=="CAR"~"motorcar",
                     mode=="BICYCLE"~"bicycle",
                     mode=="WALK"~"foot")
   RcppParallel::setThreadOptions(numThreads = as.integer(n_threads))
