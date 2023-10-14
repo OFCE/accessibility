@@ -273,7 +273,10 @@ routing_setup_dodgr <- function(path,
       cli::cli_alert_info("Déduplication")
       graph <- dodgr::dodgr_deduplicate_graph(graph)
     }
-    graph$d_weight <- graph$time_weighted
+    vertices <- dodgr::dodgr_vertices(graph)
+    graph$savedd <- graph$d_weighted
+    graph$d_weighted <- graph$time_weighted
+    
     save_street_network(graph, filename = graph_name)
   }
   mtnt <- lubridate::now()
@@ -281,7 +284,7 @@ routing_setup_dodgr <- function(path,
     type = type,
     path = path,
     graph = graph,
-    vertices = dodgr::dodgr_vertices(graph),
+    vertices = vertices,
     distances = distances,
     pkg = "dodgr",
     turn_penalty = turn_penalty,
