@@ -408,7 +408,7 @@ dodgr_path <- function(o, d, tmax, routing)
               dz_plus = sum(dz*(dz>0)),
               dz = sum(dz)) |> 
     dplyr::filter(travel_time<=tmax) |> 
-    dplyr::separate_wider_delim(trip, delim="-", names = c("from", "to")) |> 
+    tidyr::separate_wider_delim(trip, delim="-", names = c("from", "to")) |> 
     dplyr::mutate(fromId = as.integer(o_id[from]),
            toId = as.integer(d_id[to])) |>
     dplyr::relocate(fromId, toId, fromIdalt = from, toIdalt = to) |> 

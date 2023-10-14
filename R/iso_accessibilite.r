@@ -140,7 +140,9 @@ iso_accessibilite <- function(
   nw <- future::nbrOfWorkers()
   logger::log_success("future:{future}, {nw} workers")
 
-  packages <- c("data.table", "logger", "stringr", "glue", "raster", "terra", "qs", routing$pkg)
+  packages <- c("data.table", "logger", "stringr", 
+                "glue", "raster", "terra", "qs", "dplyr", "tidyr", "tibble",
+                routing$pkg)
 
   if(routing$future & future) {
     if(!is.null(routing$core_init)) {
