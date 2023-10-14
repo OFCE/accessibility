@@ -305,8 +305,11 @@ ttm_on_closest <- function(ppou, s_ou, quoi, ttm_0, les_ou, tmax, routing, grdeo
       
       ttm <- iso_ttm(o = ss_ou, d = quoi[cibles_ok], tmax=tmax+1, routing=routing)
       if(is.null(ttm$error))
-        if(nrow(ttm$result)>0)
+        if(nrow(ttm$result)>0) {
+          logger::log_info("paquet:{grdeou} ppou:{ppou} ttm ok {nrow(ttm$result)}")
           return(ttm$result[, npea:=length(cibles_ok)] [, npep:=length(unique(toId)), by=fromId])
+          
+        }
       else # 0 row ttm
       {
         logger::log_warn("paquet:{grdeou} ppou:{ppou} ttm vide")
@@ -320,7 +323,7 @@ ttm_on_closest <- function(ppou, s_ou, quoi, ttm_0, les_ou, tmax, routing, grdeo
         return(null_result)
       }
     }
-    else # cibles_ok lenght nulle
+    else # cibles_ok length nulle
     {
       logger::log_warn("paquet:{grdeou} ppou:{ppou} ttm vide")
       logger::log_warn("pas de cibles")

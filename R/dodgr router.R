@@ -210,40 +210,40 @@ routing_setup_dodgr <- function(path,
                                 n_threads= 4L,
                                 overwrite = FALSE,
                                 contract = FALSE,
-                                deduplicate = TRUE)
+                                deduplicate = TRUE,
+                                di = FALSE)
 {
   env <- parent.frame()
   path <- glue::glue(path, .envir = env)
-  rlang::check_installed("dodgr", reason="requis pour le routage")
+  rlang::check_installed(
+    "dodgr",
+    reason="requis pour le routage")
   assertthat::assert_that(
     mode%in%c("CAR", "BICYCLE", "WALK", "bicycle", "foot", "goods",
               "hgv", "horse", "moped",
               "motorcar", "motorcycle", "psv",
               "wheelchair"),
     msg = "incorrect transport mode")
+  type <- ifelse(di, "dodgr_di", "dodgr")
   mode <- dplyr::case_when(mode=="CAR"~"motorcar",
-                    mode=="BICYCLE"~"bicycle",
-                    mode=="WALK"~"foot")
-  RcppParallel::setThreadOptions(numThreads = as.integer(n_threads))
+                           mode=="BICYCLE"~"bicycle",
+                           mode=="WALK"~"foot")
+  
+  RcppParallel::setThreadOptions(
+    numThreads = as.integer(n_threads))
   # dans le path on s'attend à 1 fichier sfosm
   loff <- list.files(path=path, pattern = "*.scosm")
   if(length(loff)>1)
     cli::cli_alert_warning(
       "Attention, il y a plusieurs candidats de réseaux dans le dossier {.path {path}}" |> glue::glue())
+  
   graph_name <- stringr::str_c(
     stringr::str_remove(loff[[1]], "\\.[:alpha:]*$"), ".", mode, ".dodgrnet")
   graph_name <- glue::glue("{path}/{graph_name}")
   dodgr_dir <- stringr::str_c(path, '/dodgr_files/')
   
   if(file.exists(graph_name)&!overwrite) {
-    
     graph <- load_street_network(graph_name)
-    # dodgr_tmp <- list.files(
-    #   dodgr_dir,
-    #   pattern = "^dodgr",
-    #   full.names = TRUE)
-    # 
-    # file.copy(dodgr_tmp, tempdir())
     
     message("dodgr network en cache")
     
@@ -273,20 +273,15 @@ routing_setup_dodgr <- function(path,
       cli::cli_alert_info("Déduplication")
       graph <- dodgr::dodgr_deduplicate_graph(graph)
     }
+    graph$weight <- graph$time_weighted
     save_street_network(graph, filename = graph_name)
-    # dodgr a besoin des fichiers créés à cette étape
-    # dodgr_tmp <- list.files(tempdir(),
-    #                         pattern = "^dodgr",
-    #                         full.names = TRUE)
-    # dir.create(dodgr_dir)
-    # file.copy(from  = dodgr_tmp, to = dodgr_dir, overwrite = TRUE)
   }
   mtnt <- lubridate::now()
-  type <- "dodgr"
   list(
     type = type,
     path = path,
     graph = graph,
+    vertices = dodgr::dodgr_vertices(graph),
     distances = distances,
     pkg = "dodgr",
     turn_penalty = turn_penalty,
@@ -309,14 +304,7 @@ routing_setup_dodgr <- function(path,
       # refresh le graph à partir du disque en cas de multicore
       rout <- routing
       rout$graph <- load_street_network(routing$graph_name)
-      # dodgr_dir <- stringr::str_c(rout$path, '/dodgr_files/')
-      # dodgr_tmp <- list.files(
-      #   dodgr_dir,
-      #   pattern = "^dodgr",
-      #   full.names = TRUE)
-      # file.copy(dodgr_tmp, tempdir())
-      if(!is.null(routing$elevation))
-        rout$elevation_data <- terra::rast(str_c(routing$path, "/", routing$elevation))
+      rout$vertices <- dodgr::dodgr_vertices(rout$graph)
       return(rout)
     })
 }
@@ -337,7 +325,7 @@ dodgr_ttm <- function(o, d, tmax, routing)
   names(o_names[[2]]) <- d$id
   dimnames(temps) <- list(o$id, d$id)
   temps <- data.table(temps, keep.rownames = TRUE)
-  temps[, fromId:=rn |> as.integer()] [, rn:=NULL]
+  temps[, fromId := rn |> as.integer()] [, rn:=NULL]
   temps <- melt(temps,
                 id.vars="fromId",
                 variable.name="toId",
@@ -361,8 +349,10 @@ dodgr_ttm <- function(o, d, tmax, routing)
   }
   erreur <- NULL
   
-  if (nrow(temps)>0)
+  if (nrow(temps)>0){
     temps[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId), travel_time=as.integer(travel_time/60))]
+    setorder(temps, fromId, toId)
+    }
   else
   {
     erreur <- "dodgr::travel_time_matrix empty"
@@ -370,6 +360,65 @@ dodgr_ttm <- function(o, d, tmax, routing)
     logger::log_warn(erreur)
   }
   return(list(result=temps, error=erreur))
+}
+
+dodgr_path <- function(o, d, tmax, routing)
+{
+  o <- o[, .(id=as.character(id),lon,lat)]
+  d <- d[, .(id=as.character(id),lon,lat)]
+  
+  o_g <- dodgr::match_points_to_verts(
+    routing$vertices,
+    o[, .(lon, lat)], connected = TRUE)
+  o_g <- routing$vertices |> slice(o_g) |> pull(id)
+  # names(o_g) <- o$id
+  
+  d_g <- dodgr::match_points_to_verts(
+    routing$vertices,
+    d[, .(lon, lat)], connected = TRUE)
+  d_g <- routing$vertices |> slice(d_g) |> pull(id)
+  # names(d_g) <- d$id
+  
+  chemins <- dodgr::dodgr_paths(
+    graph = routing$graph,
+    from = o_g,
+    to = d_g)
+  
+  o_id <- purrr::set_names(o$id, o_g)
+  d_id <- purrr::set_names(d$id, d_g)
+  
+  trips <- imap_dfr(
+    chemins, \(tf, ntf) {
+      imap_dfr(tf, \(tt, ntt){
+        tibble(trip = ntt, 
+               from = head(tt,-1), 
+               to=tail(tt, -1))  }) }) |> 
+    left_join(
+      as_tibble(routing$graph) |> select(from=.vx0, to=.vx1, time, d, dz),
+      by = c("from", "to")
+    ) |>
+    group_by(trip) |> 
+    summarize(distance = as.integer(sum(d)),
+              travel_time = as.integer(sum(time)/60),
+              dz_plus = sum(dz*(dz>0)),
+              dz = sum(dz)) |> 
+    filter(travel_time<=tmax) |> 
+    separate_wider_delim(trip, delim="-", names = c("from", "to")) |> 
+    mutate(fromId = as.integer(o_id[from]),
+           toId = as.integer(d_id[to])) |>
+    relocate(fromId, toId, fromIdalt = from, toIdalt = to) |> 
+    setDT() 
+  
+  setorder(trips, fromId, toId)
+
+  erreur <- NULL
+  
+  if (nrow(trips)==0) {
+    erreur <- "dodgr::travel_time_matrix empty"
+    trips <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric(), distance=numeric())
+    logger::log_warn(erreur)
+  }
+  return(list(result=trips, error=erreur))
 }
 
 load_street_network <- function(filename) {
@@ -386,8 +435,8 @@ save_street_network <- function(graph, filename) {
   qs::qsave(graph, file = filename, nthreads = 4, preset= "fast")
   # dodgr a besoin des fichiers créés à cette étape
   dodgr_tmp <- list.files(tempdir(),
-                           pattern = "^dodgr",
-                           full.names = TRUE)
+                          pattern = "^dodgr",
+                          full.names = TRUE)
   dodgr_dir <- stringr::str_c(dirname(filename), "/dodgr_files")
   dir.create(dodgr_dir)
   file.copy(from  = dodgr_tmp, to = dodgr_dir, overwrite = TRUE)

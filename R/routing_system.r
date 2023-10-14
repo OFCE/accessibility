@@ -16,7 +16,8 @@ iso_ttm <- function(o, d, tmax, routing)
               "osrm" = osrm_ttm(o, d, tmax, routing),
               "dt"= dt_ttm(o, d, tmax, routing),
               "euclidean" = euc_ttm(o, d, tmax, routing),
-              "dodgr" = dodgr_ttm(o, d, tmax, routing))
+              "dodgr" = dodgr_ttm(o, d, tmax, routing),
+              "dodgr_di" = dodgr_path(o, d, tmax, routing))
   r
 }
 
