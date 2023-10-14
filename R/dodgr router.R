@@ -273,7 +273,7 @@ routing_setup_dodgr <- function(path,
       cli::cli_alert_info("Déduplication")
       graph <- dodgr::dodgr_deduplicate_graph(graph)
     }
-    graph$weight <- graph$time_weighted
+    graph$d_weight <- graph$time_weighted
     save_street_network(graph, filename = graph_name)
   }
   mtnt <- lubridate::now()
@@ -296,12 +296,12 @@ routing_setup_dodgr <- function(path,
     future_routing = function(routing) {
       rout <- routing
       rout$graph <- NULL
+      rout$vertices <- NULL
       rout$elevation_data <- NULL
       return(rout)
     },
     core_init = function(routing){
       RcppParallel::setThreadOptions(numThreads = routing$n_threads)
-      # refresh le graph à partir du disque en cas de multicore
       rout <- routing
       rout$graph <- load_street_network(routing$graph_name)
       rout$vertices <- dodgr::dodgr_vertices(rout$graph)
