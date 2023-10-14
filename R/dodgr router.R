@@ -308,6 +308,7 @@ routing_setup_dodgr <- function(path,
       rout <- routing
       rout$graph <- load_street_network(routing$graph_name)
       rout$vertices <- dodgr::dodgr_vertices(rout$graph)
+      logger::log_info("router {graph_name} chargé")
       return(rout)
     })
 }
@@ -373,13 +374,13 @@ dodgr_path <- function(o, d, tmax, routing)
   o_g <- dodgr::match_points_to_verts(
     routing$vertices,
     o[, .(lon, lat)], connected = TRUE)
-  o_g <- routing$vertices |> slice(o_g) |> pull(id)
+  o_g <- routing$vertices |> dplyr::slice(o_g) |> dplyr::pull(id)
   # names(o_g) <- o$id
   
   d_g <- dodgr::match_points_to_verts(
     routing$vertices,
     d[, .(lon, lat)], connected = TRUE)
-  d_g <- routing$vertices |> slice(d_g) |> pull(id)
+  d_g <- routing$vertices |> dplyr::slice(d_g) |> dplyr::pull(id)
   # names(d_g) <- d$id
   
   chemins <- dodgr::dodgr_paths(
@@ -390,26 +391,27 @@ dodgr_path <- function(o, d, tmax, routing)
   o_id <- purrr::set_names(o$id, o_g)
   d_id <- purrr::set_names(d$id, d_g)
   
-  trips <- imap_dfr(
+  trips <- purrr::imap_dfr(
     chemins, \(tf, ntf) {
-      imap_dfr(tf, \(tt, ntt){
-        tibble(trip = ntt, 
+      purrr::imap_dfr(tf, \(tt, ntt){
+        tibble::tibble(trip = ntt, 
                from = head(tt,-1), 
                to=tail(tt, -1))  }) }) |> 
-    left_join(
-      as_tibble(routing$graph) |> select(from=.vx0, to=.vx1, time, d, dz),
+    dplyr::left_join(
+      tibble::as_tibble(routing$graph) |> 
+        dplyr::select(from=.vx0, to=.vx1, time, d, dz),
       by = c("from", "to")
     ) |>
-    group_by(trip) |> 
-    summarize(distance = as.integer(sum(d)),
+    dplyr::group_by(trip) |> 
+    dplyr::summarize(distance = as.integer(sum(d)),
               travel_time = as.integer(sum(time)/60),
               dz_plus = sum(dz*(dz>0)),
               dz = sum(dz)) |> 
-    filter(travel_time<=tmax) |> 
-    separate_wider_delim(trip, delim="-", names = c("from", "to")) |> 
-    mutate(fromId = as.integer(o_id[from]),
+    dplyr::filter(travel_time<=tmax) |> 
+    dplyr::separate_wider_delim(trip, delim="-", names = c("from", "to")) |> 
+    dplyr::mutate(fromId = as.integer(o_id[from]),
            toId = as.integer(d_id[to])) |>
-    relocate(fromId, toId, fromIdalt = from, toIdalt = to) |> 
+    dplyr::relocate(fromId, toId, fromIdalt = from, toIdalt = to) |> 
     setDT() 
   
   setorder(trips, fromId, toId)
