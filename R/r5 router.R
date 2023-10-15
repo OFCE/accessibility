@@ -23,9 +23,10 @@ quiet_r5_ttm <- function(...) {
 #' @param d destination
 #' @param tmax temps max pour le trajet
 #' @param routing système de routing
+#' @param dist_only Ne calcule que les distances
 #'
 #' @import data.table
-r5_ttm <- function(o, d, tmax, routing)
+r5_ttm <- function(o, d, tmax, routing, dist_only = TRUE)
 {
   o <- o[, .(id=as.character(id),lon,lat)]
   d <- d[, .(id=as.character(id),lon,lat)]
@@ -91,9 +92,10 @@ safe_r5_di <- purrr::safely(r5r::detailed_itineraries)
 #' @param d destination
 #' @param tmax temps max pour le trajet
 #' @param routing système de routing
+#' @param dist_only Ne calcule que les distances
 #'
 #' @import data.table
-r5_di <- function(o, d, tmax, routing) {
+r5_di <- function(o, d, tmax, routing, dist_only = FALSE) {
   gc()
   o <- o[, .(id=as.character(id),lon,lat)]
   d <- d[, .(id=as.character(id),lon,lat)]

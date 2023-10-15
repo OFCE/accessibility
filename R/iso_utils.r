@@ -262,7 +262,11 @@ select_ancres <- function(s_ou, k, routing)
   les_ou <- s_ou[des_iou]
   les_autres_ou <- s_ou[-des_iou]
   # on calcule les distances entre les points choisis (ancres) et les autres
-  ttm_ou <- iso_ttm(o = les_ou, d = les_autres_ou, tmax=100, routing=routing)
+  ttm_ou <- iso_ttm(o = les_ou, 
+                    d = les_autres_ou,
+                    tmax=100,
+                    routing=routing,
+                    dist_only = TRUE)
   if(!is.null(ttm_ou$error))
   {
     logger::log_warn("erreur de routeur ttm_ou {ttm_ou$error}")

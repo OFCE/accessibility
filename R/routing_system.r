@@ -7,17 +7,18 @@
 #' @param d destination
 #' @param tmax temps max pour le trajet
 #' @param routing système de routing
-iso_ttm <- function(o, d, tmax, routing)
+#' @param dist_only Ne calcule que les distances
+iso_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
 {
   r <- switch(routing$type,
-              "r5" = r5_ttm(o, d, tmax, routing),
-              "r5_di" = r5_di(o, d, tmax, routing),
-              "otpv1" = otpv1_ttm(o, d, tmax, routing),
-              "osrm" = osrm_ttm(o, d, tmax, routing),
-              "dt"= dt_ttm(o, d, tmax, routing),
-              "euclidean" = euc_ttm(o, d, tmax, routing),
-              "dodgr" = dodgr_ttm(o, d, tmax, routing),
-              "dodgr_di" = dodgr_path(o, d, tmax, routing))
+              "r5" = r5_ttm(o, d, tmax, routing, dist_only),
+              "r5_di" = r5_di(o, d, tmax, routing, dist_only),
+              "otpv1" = otpv1_ttm(o, d, tmax, routing, dist_only),
+              "osrm" = osrm_ttm(o, d, tmax, routing, dist_only),
+              "dt"= dt_ttm(o, d, tmax, routing, dist_only),
+              "euclidean" = euc_ttm(o, d, tmax, routing, dist_only),
+              "dodgr" = dodgr_ttm(o, d, tmax, routing, dist_only),
+              "dodgr_di" = dodgr_path(o, d, tmax, routing, dist_only))
   r
 }
 
@@ -65,10 +66,11 @@ delayRouting <- function(delay, routing)
 #' @param d destination
 #' @param tmax temps max pour le trajet
 #' @param routing système de routing
+#' @param dist_only Ne calcule que les distances
 #'
 #' @import data.table
 #' @import sf
-euc_ttm <- function(o, d, tmax, routing)
+euc_ttm <- function(o, d, tmax, routing, dist_only = TRUE)
 {
   mode <- routing$mode
   vitesse <- routing$speed
@@ -98,9 +100,10 @@ euc_ttm <- function(o, d, tmax, routing)
 #' @param d destination
 #' @param tmax temps max pour le trajet
 #' @param routing système de routing
+#' @param dist_only Ne calcule que les distances
 #'
 #' @import data.table
-otpv1_ttm <- function(o, d, tmax, routing)
+otpv1_ttm <- function(o, d, tmax, routing, dist_only = TRUE)
 {
   # ca marche pas parce que OTP ne renvoie pas de table
   # du coup il faudrait faire ça avec les isochrones
@@ -138,9 +141,10 @@ otpv1_ttm <- function(o, d, tmax, routing)
 #' @param d destination
 #' @param tmax temps max pour le trajet
 #' @param routing système de routing
+#' @param dist_only Ne calcule que les distances
 #'
 #' @import data.table
-osrm_ttm <- function(o, d, tmax, routing)
+osrm_ttm <- function(o, d, tmax, routing, dist_only = TRUE)
 {
   options(osrm.server = routing$osrm.server,
           osrm.profile = routing$osrm.profile)
@@ -185,9 +189,10 @@ osrm_ttm <- function(o, d, tmax, routing)
 #' @param d destination
 #' @param tmax temps max pour le trajet
 #' @param routing système de routing
+#' @param dist_only Ne calcule que les distances
 #'
 #' @import data.table
-dt_ttm <- function(o, d, tmax, routing)
+dt_ttm <- function(o, d, tmax, routing, dist_only = TRUE)
 {
   o_rid <- merge(o[, .(oid=id, x, y)], routing$fromId[, .(rid=id, x, y)], by=c("x", "y"))
   d_rid <- merge(d[, .(did=id, x, y)], routing$toId[, .(rid=id, x, y)], by=c("x", "y"))

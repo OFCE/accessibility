@@ -273,17 +273,26 @@ routing_setup_dodgr <- function(path,
       cli::cli_alert_info("Déduplication")
       graph <- dodgr::dodgr_deduplicate_graph(graph)
     }
-    vertices <- dodgr::dodgr_vertices(graph)
-    graph$savedd <- graph$d_weighted
-    graph$d_weighted <- graph$time_weighted
     
     save_street_network(graph, filename = graph_name)
   }
   mtnt <- lubridate::now()
+  vertices <- dodgr::dodgr_vertices(graph)
+  graph$savedd <- graph$d_weighted
+  graph$d_weighted <- graph$time_weighted
+  graph.dt <- data.table(
+    from=graph$.vx0,
+    to=graph$.vx1,
+    d = graph$d,
+    time = graph$time,
+    dz = graph$time,
+    dz_plus =(graph$dz>0)*graph$dz)
+  setkey(graph.dt, from, to)
   list(
     type = type,
     path = path,
     graph = graph,
+    graph.dt = graph.dt,
     vertices = vertices,
     distances = distances,
     pkg = "dodgr",
@@ -299,6 +308,7 @@ routing_setup_dodgr <- function(path,
     future_routing = function(routing) {
       rout <- routing
       rout$graph <- NULL
+      rout$graph.dt <- NULL
       rout$vertices <- NULL
       rout$elevation_data <- NULL
       return(rout)
@@ -308,12 +318,20 @@ routing_setup_dodgr <- function(path,
       rout <- routing
       rout$graph <- load_street_network(routing$graph_name)
       rout$vertices <- dodgr::dodgr_vertices(rout$graph)
+      rout$graph.dt <- data.table(
+        from=graph$.vx0,
+        to=graph$.vx1,
+        d = graph$d,
+        time = graph$time,
+        dz = graph$time,
+        dz_plus =(graph$dz>0)*graph$dz)
+      setkey(rout$graph.dt, from, to)
       logger::log_info("router {graph_name} chargé")
       return(rout)
     })
 }
 
-dodgr_ttm <- function(o, d, tmax, routing)
+dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
 {
   o <- o[, .(id=as.character(id),lon,lat)]
   d <- d[, .(id=as.character(id),lon,lat)]
@@ -338,7 +356,7 @@ dodgr_ttm <- function(o, d, tmax, routing)
   temps <- temps[travel_time<=tmax*60,]
   temps[, `:=`(fromIdalt = o_names[[1]][as.character(fromId)],
                toIdalt = o_names[[2]][as.character(toId)])]
-  if(routing$distances) {
+  if(routing$distances&!dist_only) {
     dist <- dodgr::dodgr_distances(
       graph = routing$graph,
       from = m_o,
@@ -356,7 +374,7 @@ dodgr_ttm <- function(o, d, tmax, routing)
   if (nrow(temps)>0){
     temps[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId), travel_time=as.integer(travel_time/60))]
     setorder(temps, fromId, toId)
-    }
+  }
   else
   {
     erreur <- "dodgr::travel_time_matrix empty"
@@ -366,8 +384,9 @@ dodgr_ttm <- function(o, d, tmax, routing)
   return(list(result=temps, error=erreur))
 }
 
-dodgr_path <- function(o, d, tmax, routing)
-{
+dodgr_path <- function(o, d, tmax, routing, dist_only = FALSE) {
+  if(dist_only)
+    return(dodgr_ttm(o,d,tmax, routing, dist_only))
   o <- o[, .(id=as.character(id),lon,lat)]
   d <- d[, .(id=as.character(id),lon,lat)]
   
@@ -391,31 +410,8 @@ dodgr_path <- function(o, d, tmax, routing)
   o_id <- purrr::set_names(o$id, o_g)
   d_id <- purrr::set_names(d$id, d_g)
   
-  trips <- purrr::imap_dfr(
-    chemins, \(tf, ntf) {
-      purrr::imap_dfr(tf, \(tt, ntt){
-        tibble::tibble(trip = ntt, 
-               from = head(tt,-1), 
-               to=tail(tt, -1))  }) }) |> 
-    dplyr::left_join(
-      tibble::as_tibble(routing$graph) |> 
-        dplyr::select(from=.vx0, to=.vx1, time, d, dz),
-      by = c("from", "to")
-    ) |>
-    dplyr::group_by(trip) |> 
-    dplyr::summarize(distance = as.integer(sum(d)),
-              travel_time = as.integer(sum(time)/60),
-              dz_plus = sum(dz*(dz>0)),
-              dz = sum(dz)) |> 
-    dplyr::filter(travel_time<=tmax) |> 
-    tidyr::separate_wider_delim(trip, delim="-", names = c("from", "to")) |> 
-    dplyr::mutate(fromId = as.integer(o_id[from]),
-           toId = as.integer(d_id[to])) |>
-    dplyr::relocate(fromId, toId, fromIdalt = from, toIdalt = to) |> 
-    setDT() 
+  trips <- agr_chemins(chemins, routing, o_id, d_id)
   
-  setorder(trips, fromId, toId)
-
   erreur <- NULL
   
   if (nrow(trips)==0) {
@@ -423,7 +419,48 @@ dodgr_path <- function(o, d, tmax, routing)
     trips <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric(), distance=numeric())
     logger::log_warn(erreur)
   }
-  return(list(result=trips, error=erreur))
+  return(list(result=trips[travel_time<=tmax, ], error=erreur))
+}
+
+agr_chemins <- function(chemins, routing, o, d) {
+  res <- data.table()
+  for(grp in names(chemins)) {
+    for(trip in names(chemins[[grp]])) {
+      nn <- stringr::str_split(trip, "-")[[1]]
+      ff <- chemins[[grp]][[trip]]
+      oo <- o[nn[[1]]]
+      dd <- d[nn[[2]]]
+      if(length(ff)>1) {
+        tt <- tail(ff,-1)
+        ff <- head(ff, -1)
+        vert <- data.table(from = ff, to = tt)
+        setkey(vert, from, to)
+        dt <- routing$graph.dt[vert]
+        dt <- dt[, .(
+          fromId = as.integer(oo),
+          toId = as.integer(dd),
+          fromIdalt = nn[[1]],
+          toIdalt = nn[[2]],
+          distance = sum(d),
+          travel_time = sum(time)/60,
+          dz = sum(dz),
+          dz_plus = sum(dz_plus))]
+      } else {
+        dt <- data.table(
+          fromId = as.integer(oo),
+          toId = as.integer(dd),
+          fromIdalt = nn[[1]],
+          toIdalt = nn[[2]],
+          distance = NA,
+          travel_time = NA,
+          dz = NA,
+          dz_plus = NA)
+      }
+      res <- rbind(res, dt)
+    }
+  }
+  setorder(res, fromId, toId)
+  return(res)
 }
 
 load_street_network <- function(filename) {
