@@ -314,6 +314,7 @@ routing_setup_dodgr <- function(path,
     # graph.dt = graph.dt,
     vertices = vertices,
     distances = distances,
+    denivele = denivele,
     pkg = "dodgr",
     turn_penalty = turn_penalty,
     graph_name = graph_name,
@@ -375,13 +376,14 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
                 variable.name="toId",
                 value.name = "travel_time",
                 variable.factor = FALSE)
-  temps <- temps[travel_time<=tmax*60,]
+  temps <- temps[, travel_time := as.integer(travel_time/60)]
+  temps <- temps[travel_time<=tmax,]
   temps[, `:=`(fromIdalt = o_names[[1]][as.character(fromId)],
                toIdalt = o_names[[2]][as.character(toId)])]
   if(!dist_only) {
     if(routing$distances) {
       local_graph$d <- routing$graph$d
-      dist <- temps <- dodgr::dodgr_dists(
+      dist <- dodgr::dodgr_dists(
         graph = local_graph,
         from = m_o,
         to = m_d)
@@ -401,7 +403,7 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
     }
     if(routing$denivele) {
       local_graph$d <- routing$graph$dzplus
-      dzplus <- dodgr::dodgr_distances(
+      dzplus <- dodgr::dodgr_dists(
         graph = local_graph,
         from = m_o,
         to = m_d)
@@ -423,7 +425,7 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
   erreur <- NULL
   
   if (nrow(temps)>0){
-    temps[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId), travel_time=as.integer(travel_time/60))]
+    temps[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId))]
     setorder(temps, fromId, toId)
   }
   else
