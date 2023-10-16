@@ -17,7 +17,8 @@ download_osmsc <- function(box, elevation=FALSE, workers = 1, .progress = TRUE) 
   rlang::check_installed(
     "osmdata", 
     version="0.2.5.005", 
-    reason = "pour utiliser download_sc, il faut au moins la version 0.2.5.005 sir github ropensci/osmdata")
+    reason = "pour utiliser download_sc, il faut au moins la version 0.2.5.005
+    sur github ropensci/osmdata")
   require(osmdata, quietly = TRUE)
   tictoc::tic()
   
@@ -355,7 +356,7 @@ routing_setup_dodgr <- function(path,
 
 dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
 {
-  logger::log_info("dodgr_ttm called, {dist_only}, {length(o)}x{length(d)}")
+  logger::log_info("dodgr_ttm called, {dist_only}, {nrow(o)}x{nrow(d)}")
   local_graph <- routing$graph
   local_graph$d <- routing$graph$time
   local_graph$d_weighted <- routing$graph$time_weighted
