@@ -119,7 +119,7 @@ iso_accessibilite <- function(
     chunk = chunk,
     routing = routing,
     tmax = tmax,
-    min_group = future::nbrOfWorkers())
+    min_group =round(sqrt(future::nbrOfWorkers())))
 
   ou_4326 <- groupes$ou
   ou_gr <- groupes$ou_gr

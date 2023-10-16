@@ -13,7 +13,9 @@
 #'
 #' @import data.table
 #' @import sf
-iso_ouetquoi_4326 <- function(ou, quoi, res_ou, res_quoi, opp_var, fun_quoi="mean", resolution=res_quoi, rf=5)
+iso_ouetquoi_4326 <- function(ou, quoi, res_ou, res_quoi, 
+                              opp_var, fun_quoi="mean", 
+                              resolution=res_quoi, rf=5)
 {
   # projection éventuelle sur une grille 3035 à la résolution res_quoi ou resolution
   if (!("sfc_POINT" %in% class(sf::st_geometry(quoi))) | is.finite(res_quoi))
@@ -194,7 +196,9 @@ iso_split_ou <- function(ou, quoi, chunk=NULL, routing, tmax=60,
     ngr <- min(max(min_group, round(size/chunk)), round(size/1000)) # au moins 8 groupes, au plus des morceaux de 1k
     resolution <- 12.5*2^floor(max(0,log2(sqrt(surf/ngr)/12.5)))
     
-    subsampling <- min(max(n_t,floor(resolution/(0.1*tmax*vmaxmode(routing$mode)))),8)
+    subsampling <- min(
+      max(n_t, floor(resolution/(0.1*tmax*vmaxmode(routing$mode)))),
+      min_group)
     
     idINS <- r3035::idINS3035(ou$x, ou$y, resolution, resinstr = FALSE)
     uidINS <- unique(idINS)
