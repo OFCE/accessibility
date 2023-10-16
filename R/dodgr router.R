@@ -12,7 +12,7 @@
 #'
 #'
 #'
-download_osmsc <- function(box, workers = 1, .progress = TRUE) {
+download_osmsc <- function(box, elevation=FALSE, workers = 1, .progress = TRUE) {
   
   rlang::check_installed(
     "osmdata", 
@@ -88,6 +88,18 @@ download_osmsc <- function(box, workers = 1, .progress = TRUE) {
   .options = furrr::furrr_options(seed=TRUE))
   future::plan(saved_plan)
   osm <- do.call(c, osm)
+  if(elevation) {
+    zone <- data.frame(t(bbox))
+    elevation <- elevatr::get_elev_raster(
+      locations = data.frame(t(bbox)), src = "aws", 
+      prj = st_crs(4326), z=13, neg_to_na = TRUE)
+    progressr::handlers("cli")
+    raster::writeRaster(elevation, "/tmp/elevation.tif")
+    osm <- osm |> 
+      osmdata::osm_elevation("/tmp/elevation.tif")
+  }
+  
+  
   time <- tictoc::toc(log = TRUE, quiet = TRUE)
   dtime <- (time$toc - time$tic)
   cli::cli_alert_success(
@@ -187,18 +199,23 @@ download_osmsf <- function(box, workers = 1, .progress = TRUE, trim= FALSE) {
 #' A partir d'un fichier de réseau (au format silicate, téléchargé par overpass, voir download_dodgr_osm)
 #' le setup fabrique le weighted_streetnetwork à partir d'un profile par mode de transport
 #' Ce fichier est enregistré est peut être ensuite utilisé pour calculer les distances ou les temps de parcours
+#' 
+#' Dans l'état actuel di ne fonctionne pas, de plus le calcul est fait dans dodgr avec un seul thread
+#' 
 #'
 #' @param path string, chemin d'accès au dossier contenant le réseau
 #' @param date string, date Date où seront simulées les routes (non utilisé)
 #' @param mode string, mode de transport, par défaut "CAR" (possible (BICYCLE, WALK,...))
 #' @param turn_penalty booléen, applique une pénalité pour les turns
 #' @param distances booléen, calcule les distances en prime
+#' @param denivele calcule le d+ sur le trajet
 #' @param wt_profile_file string, chemin vers le fichier des profils (écrit avec \code{dodgr::write_dodgr_wt_profile})
 #' @param overwrite booléen, Regénére le reseau même si il est présent
 #' @param n_threads entier, nombre de threads
 #' @param overwrite reconstruit le réseau dodgr à partir de la source OSM
 #' @param contract applique la fonction de contraction de graphe (défaut FALSE) déconseillé si turn_penalty est employé
 #' @param deduplicate applique la fonction de déduplication de graphe (défaut TRUE)
+#' @param di utilise les itinériaires détaillés, mais ne fonctionne pas pour le moment
 #'
 #' @export
 routing_setup_dodgr <- function(path,
@@ -206,12 +223,14 @@ routing_setup_dodgr <- function(path,
                                 mode="CAR",
                                 turn_penalty = FALSE,
                                 distances = FALSE,
+                                denivele = FALSE,
                                 wt_profile_file = NULL,
                                 n_threads= 4L,
                                 overwrite = FALSE,
                                 contract = FALSE,
                                 deduplicate = TRUE,
-                                di = FALSE)
+                                di = FALSE, 
+                                elevation = FALSE)
 {
   env <- parent.frame()
   path <- glue::glue(path, .envir = env)
@@ -278,15 +297,15 @@ routing_setup_dodgr <- function(path,
   }
   mtnt <- lubridate::now()
   vertices <- dodgr::dodgr_vertices(graph)
-  graph$savedd <- graph$d_weighted
-  graph$d_weighted <- graph$time_weighted
+  if("dz"%in% names(graph))
+    graph$dzplus <- graph$dz * (graph$dz >0)
   graph.dt <- data.table(
-    from=graph$.vx0,
-    to=graph$.vx1,
+    from = graph$.vx0,
+    to = graph$.vx1,
     d = graph$d,
     time = graph$time,
-    dz = graph$time,
-    dz_plus =(graph$dz>0)*graph$dz)
+    dz = graph$dz,
+    dzplus = graph$dzplus)
   setkey(graph.dt, from, to)
   list(
     type = type,
@@ -333,15 +352,17 @@ routing_setup_dodgr <- function(path,
 
 dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
 {
+  local_graph <- routing$graph
+  local_graph$d <- routing$graph$time
+  local_graph$d_weighted <- routing$graph$time_weighted
   o <- o[, .(id=as.character(id),lon,lat)]
   d <- d[, .(id=as.character(id),lon,lat)]
   m_o <- as.matrix(o[, .(lon, lat)])
   m_d <- as.matrix(d[, .(lon, lat)])
-  temps <- dodgr::dodgr_times(
-    graph = routing$graph,
+  temps <- dodgr::dodgr_dists(
+    graph = local_graph,
     from = m_o,
-    to = m_d,
-    shortest=FALSE)
+    to = m_d)
   o_names <- dimnames(temps)
   names(o_names[[1]]) <- o$id
   names(o_names[[2]]) <- d$id
@@ -356,18 +377,47 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
   temps <- temps[travel_time<=tmax*60,]
   temps[, `:=`(fromIdalt = o_names[[1]][as.character(fromId)],
                toIdalt = o_names[[2]][as.character(toId)])]
-  if(routing$distances&!dist_only) {
-    dist <- dodgr::dodgr_distances(
-      graph = routing$graph,
-      from = m_o,
-      to = m_d,
-      shortest=FALSE,
-      parallel = TRUE)
-    dimnames(dist) <- list(o$id, d$id)
-    dist <- data.table(dist, keep.rownames = TRUE)
-    dist[, fromId:=rn |> as.integer()] [, rn:=NULL]
-    dist <- melt(dist, id.vars="fromId", variable.name="toId", value.name = "distance", variable.factor = FALSE)
-    temps <- merge(temps, dist, by=c("fromId", "toId"), all.x=TRUE, all.y=FALSE)
+  if(!dist_only) {
+    if(routing$distances) {
+      local_graph$d <- routing$graph$d
+      dist <- temps <- dodgr::dodgr_dists(
+        graph = local_graph,
+        from = m_o,
+        to = m_d)
+      dimnames(dist) <- list(o$id, d$id)
+      dist <- data.table(dist, keep.rownames = TRUE)
+      dist[, fromId:=rn |> as.integer()] [, rn:=NULL]
+      dist <- melt(dist,
+                   id.vars="fromId", 
+                   variable.name="toId", 
+                   value.name = "distance", 
+                   variable.factor = FALSE)
+      temps <- merge(temps, 
+                     dist,
+                     by=c("fromId", "toId"),
+                     all.x=TRUE, 
+                     all.y=FALSE)
+    }
+    if(routing$denivele) {
+      local_graph$d <- routing$graph$dzplus
+      dzplus <- dodgr::dodgr_distances(
+        graph = local_graph,
+        from = m_o,
+        to = m_d)
+      dimnames(dzplus) <- list(o$id, d$id)
+      dzplus <- data.table(dzplus, keep.rownames = TRUE)
+      dzplus[, fromId:=rn |> as.integer()] [, rn:=NULL]
+      dzplus <- melt(dzplus,
+                   id.vars="fromId", 
+                   variable.name="toId", 
+                   value.name = "dzplus", 
+                   variable.factor = FALSE)
+      temps <- merge(temps, 
+                     dzplus,
+                     by=c("fromId", "toId"),
+                     all.x=TRUE, 
+                     all.y=FALSE)
+    }
   }
   erreur <- NULL
   
@@ -385,6 +435,7 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
 }
 
 dodgr_path <- function(o, d, tmax, routing, dist_only = FALSE) {
+  logger::log_info("dodgr_path called, {dist_only}, {length(o)}x{length(d)}")
   if(dist_only)
     return(dodgr_ttm(o,d,tmax, routing, dist_only))
   o <- o[, .(id=as.character(id),lon,lat)]
@@ -401,7 +452,7 @@ dodgr_path <- function(o, d, tmax, routing, dist_only = FALSE) {
     d[, .(lon, lat)], connected = TRUE)
   d_g <- routing$vertices |> dplyr::slice(d_g) |> dplyr::pull(id)
   # names(d_g) <- d$id
-  
+  logger::log_info(" aggrégation chemins, {length(o_g)}x{length(o_d)}")
   chemins <- dodgr::dodgr_paths(
     graph = routing$graph,
     from = o_g,
