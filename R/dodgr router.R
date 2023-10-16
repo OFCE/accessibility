@@ -338,8 +338,8 @@ routing_setup_dodgr <- function(path,
       rout <- routing
       rout$graph <- load_street_network(routing$graph_name)
       rout$vertices <- dodgr::dodgr_vertices(rout$graph)
-      if("dz"%in% names(graph))
-        graph$dzplus <- graph$dz * (graph$dz >0)
+      if("dz"%in% names(routing$graph))
+        rout$graph$dzplus <- routing$graph$dz * (routing$graph$dz >0)
       # rout$graph.dt <- data.table(
       #   from=graph$.vx0,
       #   to=graph$.vx1,
