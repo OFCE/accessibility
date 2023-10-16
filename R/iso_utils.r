@@ -166,7 +166,8 @@ iso_ouetquoi_4326 <- function(ou, quoi, res_ou, res_quoi, opp_var, fun_quoi="mea
 #' @import data.table
 #' @import sf
 
-iso_split_ou <- function(ou, quoi, chunk=NULL, routing, tmax=60)
+iso_split_ou <- function(ou, quoi, chunk=NULL, routing, tmax=60,
+                         min_group = 8)
 {
   n <- min(100, nrow(ou))
   mou <- ou[sample(.N, n), .(x,y)] |> as.matrix()
@@ -190,7 +191,7 @@ iso_split_ou <- function(ou, quoi, chunk=NULL, routing, tmax=60)
   }
   else
   {
-    ngr <- min(max(8, round(size/chunk)), round(size/1000)) # au moins 8 groupes, au plus des morceaux de 1k
+    ngr <- min(max(min_group, round(size/chunk)), round(size/1000)) # au moins 8 groupes, au plus des morceaux de 1k
     resolution <- 12.5*2^floor(max(0,log2(sqrt(surf/ngr)/12.5)))
     
     subsampling <- min(max(n_t,floor(resolution/(0.1*tmax*vmaxmode(routing$mode)))),8)
@@ -205,7 +206,8 @@ iso_split_ou <- function(ou, quoi, chunk=NULL, routing, tmax=60)
   Nous <- out_ou[, .N, by=gr]
   Nous <- rlang::set_names(Nous$N, Nous$gr)
   logger::log_success("taille:{ofce::f2si2(size)} gr:{ofce::f2si2(ngr)} res_gr:{resolution}")
-  list(ou=out_ou, ou_gr=ou_gr, resINS=resolution, subsampling=subsampling, Nous=Nous)
+  list(ou=out_ou, ou_gr=ou_gr, resINS=resolution,
+       subsampling=subsampling, Nous=Nous)
 }
 
 #' récupère les infos sur le routeur

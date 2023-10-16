@@ -52,7 +52,7 @@ iso_accessibilite <- function(
   routing = "r5",                         # défini le moteur de routage
   tmax = 10L,                        # en minutes
   pdt = 1L,
-  chunk = 10000000,                   # paquet envoyé
+  chunk = 20000000,                   # paquet envoyé
   future = FALSE,
   out = ifelse(is.finite(resolution), resolution, "raster"),
   ttm_out = FALSE,
@@ -118,7 +118,8 @@ iso_accessibilite <- function(
     quoi = quoi_4326,
     chunk = chunk,
     routing = routing,
-    tmax = tmax)
+    tmax = tmax,
+    min_group = future::nbrOfWorkers())
 
   ou_4326 <- groupes$ou
   ou_gr <- groupes$ou_gr
@@ -165,7 +166,8 @@ iso_accessibilite <- function(
         purrr::map(gs, function(g) {
           pb(amount=groupes$Nous[[g]])
           rrouting <- get_routing(routing, g)
-          access_on_groupe(g, ou_4326, quoi_4326, rrouting, k, tmax, opp_var, ttm_out, pids, dir, t2d=table2disk)
+          access_on_groupe(g, ou_4326, quoi_4326, rrouting, k,
+                           tmax, opp_var, ttm_out, pids, dir, t2d=table2disk)
         })
       }, .options=furrr::furrr_options(seed=TRUE,
                                        stdout=FALSE ,
