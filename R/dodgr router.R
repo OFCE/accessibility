@@ -299,19 +299,19 @@ routing_setup_dodgr <- function(path,
   vertices <- dodgr::dodgr_vertices(graph)
   if("dz"%in% names(graph))
     graph$dzplus <- graph$dz * (graph$dz >0)
-  graph.dt <- data.table(
-    from = graph$.vx0,
-    to = graph$.vx1,
-    d = graph$d,
-    time = graph$time,
-    dz = graph$dz,
-    dzplus = graph$dzplus)
-  setkey(graph.dt, from, to)
+  # graph.dt <- data.table(
+  #   from = graph$.vx0,
+  #   to = graph$.vx1,
+  #   d = graph$d,
+  #   time = graph$time,
+  #   dz = graph$dz,
+  #   dzplus = graph$dzplus)
+  # setkey(graph.dt, from, to)
   list(
     type = type,
     path = path,
     graph = graph,
-    graph.dt = graph.dt,
+    # graph.dt = graph.dt,
     vertices = vertices,
     distances = distances,
     pkg = "dodgr",
@@ -327,7 +327,7 @@ routing_setup_dodgr <- function(path,
     future_routing = function(routing) {
       rout <- routing
       rout$graph <- NULL
-      rout$graph.dt <- NULL
+      # rout$graph.dt <- NULL
       rout$vertices <- NULL
       rout$elevation_data <- NULL
       return(rout)
@@ -337,14 +337,14 @@ routing_setup_dodgr <- function(path,
       rout <- routing
       rout$graph <- load_street_network(routing$graph_name)
       rout$vertices <- dodgr::dodgr_vertices(rout$graph)
-      rout$graph.dt <- data.table(
-        from=graph$.vx0,
-        to=graph$.vx1,
-        d = graph$d,
-        time = graph$time,
-        dz = graph$time,
-        dz_plus =(graph$dz>0)*graph$dz)
-      setkey(rout$graph.dt, from, to)
+      # rout$graph.dt <- data.table(
+      #   from=graph$.vx0,
+      #   to=graph$.vx1,
+      #   d = graph$d,
+      #   time = graph$time,
+      #   dz = graph$time,
+      #   dz_plus =(graph$dz>0)*graph$dz)
+      # setkey(rout$graph.dt, from, to)
       logger::log_info("router {graph_name} chargé")
       return(rout)
     })
