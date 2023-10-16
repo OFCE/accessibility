@@ -352,6 +352,7 @@ routing_setup_dodgr <- function(path,
 
 dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
 {
+  logger::log_info("dodgr_ttm called, {dist_only}, {length(o)}x{length(d)}")
   local_graph <- routing$graph
   local_graph$d <- routing$graph$time
   local_graph$d_weighted <- routing$graph$time_weighted
