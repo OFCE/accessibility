@@ -3,7 +3,7 @@
 #' le format silicate permet à dodgr de pondérer les tournants,
 #' les arrêts aux feux rouge ainsi que les restrictions de circulation
 #'
-#' @param box les limites de la zone à télécharger, au format st_bbox()
+#' @param zone la zone à télécharger, au format sf
 #' @param workers le nombre de workers
 #' @param .progress affiche un indicateur de progression
 #'
@@ -12,7 +12,7 @@
 #'
 #'
 #'
-download_osmsc <- function(box, elevation=FALSE, workers = 1, .progress = TRUE) {
+download_osmsc <- function(zone, elevation=FALSE, workers = 1, .progress = TRUE) {
   
   rlang::check_installed(
     "osmdata", 
@@ -44,7 +44,8 @@ download_osmsc <- function(box, elevation=FALSE, workers = 1, .progress = TRUE) 
     return(bboxl)
   }
   
-  bbox <- box |> matrix(nrow = 2, dimnames = list(list("x","y"), list("min", "max")))
+  bbox <- sf::st_bbox(zone |> sf::st_transform(4326)) |>
+    matrix(nrow = 2, dimnames = list(list("x","y"), list("min", "max")))
   logger::log_success("bbox {box}")
   
   queue <- split_bbox(bbox, grid=max(1,round(sqrt(2*workers))))
@@ -89,17 +90,16 @@ download_osmsc <- function(box, elevation=FALSE, workers = 1, .progress = TRUE) 
   .options = furrr::furrr_options(seed=TRUE))
   future::plan(saved_plan)
   osm <- do.call(c, osm)
+  
   if(elevation) {
-    zone <- data.frame(t(bbox))
     elevation <- elevatr::get_elev_raster(
-      locations = data.frame(t(bbox)), src = "aws", 
-      prj = st_crs(4326), z=13, neg_to_na = TRUE)
+      locations = zone |> sf::st_transform(4326), src = "aws", 
+      z=13, neg_to_na = TRUE)
     progressr::handlers("cli")
     raster::writeRaster(elevation, "/tmp/elevation.tif")
     osm <- osm |> 
       osmdata::osm_elevation("/tmp/elevation.tif")
   }
-  
   
   time <- tictoc::toc(log = TRUE, quiet = TRUE)
   dtime <- (time$toc - time$tic)
