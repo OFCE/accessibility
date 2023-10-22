@@ -4,10 +4,12 @@
 \alias{download_osmsc}
 \title{Télécharge d'OSM pour dodgr en format silicate}
 \usage{
-download_osmsc(box, workers = 1, .progress = TRUE)
+download_osmsc(zone, elevation = FALSE, workers = 1, .progress = TRUE)
 }
 \arguments{
-\item{box}{les limites de la zone à télécharger, au format st_bbox()}
+\item{zone}{la zone à télécharger, au format sf}
+
+\item{elevation}{télécharge les altitudes pour alimenter les dénivelés}
 
 \item{workers}{le nombre de workers}
 

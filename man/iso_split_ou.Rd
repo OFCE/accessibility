@@ -5,7 +5,7 @@
 \title{produit les macro-secteurs sur la grille pour compartimenter les calculs.
 /code{iso_split_ou} produit les groupes de positions en vue de compartimenter les calculs.}
 \usage{
-iso_split_ou(ou, quoi, chunk = NULL, routing, tmax = 60)
+iso_split_ou(ou, quoi, chunk = NULL, routing, tmax = 60, min_group = 8)
 }
 \arguments{
 \item{ou}{positions sur lesquelles sont calculés les accessibilités. Si NULL, un raster est défini par défaut.}

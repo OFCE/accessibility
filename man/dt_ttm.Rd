@@ -4,7 +4,7 @@
 \alias{dt_ttm}
 \title{calcul du temps de trajet avec data.table (??)}
 \usage{
-dt_ttm(o, d, tmax, routing)
+dt_ttm(o, d, tmax, routing, dist_only = TRUE)
 }
 \arguments{
 \item{o}{origine}
@@ -14,6 +14,8 @@ dt_ttm(o, d, tmax, routing)
 \item{tmax}{temps max pour le trajet}
 
 \item{routing}{système de routing}
+
+\item{dist_only}{Ne calcule que les distances}
 }
 \description{
 calcul du temps de trajet avec data.table (??)

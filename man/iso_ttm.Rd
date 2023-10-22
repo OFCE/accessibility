@@ -5,7 +5,7 @@
 \title{calcul du temps de trajet selon le système de routing choisi.
 /code{iso_ttm} calcule un temps de trajets}
 \usage{
-iso_ttm(o, d, tmax, routing)
+iso_ttm(o, d, tmax, routing, dist_only = FALSE)
 }
 \arguments{
 \item{o}{origine}
@@ -15,6 +15,8 @@ iso_ttm(o, d, tmax, routing)
 \item{tmax}{temps max pour le trajet}
 
 \item{routing}{système de routing}
+
+\item{dist_only}{Ne calcule que les distances}
 }
 \description{
 calcul du temps de trajet selon le système de routing choisi.

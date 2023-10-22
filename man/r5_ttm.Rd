@@ -4,7 +4,7 @@
 \alias{r5_ttm}
 \title{calcul du temps de trajet avec r5}
 \usage{
-r5_ttm(o, d, tmax, routing)
+r5_ttm(o, d, tmax, routing, dist_only = TRUE)
 }
 \arguments{
 \item{o}{origine}
@@ -14,6 +14,8 @@ r5_ttm(o, d, tmax, routing)
 \item{tmax}{temps max pour le trajet}
 
 \item{routing}{système de routing}
+
+\item{dist_only}{Ne calcule que les distances}
 }
 \description{
 calcul du temps de trajet avec r5

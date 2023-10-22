@@ -384,7 +384,7 @@ is.in.dir <- function(groupe, dir)
 access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_var, ttm_out, pids, dir, t2d)
 {
   spid <- get_pid(pids)
-  
+  gc()
   s_ou <- ou_4326[gr==groupe, .(id, lon, lat, x, y)]
   logger::log_debug("aog:{groupe} {k} {nrow(s_ou)}")
   

@@ -5,6 +5,7 @@
 #'
 #' @param zone la zone à télécharger, au format sf
 #' @param workers le nombre de workers
+#' @param elevation télécharge les altitudes pour alimenter les dénivelés
 #' @param .progress affiche un indicateur de progression
 #'
 #' @return un osmdata_sc
@@ -46,7 +47,7 @@ download_osmsc <- function(zone, elevation=FALSE, workers = 1, .progress = TRUE)
   
   bbox <- sf::st_bbox(zone |> sf::st_transform(4326)) |>
     matrix(nrow = 2, dimnames = list(list("x","y"), list("min", "max")))
-  logger::log_success("bbox {box}")
+  logger::log_success("bbox {bbox}")
   
   queue <- split_bbox(bbox, grid=max(1,round(sqrt(2*workers))))
   fts <- c("\"highway\"", "\"restriction\"", "\"access\"",

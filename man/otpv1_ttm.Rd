@@ -4,7 +4,7 @@
 \alias{otpv1_ttm}
 \title{calcul du temps de trajet avec otp. Ne marche pas.}
 \usage{
-otpv1_ttm(o, d, tmax, routing)
+otpv1_ttm(o, d, tmax, routing, dist_only = TRUE)
 }
 \arguments{
 \item{o}{origine}
@@ -14,6 +14,8 @@ otpv1_ttm(o, d, tmax, routing)
 \item{tmax}{temps max pour le trajet}
 
 \item{routing}{système de routing}
+
+\item{dist_only}{Ne calcule que les distances}
 }
 \description{
 calcul du temps de trajet avec otp. Ne marche pas.

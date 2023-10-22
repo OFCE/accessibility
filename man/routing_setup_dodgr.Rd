@@ -10,11 +10,14 @@ routing_setup_dodgr(
   mode = "CAR",
   turn_penalty = FALSE,
   distances = FALSE,
+  denivele = FALSE,
   wt_profile_file = NULL,
   n_threads = 4L,
   overwrite = FALSE,
   contract = FALSE,
-  deduplicate = TRUE
+  deduplicate = TRUE,
+  di = FALSE,
+  elevation = FALSE
 )
 }
 \arguments{
@@ -28,6 +31,8 @@ routing_setup_dodgr(
 
 \item{distances}{booléen, calcule les distances en prime}
 
+\item{denivele}{calcule le d+ sur le trajet}
+
 \item{wt_profile_file}{string, chemin vers le fichier des profils (écrit avec \code{dodgr::write_dodgr_wt_profile})}
 
 \item{n_threads}{entier, nombre de threads}
@@ -37,10 +42,15 @@ routing_setup_dodgr(
 \item{contract}{applique la fonction de contraction de graphe (défaut FALSE) déconseillé si turn_penalty est employé}
 
 \item{deduplicate}{applique la fonction de déduplication de graphe (défaut TRUE)}
+
+\item{di}{utilise les itinériaires détaillés, mais ne fonctionne pas pour le moment}
 }
 \description{
 Cette fonction met en place ce qui est nécessaire pour lancer dodgr
 A partir d'un fichier de réseau (au format silicate, téléchargé par overpass, voir download_dodgr_osm)
 le setup fabrique le weighted_streetnetwork à partir d'un profile par mode de transport
 Ce fichier est enregistré est peut être ensuite utilisé pour calculer les distances ou les temps de parcours
+}
+\details{
+Dans l'état actuel di ne fonctionne pas, de plus le calcul est fait dans dodgr avec un seul thread
 }
