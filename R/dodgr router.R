@@ -266,11 +266,15 @@ routing_setup_dodgr <- function(path,
   dodgr_dir <- stringr::str_c(path, '/dodgr_files/')
   
   if(file.exists(graph_name)&!overwrite) {
-    if(nofuture) 
-      graph <- dgr_load_streetnet(graph_name)
-    else 
+    if(nofuture) {
+      net <- dgr_load_streetnet(graph_name)
+      graph <- net$graph
+      vertices <- net$verts_c
+    }
+    else {
       graph <- NULL
-    
+      vertices <- NULL
+    }
     message("dodgr network en cache")
     
   } else {
@@ -300,20 +304,17 @@ routing_setup_dodgr <- function(path,
       graph <- dodgr::dodgr_deduplicate_graph(graph)
     }
     
-    dgr_save_streetnet(graph, filename = graph_name)
+    out <- dgr_save_streetnet(graph, filename = graph_name)
+    vertices <- out$vert_c
+    
   }
   mtnt <- lubridate::now()
-  vertices <- dodgr::dodgr_vertices(graph)
   if("dz"%in% names(graph))
     graph$dzplus <- graph$dz * (graph$dz >0)
-  # graph.dt <- data.table(
-  #   from = graph$.vx0,
-  #   to = graph$.vx1,
-  #   d = graph$d,
-  #   time = graph$time,
-  #   dz = graph$dz,
-  #   dzplus = graph$dzplus)
-  # setkey(graph.dt, from, to)
+  if(!nofuture) {
+    graph <- NULL
+    vertices <- NULL
+  }
   list(
     type = type,
     path = path,
@@ -343,8 +344,9 @@ routing_setup_dodgr <- function(path,
     core_init = function(routing){
       RcppParallel::setThreadOptions(numThreads = routing$n_threads)
       rout <- routing
-      rout$graph <- dgr_load_streetnet(routing$graph_name)
-      rout$vertices <- dodgr::dodgr_vertices(rout$graph)
+      net <- dgr_load_streetnet(routing$graph_name)
+      rout$graph <- net$graph
+      rout$vertices <- net$verts_c
       if("dz"%in% names(rout$graph))
         rout$graph$dzplus <- rout$graph$dz * (rout$graph$dz >0)
       # rout$graph.dt <- data.table(
@@ -618,6 +620,7 @@ dgr_save_streetnet <- function (net, filename = NULL) {
   )
   
   qs::qsave(out, filename, nthreads = 4L, preset = "fast")
+  invisible(out)
 }
 
 #' Load a street network previously saved with \link{dodgr_save_streetnet}.
@@ -678,5 +681,5 @@ dgr_load_streetnet <- function (filename) {
     saveRDS (x$junctions, fname_j)
   }
   
-  return (x$graph)
+  return (list(graph = x$graph, verts_c = x$verts_c))
 }
