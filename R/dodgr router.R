@@ -310,7 +310,7 @@ routing_setup_dodgr <- function(path,
   }
   mtnt <- lubridate::now()
   if("dz"%in% names(graph))
-    graph$dzplus <- graph$dz * (graph$dz >0)
+    graph$dzplus <- graph$dz * graph$d * (graph$dz >0)
   if(!nofuture) {
     graph <- NULL
     vertices <- NULL
@@ -348,15 +348,7 @@ routing_setup_dodgr <- function(path,
       rout$graph <- net$graph
       rout$vertices <- net$verts_c
       if("dz"%in% names(rout$graph))
-        rout$graph$dzplus <- rout$graph$dz * (rout$graph$dz >0)
-      # rout$graph.dt <- data.table(
-      #   from=graph$.vx0,
-      #   to=graph$.vx1,
-      #   d = graph$d,
-      #   time = graph$time,
-      #   dz = graph$time,
-      #   dz_plus =(graph$dz>0)*graph$dz)
-      # setkey(rout$graph.dt, from, to)
+        rout$graph$dzplus <- rout$graph$dz * rout$graph$d * (rout$graph$dz >0)
       logger::log_info("router {graph_name} chargé")
       return(rout)
     })
@@ -367,7 +359,6 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
   logger::log_info("dodgr_ttm called, {dist_only}, {nrow(o)}x{nrow(d)}")
   local_graph <- routing$graph
   local_graph$d <- routing$graph$time
-  local_graph$d_weighted <- routing$graph$time_weighted
   o <- o[, .(id=as.character(id),lon,lat)]
   d <- d[, .(id=as.character(id),lon,lat)]
   m_o <- as.matrix(o[, .(lon, lat)])
@@ -375,7 +366,8 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
   temps <- dodgr::dodgr_dists(
     graph = local_graph,
     from = m_o,
-    to = m_d)
+    to = m_d,
+    shortest = FALSE)
   o_names <- dimnames(temps)
   names(o_names[[1]]) <- o$id
   names(o_names[[2]]) <- d$id
@@ -397,7 +389,8 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
       dist <- dodgr::dodgr_dists(
         graph = local_graph,
         from = m_o,
-        to = m_d)
+        to = m_d,
+        shortest = FALSE)
       dimnames(dist) <- list(o$id, d$id)
       dist <- data.table(dist, keep.rownames = TRUE)
       dist[, fromId:=rn |> as.integer()] [, rn:=NULL]
@@ -411,13 +404,15 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
                      by=c("fromId", "toId"),
                      all.x=TRUE, 
                      all.y=FALSE)
+      temps[, distance:= as.integer(distance)]
     }
     if(routing$denivele) {
       local_graph$d <- routing$graph$dzplus
       dzplus <- dodgr::dodgr_dists(
         graph = local_graph,
         from = m_o,
-        to = m_d)
+        to = m_d,
+        shortest = FALSE)
       dimnames(dzplus) <- list(o$id, d$id)
       dzplus <- data.table(dzplus, keep.rownames = TRUE)
       dzplus[, fromId:=rn |> as.integer()] [, rn:=NULL]

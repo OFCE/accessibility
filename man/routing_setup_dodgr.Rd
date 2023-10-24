@@ -17,7 +17,8 @@ routing_setup_dodgr(
   contract = FALSE,
   deduplicate = TRUE,
   di = FALSE,
-  elevation = FALSE
+  elevation = FALSE,
+  nofuture = TRUE
 )
 }
 \arguments{
