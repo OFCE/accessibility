@@ -522,12 +522,12 @@ agr_chemins <- function(chemins, routing, o, d) {
   return(res)
 }
 
-load_streetnetwork <- function(filename) {
+load_streetnet <- function(filename) {
   dodgr_dir <- stringr::str_c(dirname(filename), '/dodgr_files/')
   qs::qread(filename, nthreads = 8L)
 }
 
-save_streetnetwork <- function(graph, filename) {
+save_streetnet <- function(graph, filename) {
   qs::qsave(graph, file = filename, nthreads = 8L, preset= "fast")
 }
 
