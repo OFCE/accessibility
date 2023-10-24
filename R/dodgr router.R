@@ -287,7 +287,7 @@ routing_setup_dodgr <- function(path,
     
     osm_network <- qs::qread(str_c(path, "/", loff[[1]]), nthreads=4)
     
-    dodgr::dodgr_cache_off()
+    dodgr::dodgr_cache_on()
     
     cli::cli_alert_info("Création du streetnet")
     graph <- dodgr::weight_streetnet(
@@ -303,24 +303,22 @@ routing_setup_dodgr <- function(path,
       cli::cli_alert_info("Déduplication")
       graph <- dodgr::dodgr_deduplicate_graph(graph)
     }
-    
-    out <- dgr_save_streetnet(graph, filename = graph_name)
-    vertices <- out$vert_c
-    
+    cli::cli_alert_info("Preprocess")
+    pg <- dodgr::process_graph(graph)
+    out <- save_streetnet(pg, filename = graph_name)
   }
   mtnt <- lubridate::now()
-  if("dz"%in% names(graph))
-    graph$dzplus <- graph$dz * graph$d * (graph$dz >0)
+  if("dz"%in% names(graph)) {
+    pg$graph$dzplus <- pg$graph$dz * pg$graph$d * (pg$graph$dz >0)
+    pg$graph_compound$dzplus <- pg$graph$dz * pg$graph$d * (pg$graph$dz >0)
+  }
   if(!nofuture) {
-    graph <- NULL
-    vertices <- NULL
+    pg <- NULL
   }
   list(
     type = type,
     path = path,
-    graph = graph,
-    # graph.dt = graph.dt,
-    vertices = vertices,
+    pg = pg,
     distances = distances,
     denivele = denivele,
     pkg = "dodgr",
@@ -335,20 +333,18 @@ routing_setup_dodgr <- function(path,
     future = TRUE,
     future_routing = function(routing) {
       rout <- routing
-      rout$graph <- NULL
-      # rout$graph.dt <- NULL
-      rout$vertices <- NULL
+      rout$processed_graph <- NULL
       rout$elevation_data <- NULL
       return(rout)
     },
     core_init = function(routing){
       RcppParallel::setThreadOptions(numThreads = routing$n_threads)
       rout <- routing
-      net <- dgr_load_streetnet(routing$graph_name)
-      rout$graph <- net$graph
-      rout$vertices <- net$verts_c
-      if("dz"%in% names(rout$graph))
-        rout$graph$dzplus <- rout$graph$dz * rout$graph$d * (rout$graph$dz >0)
+      rout$pg <- load_streetnet(routing$graph_name)
+      if("dz"%in% names(rout$pg$graph)) {
+        rout$pg$graph$dzplus <- rout$pg$graph$dz * rout$pg$graph$d * (rout$pg$graph$dz >0)
+        rout$pg$graph_compound$dzplus <- rout$pg$graph$dz * rout$pg$graph$d * (rout$pg$graph$dz >0)
+      }
       logger::log_info("router {graph_name} chargé")
       return(rout)
     })
@@ -357,14 +353,15 @@ routing_setup_dodgr <- function(path,
 dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
 {
   logger::log_info("dodgr_ttm called, {dist_only}, {nrow(o)}x{nrow(d)}")
-  local_graph <- routing$graph
-  local_graph$d <- routing$graph$time
+  lpg <- routing$pg
+  lpg$graph$d <- routing$pg$graph$time
+  lpg$graph_compound$d <- routing$pg$graph_compound$time
   o <- o[, .(id=as.character(id),lon,lat)]
   d <- d[, .(id=as.character(id),lon,lat)]
   m_o <- as.matrix(o[, .(lon, lat)])
   m_d <- as.matrix(d[, .(lon, lat)])
-  temps <- dodgr::dodgr_dists(
-    graph = local_graph,
+  temps <- dodgr::dodgr_dists_pre(
+    graph = lpg,
     from = m_o,
     to = m_d,
     shortest = FALSE)
@@ -385,9 +382,10 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
                toIdalt = o_names[[2]][as.character(toId)])]
   if(!dist_only) {
     if(routing$distances) {
-      local_graph$d <- routing$graph$d
+      lpg$graph$d <- routing$pg$graph$d
+      lpg$graph_compound$d <- routing$pg$graph_compound$d
       dist <- dodgr::dodgr_dists(
-        graph = local_graph,
+        graph = lpg,
         from = m_o,
         to = m_d,
         shortest = FALSE)
@@ -407,9 +405,10 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
       temps[, distance:= as.integer(distance)]
     }
     if(routing$denivele) {
-      local_graph$d <- routing$graph$dzplus
+      lpg$graph$d <- routing$pg$graph$dzplus
+      lpg$graph_compound$d <- routing$pg$graph$dzplus
       dzplus <- dodgr::dodgr_dists(
-        graph = local_graph,
+        graph = lpg,
         from = m_o,
         to = m_d,
         shortest = FALSE)
@@ -523,25 +522,13 @@ agr_chemins <- function(chemins, routing, o, d) {
   return(res)
 }
 
-load_street_network <- function(filename) {
+load_streetnetwork <- function(filename) {
   dodgr_dir <- stringr::str_c(dirname(filename), '/dodgr_files/')
-  dodgr_tmp <- list.files(
-    dodgr_dir,
-    pattern = "^dodgr",
-    full.names = TRUE)
-  file.copy(dodgr_tmp, tempdir())
-  qs::qread(filename, nthreads = 4)
+  qs::qread(filename, nthreads = 8L)
 }
 
-save_street_network <- function(graph, filename) {
-  qs::qsave(graph, file = filename, nthreads = 4, preset= "fast")
-  # dodgr a besoin des fichiers créés à cette étape
-  dodgr_tmp <- list.files(tempdir(),
-                          pattern = "^dodgr",
-                          full.names = TRUE)
-  dodgr_dir <- stringr::str_c(dirname(filename), "/dodgr_files")
-  dir.create(dodgr_dir)
-  file.copy(from  = dodgr_tmp, to = dodgr_dir, overwrite = TRUE)
+save_streetnetwork <- function(graph, filename) {
+  qs::qsave(graph, file = filename, nthreads = 8L, preset= "fast")
 }
 
 dgr_save_streetnet <- function (net, filename = NULL) {
