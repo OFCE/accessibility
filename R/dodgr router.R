@@ -310,7 +310,9 @@ routing_setup_dodgr <- function(path,
   mtnt <- lubridate::now()
   if("dz"%in% names(graph)) {
     pg$graph$dzplus <- pg$graph$dz * pg$graph$d * (pg$graph$dz >0)
-    pg$graph_compound$dzplus <- pg$graph$dz * pg$graph$d * (pg$graph$dz >0)
+    pg$graph_compound$dzplus <- 
+      pg$graph_compound$dz * pg$graph_compound$d * (pg$graph_compound$dz >0)
+    pg$graph_compound$dzplus[is.na(pg$graph_compound$dzplus)] <- 0
   }
   if(!nofuture) {
     pg <- NULL
@@ -342,9 +344,12 @@ routing_setup_dodgr <- function(path,
       rout <- routing
       rout$pg <- load_streetnet(routing$graph_name)
       if("dz"%in% names(rout$pg$graph)) {
-        rout$pg$graph$dzplus <- rout$pg$graph$dz * rout$pg$graph$d * (rout$pg$graph$dz >0)
-        rout$pg$graph_compound$dzplus <- rout$pg$graph$dz * rout$pg$graph$d * (rout$pg$graph$dz >0)
-      }
+        rout$pg$graph$dzplus <-
+          rout$pg$graph$dz * rout$pg$graph$d * (rout$pg$graph$dz >0)
+        rout$pg$graph_compound$dzplus <- 
+          rout$pg$graph_compound$dz * rout$pg$graph_compound$d * (rout$pg$graph_compound$dz >0)
+        rout$pg$graph_compound$dzplus[is.na(rout$pg$graph_compound$dzplus)] <- 0
+        }
       logger::log_info("router {graph_name} chargé")
       return(rout)
     })
@@ -361,7 +366,7 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
   m_o <- as.matrix(o[, .(lon, lat)])
   m_d <- as.matrix(d[, .(lon, lat)])
   temps <- dodgr::dodgr_dists_pre(
-    graph = lpg,
+    proc_g = lpg,
     from = m_o,
     to = m_d,
     shortest = FALSE)
@@ -384,8 +389,8 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
     if(routing$distances) {
       lpg$graph$d <- routing$pg$graph$d
       lpg$graph_compound$d <- routing$pg$graph_compound$d
-      dist <- dodgr::dodgr_dists(
-        graph = lpg,
+      dist <- dodgr::dodgr_dists_pre(
+        proc_g = lpg,
         from = m_o,
         to = m_d,
         shortest = FALSE)
@@ -406,9 +411,9 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
     }
     if(routing$denivele) {
       lpg$graph$d <- routing$pg$graph$dzplus
-      lpg$graph_compound$d <- routing$pg$graph$dzplus
-      dzplus <- dodgr::dodgr_dists(
-        graph = lpg,
+      lpg$graph_compound$d <- routing$pg$graph_compound$dzplus
+      dzplus <- dodgr::dodgr_dists_pre(
+        proc_g = lpg,
         from = m_o,
         to = m_d,
         shortest = FALSE)
