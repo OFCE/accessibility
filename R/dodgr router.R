@@ -442,7 +442,7 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
   names(o_names[[2]]) <- d$id
   dimnames(temps) <- list(o$id, d$id)
   temps <- data.table(temps, keep.rownames = TRUE)
-  temps[, fromId := rn |> as.integer()] [, rn:=NULL]
+  temps[, fromId := rn ] [, rn:=NULL]
   temps <- melt(temps,
                 id.vars="fromId",
                 variable.name="toId",
@@ -463,7 +463,7 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
         shortest = FALSE)
       dimnames(dist) <- list(o$id, d$id)
       dist <- data.table(dist, keep.rownames = TRUE)
-      dist[, fromId:=rn |> as.integer()] [, rn:=NULL]
+      dist[, fromId:=rn ] [, rn:=NULL]
       dist <- melt(dist,
                    id.vars="fromId", 
                    variable.name="toId", 
@@ -486,7 +486,7 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
         shortest = FALSE)
       dimnames(dzplus) <- list(o$id, d$id)
       dzplus <- data.table(dzplus, keep.rownames = TRUE)
-      dzplus[, fromId:=rn |> as.integer()] [, rn:=NULL]
+      dzplus[, fromId:=rn] [, rn:=NULL]
       dzplus <- melt(dzplus,
                      id.vars="fromId", 
                      variable.name="toId", 
@@ -502,13 +502,13 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
   erreur <- NULL
   
   if (nrow(temps)>0){
-    temps[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId))]
     setorder(temps, fromId, toId)
   }
   else
   {
     erreur <- "dodgr::travel_time_matrix empty"
-    temps <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric(), distance=numeric())
+    temps <- data.table(fromId=character(), toId=character(),
+                        travel_time=numeric(), distance=numeric())
     logger::log_warn(erreur)
   }
   return(list(result=temps, error=erreur))
