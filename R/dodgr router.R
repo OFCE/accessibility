@@ -349,324 +349,429 @@ routing_setup_dodgr <- function(path,
         rout$pg$graph_compound$dzplus <- 
           rout$pg$graph_compound$dz * rout$pg$graph_compound$d * (rout$pg$graph_compound$dz >0)
         rout$pg$graph_compound$dzplus[is.na(rout$pg$graph_compound$dzplus)] <- 0
-        }
+      }
       logger::log_info("router {graph_name} chargé")
       return(rout)
     })
 }
 
-dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
-{
-  logger::log_info("dodgr_ttm called, {dist_only}, {nrow(o)}x{nrow(d)}")
-  lpg <- routing$pg
+#' ttm sur des paires
+#'
+#' @param od tibble origine destination
+#' @param routing routing (voir dodgr_routing_setup)
+#' @param chunk nombre de paires demandées d'un coup 
+#'
+#' @return a tibble
+#' @export
+
+dodgr_pairs <- function(od, routing, chunk = Inf) {
+  logger::log_info("dodgr_pairs called, {nrow(od)}")
+  RcppParallel::setThreadOptions(numThreads = routing$n_threads)
+  if(is.null(routing$pg))
+    lpg <- routing$pg
   lpg$graph$d <- routing$pg$graph$time
   lpg$graph_compound$d <- routing$pg$graph_compound$time
-  o <- o[, .(id=as.character(id),lon,lat)]
-  d <- d[, .(id=as.character(id),lon,lat)]
-  m_o <- as.matrix(o[, .(lon, lat)])
-  m_d <- as.matrix(d[, .(lon, lat)])
-  temps <- dodgr::dodgr_dists_pre(
-    proc_g = lpg,
-    from = m_o,
-    to = m_d,
-    shortest = FALSE)
-  o_names <- dimnames(temps)
-  names(o_names[[1]]) <- o$id
-  names(o_names[[2]]) <- d$id
-  dimnames(temps) <- list(o$id, d$id)
-  temps <- data.table(temps, keep.rownames = TRUE)
-  temps[, fromId := rn |> as.integer()] [, rn:=NULL]
-  temps <- melt(temps,
-                id.vars="fromId",
-                variable.name="toId",
-                value.name = "travel_time",
-                variable.factor = FALSE)
-  temps <- temps[, travel_time := as.integer(travel_time/60)]
-  temps <- temps[travel_time<=tmax,]
-  temps[, `:=`(fromIdalt = o_names[[1]][as.character(fromId)],
-               toIdalt = o_names[[2]][as.character(toId)])]
-  if(!dist_only) {
-    if(routing$distances) {
+  odl <- od |>
+    mutate(gr = (0:n()-1) %/% chunk) |>
+    group_split()
+  ttm <- map_dfr(odl, ~{
+    m_o <- as.matrix(odl |> select(o_lon, o_lat), ncol=2)
+    m_d <- as.matrix(odl |> select(d_lon, d_lat), ncol=2)
+    
+    temps <- dodgr::dodgr_dists_pre(
+      proc_g = lpg,
+      from = m_o,
+      to = m_d,
+      shortest = FALSE,
+      pairwise = TRUE)
+    
+    lpg$graph$d <- routing$pg$graph$d
+    lpg$graph_compound$d <- routing$pg$graph_compound$d
+    dist <- dodgr::dodgr_dists_pre(
+      proc_g = lpg,
+      from = m_o,
+      to = m_d,
+      shortest = FALSE,
+      pairwise = TRUE)
+    
+    lpg$graph$d <- routing$pg$graph$dzplus
+    lpg$graph_compound$d <- routing$pg$graph_compound$dzplus
+    dzplus <- dodgr::dodgr_dists_pre(
+      proc_g = lpg,
+      from = m_o,
+      to = m_d,
+      shortest = FALSE,
+      pairwise = TRUE)
+    bind_cols(old, tibble(d = dist, travel_time = temps, dzplus = dzplus))
+  })
+}
+  
+  #' ttm sur des paires
+  #'
+  #' @param od tibble origine destination
+  #' @param routing routing (voir dodgr_routing_setup)
+  #' @param chunk nombre de paires demandées d'un coup 
+  #'
+  #' @return a tibble
+  #' @export
+  
+  dodgr_pairs <- function(od, routing, chunk = Inf) {
+    logger::log_info("dodgr_pairs called, {nrow(od)}")
+    RcppParallel::setThreadOptions(numThreads = routing$n_threads)
+    if(is.null(routing$pg))
+      lpg <- routing$pg
+    lpg$graph$d <- routing$pg$graph$time
+    lpg$graph_compound$d <- routing$pg$graph_compound$time
+    odl <- od |>
+      mutate(gr = (0:n()-1) %/% chunk) |>
+      group_split()
+    ttm <- map_dfr(odl, ~{
+      m_o <- as.matrix(odl |> select(o_lon, o_lat), ncol=2)
+      m_d <- as.matrix(odl |> select(d_lon, d_lat), ncol=2)
+      
+      temps <- dodgr::dodgr_dists_pre(
+        proc_g = lpg,
+        from = m_o,
+        to = m_d,
+        shortest = FALSE,
+        pairwise = TRUE)
+      
       lpg$graph$d <- routing$pg$graph$d
       lpg$graph_compound$d <- routing$pg$graph_compound$d
       dist <- dodgr::dodgr_dists_pre(
         proc_g = lpg,
         from = m_o,
         to = m_d,
-        shortest = FALSE)
-      dimnames(dist) <- list(o$id, d$id)
-      dist <- data.table(dist, keep.rownames = TRUE)
-      dist[, fromId:=rn |> as.integer()] [, rn:=NULL]
-      dist <- melt(dist,
-                   id.vars="fromId", 
-                   variable.name="toId", 
-                   value.name = "distance", 
-                   variable.factor = FALSE)
-      temps <- merge(temps, 
-                     dist,
-                     by=c("fromId", "toId"),
-                     all.x=TRUE, 
-                     all.y=FALSE)
-      temps[, distance:= as.integer(distance)]
-    }
-    if(routing$denivele) {
+        shortest = FALSE,
+        pairwise = TRUE)
+      
       lpg$graph$d <- routing$pg$graph$dzplus
       lpg$graph_compound$d <- routing$pg$graph_compound$dzplus
       dzplus <- dodgr::dodgr_dists_pre(
         proc_g = lpg,
         from = m_o,
         to = m_d,
-        shortest = FALSE)
-      dimnames(dzplus) <- list(o$id, d$id)
-      dzplus <- data.table(dzplus, keep.rownames = TRUE)
-      dzplus[, fromId:=rn |> as.integer()] [, rn:=NULL]
-      dzplus <- melt(dzplus,
-                   id.vars="fromId", 
-                   variable.name="toId", 
-                   value.name = "dzplus", 
-                   variable.factor = FALSE)
-      temps <- merge(temps, 
-                     dzplus,
-                     by=c("fromId", "toId"),
-                     all.x=TRUE, 
-                     all.y=FALSE)
-    }
+        shortest = FALSE,
+        pairwise = TRUE)
+      bind_cols(old, tibble(d = dist, travel_time = temps, dzplus = dzplus))
+    })
+    
+    
   }
-  erreur <- NULL
   
-  if (nrow(temps)>0){
-    temps[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId))]
-    setorder(temps, fromId, toId)
-  }
-  else
+  dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
   {
-    erreur <- "dodgr::travel_time_matrix empty"
-    temps <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric(), distance=numeric())
-    logger::log_warn(erreur)
-  }
-  return(list(result=temps, error=erreur))
-}
-
-dodgr_path <- function(o, d, tmax, routing, dist_only = FALSE) {
-  logger::log_info("dodgr_path called, {dist_only}, {length(o)}x{length(d)}")
-  if(dist_only)
-    return(dodgr_ttm(o,d,tmax, routing, dist_only))
-  o <- o[, .(id=as.character(id),lon,lat)]
-  d <- d[, .(id=as.character(id),lon,lat)]
-  
-  o_g <- dodgr::match_points_to_verts(
-    routing$vertices,
-    o[, .(lon, lat)], connected = TRUE)
-  o_g <- routing$vertices |> dplyr::slice(o_g) |> dplyr::pull(id)
-  # names(o_g) <- o$id
-  
-  d_g <- dodgr::match_points_to_verts(
-    routing$vertices,
-    d[, .(lon, lat)], connected = TRUE)
-  d_g <- routing$vertices |> dplyr::slice(d_g) |> dplyr::pull(id)
-  # names(d_g) <- d$id
-  logger::log_info(" aggrégation chemins, {length(o_g)}x{length(o_d)}")
-  chemins <- dodgr::dodgr_paths(
-    graph = routing$graph,
-    from = o_g,
-    to = d_g)
-  
-  o_id <- purrr::set_names(o$id, o_g)
-  d_id <- purrr::set_names(d$id, d_g)
-  
-  trips <- agr_chemins(chemins, routing, o_id, d_id)
-  
-  erreur <- NULL
-  
-  if (nrow(trips)==0) {
-    erreur <- "dodgr::travel_time_matrix empty"
-    trips <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric(), distance=numeric())
-    logger::log_warn(erreur)
-  }
-  return(list(result=trips[travel_time<=tmax, ], error=erreur))
-}
-
-agr_chemins <- function(chemins, routing, o, d) {
-  res <- data.table()
-  for(grp in names(chemins)) {
-    for(trip in names(chemins[[grp]])) {
-      nn <- stringr::str_split(trip, "-")[[1]]
-      ff <- chemins[[grp]][[trip]]
-      oo <- o[nn[[1]]]
-      dd <- d[nn[[2]]]
-      if(length(ff)>1) {
-        tt <- tail(ff,-1)
-        ff <- head(ff, -1)
-        vert <- data.table(from = ff, to = tt)
-        setkey(vert, from, to)
-        dt <- routing$graph.dt[vert]
-        dt <- dt[, .(
-          fromId = as.integer(oo),
-          toId = as.integer(dd),
-          fromIdalt = nn[[1]],
-          toIdalt = nn[[2]],
-          distance = sum(d),
-          travel_time = sum(time)/60,
-          dz = sum(dz),
-          dz_plus = sum(dz_plus))]
-      } else {
-        dt <- data.table(
-          fromId = as.integer(oo),
-          toId = as.integer(dd),
-          fromIdalt = nn[[1]],
-          toIdalt = nn[[2]],
-          distance = NA,
-          travel_time = NA,
-          dz = NA,
-          dz_plus = NA)
+    logger::log_info("dodgr_ttm called, {dist_only}, {nrow(o)}x{nrow(d)}")
+    lpg <- routing$pg
+    lpg$graph$d <- routing$pg$graph$time
+    lpg$graph_compound$d <- routing$pg$graph_compound$time
+    o <- o[, .(id=as.character(id),lon,lat)]
+    d <- d[, .(id=as.character(id),lon,lat)]
+    m_o <- as.matrix(o[, .(lon, lat)])
+    m_d <- as.matrix(d[, .(lon, lat)])
+    temps <- dodgr::dodgr_dists_pre(
+      proc_g = lpg,
+      from = m_o,
+      to = m_d,
+      shortest = FALSE)
+    o_names <- dimnames(temps)
+    names(o_names[[1]]) <- o$id
+    names(o_names[[2]]) <- d$id
+    dimnames(temps) <- list(o$id, d$id)
+    temps <- data.table(temps, keep.rownames = TRUE)
+    temps[, fromId := rn |> as.integer()] [, rn:=NULL]
+    temps <- melt(temps,
+                  id.vars="fromId",
+                  variable.name="toId",
+                  value.name = "travel_time",
+                  variable.factor = FALSE)
+    temps <- temps[, travel_time := as.integer(travel_time/60)]
+    temps <- temps[travel_time<=tmax,]
+    temps[, `:=`(fromIdalt = o_names[[1]][as.character(fromId)],
+                 toIdalt = o_names[[2]][as.character(toId)])]
+    if(!dist_only) {
+      if(routing$distances) {
+        lpg$graph$d <- routing$pg$graph$d
+        lpg$graph_compound$d <- routing$pg$graph_compound$d
+        dist <- dodgr::dodgr_dists_pre(
+          proc_g = lpg,
+          from = m_o,
+          to = m_d,
+          shortest = FALSE)
+        dimnames(dist) <- list(o$id, d$id)
+        dist <- data.table(dist, keep.rownames = TRUE)
+        dist[, fromId:=rn |> as.integer()] [, rn:=NULL]
+        dist <- melt(dist,
+                     id.vars="fromId", 
+                     variable.name="toId", 
+                     value.name = "distance", 
+                     variable.factor = FALSE)
+        temps <- merge(temps, 
+                       dist,
+                       by=c("fromId", "toId"),
+                       all.x=TRUE, 
+                       all.y=FALSE)
+        temps[, distance:= as.integer(distance)]
       }
-      res <- rbind(res, dt)
+      if(routing$denivele) {
+        lpg$graph$d <- routing$pg$graph$dzplus
+        lpg$graph_compound$d <- routing$pg$graph_compound$dzplus
+        dzplus <- dodgr::dodgr_dists_pre(
+          proc_g = lpg,
+          from = m_o,
+          to = m_d,
+          shortest = FALSE)
+        dimnames(dzplus) <- list(o$id, d$id)
+        dzplus <- data.table(dzplus, keep.rownames = TRUE)
+        dzplus[, fromId:=rn |> as.integer()] [, rn:=NULL]
+        dzplus <- melt(dzplus,
+                       id.vars="fromId", 
+                       variable.name="toId", 
+                       value.name = "dzplus", 
+                       variable.factor = FALSE)
+        temps <- merge(temps, 
+                       dzplus,
+                       by=c("fromId", "toId"),
+                       all.x=TRUE, 
+                       all.y=FALSE)
+      }
     }
-  }
-  setorder(res, fromId, toId)
-  return(res)
-}
-
-load_streetnet <- function(filename) {
-  dodgr_dir <- stringr::str_c(dirname(filename), '/dodgr_files/')
-  qs::qread(filename, nthreads = 8L)
-}
-
-save_streetnet <- function(graph, filename) {
-  qs::qsave(graph, file = filename, nthreads = 8L, preset= "fast")
-}
-
-dgr_save_streetnet <- function (net, filename = NULL) {
-  
-  if (is.null (filename)) {
-    stop ("'filename' must be specified.")
-  }
-  if (!is.character (filename)) {
-    stop ("'filename' must be specified as character value.")
-  }
-  if (length (filename) != 1L) {
-    stop ("'filename' must be specified as single character value.")
+    erreur <- NULL
+    
+    if (nrow(temps)>0){
+      temps[, `:=`(fromId=as.integer(fromId), toId=as.integer(toId))]
+      setorder(temps, fromId, toId)
+    }
+    else
+    {
+      erreur <- "dodgr::travel_time_matrix empty"
+      temps <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric(), distance=numeric())
+      logger::log_warn(erreur)
+    }
+    return(list(result=temps, error=erreur))
   }
   
-  if (tools::file_ext (filename) == "") {
-    filename <- paste0 (filename, ".Rds")
+  dodgr_path <- function(o, d, tmax, routing, dist_only = FALSE) {
+    logger::log_info("dodgr_path called, {dist_only}, {length(o)}x{length(d)}")
+    if(dist_only)
+      return(dodgr_ttm(o,d,tmax, routing, dist_only))
+    o <- o[, .(id=as.character(id),lon,lat)]
+    d <- d[, .(id=as.character(id),lon,lat)]
+    
+    o_g <- dodgr::match_points_to_verts(
+      routing$vertices,
+      o[, .(lon, lat)], connected = TRUE)
+    o_g <- routing$vertices |> dplyr::slice(o_g) |> dplyr::pull(id)
+    # names(o_g) <- o$id
+    
+    d_g <- dodgr::match_points_to_verts(
+      routing$vertices,
+      d[, .(lon, lat)], connected = TRUE)
+    d_g <- routing$vertices |> dplyr::slice(d_g) |> dplyr::pull(id)
+    # names(d_g) <- d$id
+    logger::log_info(" aggrégation chemins, {length(o_g)}x{length(o_d)}")
+    chemins <- dodgr::dodgr_paths(
+      graph = routing$graph,
+      from = o_g,
+      to = d_g)
+    
+    o_id <- purrr::set_names(o$id, o_g)
+    d_id <- purrr::set_names(d$id, d_g)
+    
+    trips <- agr_chemins(chemins, routing, o_id, d_id)
+    
+    erreur <- NULL
+    
+    if (nrow(trips)==0) {
+      erreur <- "dodgr::travel_time_matrix empty"
+      trips <- data.table(fromId=numeric(), toId=numeric(), travel_time=numeric(), distance=numeric())
+      logger::log_warn(erreur)
+    }
+    return(list(result=trips[travel_time<=tmax, ], error=erreur))
   }
   
-  # This function is essentially cache_graph in reverse
-  hash <- attr (net, "hash")
-  td <- fs::path_temp ()
-  
-  fname_v <- fs::path (td, paste0 ("dodgr_verts_", hash, ".Rds"))
-  if (fs::file_exists (fname_v)) {
-    v <- readRDS (fname_v)
-  } else {
-    v <- dodgr::dodgr_vertices (net)
+  agr_chemins <- function(chemins, routing, o, d) {
+    res <- data.table()
+    for(grp in names(chemins)) {
+      for(trip in names(chemins[[grp]])) {
+        nn <- stringr::str_split(trip, "-")[[1]]
+        ff <- chemins[[grp]][[trip]]
+        oo <- o[nn[[1]]]
+        dd <- d[nn[[2]]]
+        if(length(ff)>1) {
+          tt <- tail(ff,-1)
+          ff <- head(ff, -1)
+          vert <- data.table(from = ff, to = tt)
+          setkey(vert, from, to)
+          dt <- routing$graph.dt[vert]
+          dt <- dt[, .(
+            fromId = as.integer(oo),
+            toId = as.integer(dd),
+            fromIdalt = nn[[1]],
+            toIdalt = nn[[2]],
+            distance = sum(d),
+            travel_time = sum(time)/60,
+            dz = sum(dz),
+            dz_plus = sum(dz_plus))]
+        } else {
+          dt <- data.table(
+            fromId = as.integer(oo),
+            toId = as.integer(dd),
+            fromIdalt = nn[[1]],
+            toIdalt = nn[[2]],
+            distance = NA,
+            travel_time = NA,
+            dz = NA,
+            dz_plus = NA)
+        }
+        res <- rbind(res, dt)
+      }
+    }
+    setorder(res, fromId, toId)
+    return(res)
   }
   
-  # The hash for the contracted graph is generated from the edge IDs of
-  # the full graph plus default NULL vertices:
-  gr_cols <- dodgr:::dodgr_graph_cols (net)
-  edge_col <- gr_cols$edge_id
-  hashc <- dodgr:::get_hash (net, contracted = TRUE, verts = NULL, force = TRUE)
-  
-  fname_c <- fs::path (td, paste0 ("dodgr_graphc_", hashc, ".Rds"))
-  if (fs::file_exists (fname_c)) {
-    graphc <- readRDS (fname_c)
-  } else {
-    graphc <- dodgr::dodgr_contract_graph (net)
+  load_streetnet <- function(filename) {
+    dodgr_dir <- stringr::str_c(dirname(filename), '/dodgr_files/')
+    qs::qread(filename, nthreads = 8L)
   }
   
-  hashe <- attr (graphc, "hashe")
-  fname_vc <- fs::path (td, paste0 ("dodgr_verts_", hashe, ".Rds"))
-  if (fs::file_exists (fname_vc)) {
-    verts_c <- readRDS (fname_vc)
-  } else {
-    verts_c <- dodgr::dodgr_vertices (graphc)
+  save_streetnet <- function(graph, filename) {
+    qs::qsave(graph, file = filename, nthreads = 8L, preset= "fast")
   }
   
-  fname_e <- fs::path (td, paste0 ("dodgr_edge_map_", hashc, ".Rds"))
-  if (!fs::file_exists (fname_e)) { # should always be
-    stop ("edge_map was not cached; unable to save network.")
+  dgr_save_streetnet <- function (net, filename = NULL) {
+    
+    if (is.null (filename)) {
+      stop ("'filename' must be specified.")
+    }
+    if (!is.character (filename)) {
+      stop ("'filename' must be specified as character value.")
+    }
+    if (length (filename) != 1L) {
+      stop ("'filename' must be specified as single character value.")
+    }
+    
+    if (tools::file_ext (filename) == "") {
+      filename <- paste0 (filename, ".Rds")
+    }
+    
+    # This function is essentially cache_graph in reverse
+    hash <- attr (net, "hash")
+    td <- fs::path_temp ()
+    
+    fname_v <- fs::path (td, paste0 ("dodgr_verts_", hash, ".Rds"))
+    if (fs::file_exists (fname_v)) {
+      v <- readRDS (fname_v)
+    } else {
+      v <- dodgr::dodgr_vertices (net)
+    }
+    
+    # The hash for the contracted graph is generated from the edge IDs of
+    # the full graph plus default NULL vertices:
+    gr_cols <- dodgr:::dodgr_graph_cols (net)
+    edge_col <- gr_cols$edge_id
+    hashc <- dodgr:::get_hash (net, contracted = TRUE, verts = NULL, force = TRUE)
+    
+    fname_c <- fs::path (td, paste0 ("dodgr_graphc_", hashc, ".Rds"))
+    if (fs::file_exists (fname_c)) {
+      graphc <- readRDS (fname_c)
+    } else {
+      graphc <- dodgr::dodgr_contract_graph (net)
+    }
+    
+    hashe <- attr (graphc, "hashe")
+    fname_vc <- fs::path (td, paste0 ("dodgr_verts_", hashe, ".Rds"))
+    if (fs::file_exists (fname_vc)) {
+      verts_c <- readRDS (fname_vc)
+    } else {
+      verts_c <- dodgr::dodgr_vertices (graphc)
+    }
+    
+    fname_e <- fs::path (td, paste0 ("dodgr_edge_map_", hashc, ".Rds"))
+    if (!fs::file_exists (fname_e)) { # should always be
+      stop ("edge_map was not cached; unable to save network.")
+    }
+    
+    edge_map <- readRDS (fname_e)
+    
+    fname_j <- fs::path (td, paste0 ("dodgr_junctions_", hashc, ".Rds"))
+    if (!fs::file_exists (fname_j)) { # should always be
+      stop ("junction list was not cached; unable to save network.")
+    }
+    junctions <- readRDS (fname_j)
+    
+    out <- list (
+      graph = net,
+      verts = v,
+      graph_c = graphc,
+      verts_c = verts_c,
+      edge_map = edge_map,
+      junctions = junctions
+    )
+    
+    qs::qsave(out, filename, nthreads = 4L, preset = "fast")
+    invisible(out)
   }
   
-  edge_map <- readRDS (fname_e)
-  
-  fname_j <- fs::path (td, paste0 ("dodgr_junctions_", hashc, ".Rds"))
-  if (!fs::file_exists (fname_j)) { # should always be
-    stop ("junction list was not cached; unable to save network.")
-  }
-  junctions <- readRDS (fname_j)
-  
-  out <- list (
-    graph = net,
-    verts = v,
-    graph_c = graphc,
-    verts_c = verts_c,
-    edge_map = edge_map,
-    junctions = junctions
-  )
-  
-  qs::qsave(out, filename, nthreads = 4L, preset = "fast")
-  invisible(out)
-}
-
-#' Load a street network previously saved with \link{dodgr_save_streetnet}.
-#'
-#' This always returns the full, non-contracted graph. The contracted graph can
-#' be generated by passing the result to \link{dodgr_contract_graph}.
-#' @param filename Name (with optional full path) of file to be loaded.
-#'
-#' @examples
-#' net <- weight_streetnet (hampi)
-#' f <- file.path (tempdir (), "streetnet.Rds")
-#' dodgr_save_streetnet (net, f)
-#' clear_dodgr_cache () # rm cached objects from tempdir
-#' # at some later time, or in a new R session:
-#' net <- dodgr_load_streetnet (f)
-#' @family cache
-#' @export
-dgr_load_streetnet <- function (filename) {
-  
-  if (!fs::file_exists (filename)) {
-    stop ("filename [", filename, "] not found.")
-  }
-  
-  td <- fs::path_temp ()
-  x <- qs::qread (filename, nthreads = 8L)
-  
-  hash <- attr (x$graph, "hash")
-  hashc <- attr (x$graph_c, "hashc") # hash for contracted graph
-  hashe <- attr (x$graph_c, "hashe") # hash for edge map
-  
-  fname <- fs::path (td, paste0 ("dodgr_graph_", hash, ".Rds"))
-  if (!fs::file_exists (fname)) {
-    saveRDS (x$graph, fname)
-  }
-  
-  fname_v <- fs::path (td, paste0 ("dodgr_verts_", hash, ".Rds"))
-  if (!fs::file_exists (fname_v)) {
-    saveRDS (x$verts, fname_v)
-  }
-  
-  fname_c <- fs::path (td, paste0 ("dodgr_graphc_", hashc, ".Rds"))
-  if (!fs::file_exists (fname_c)) {
-    saveRDS (x$graph_c, fname_c)
+  #' Load a street network previously saved with \link{dodgr_save_streetnet}.
+  #'
+  #' This always returns the full, non-contracted graph. The contracted graph can
+  #' be generated by passing the result to \link{dodgr_contract_graph}.
+  #' @param filename Name (with optional full path) of file to be loaded.
+  #'
+  #' @examples
+  #' net <- weight_streetnet (hampi)
+  #' f <- file.path (tempdir (), "streetnet.Rds")
+  #' dodgr_save_streetnet (net, f)
+  #' clear_dodgr_cache () # rm cached objects from tempdir
+  #' # at some later time, or in a new R session:
+  #' net <- dodgr_load_streetnet (f)
+  #' @family cache
+  #' @export
+  dgr_load_streetnet <- function (filename) {
+    
+    if (!fs::file_exists (filename)) {
+      stop ("filename [", filename, "] not found.")
+    }
+    
+    td <- fs::path_temp ()
+    x <- qs::qread (filename, nthreads = 8L)
+    
+    hash <- attr (x$graph, "hash")
+    hashc <- attr (x$graph_c, "hashc") # hash for contracted graph
+    hashe <- attr (x$graph_c, "hashe") # hash for edge map
+    
+    fname <- fs::path (td, paste0 ("dodgr_graph_", hash, ".Rds"))
+    if (!fs::file_exists (fname)) {
+      saveRDS (x$graph, fname)
+    }
+    
+    fname_v <- fs::path (td, paste0 ("dodgr_verts_", hash, ".Rds"))
+    if (!fs::file_exists (fname_v)) {
+      saveRDS (x$verts, fname_v)
+    }
+    
+    fname_c <- fs::path (td, paste0 ("dodgr_graphc_", hashc, ".Rds"))
+    if (!fs::file_exists (fname_c)) {
+      saveRDS (x$graph_c, fname_c)
+    }
+    
+    fname_vc <- fs::path (td, paste0 ("dodgr_verts_", hashe, ".Rds"))
+    if (!fs::file_exists (fname_vc)) {
+      saveRDS (x$verts_c, fname_vc)
+    }
+    
+    fname_e <- fs::path (td, paste0 ("dodgr_edge_map_", hashc, ".Rds"))
+    if (!fs::file_exists (fname_e)) {
+      saveRDS (x$edge_map, fname_e)
+    }
+    
+    fname_j <- fs::path (td, paste0 ("dodgr_junctions_", hashc, ".Rds"))
+    if (!fs::file_exists (fname_j)) {
+      saveRDS (x$junctions, fname_j)
+    }
+    
+    return (list(graph = x$graph, verts_c = x$verts_c))
   }
   
-  fname_vc <- fs::path (td, paste0 ("dodgr_verts_", hashe, ".Rds"))
-  if (!fs::file_exists (fname_vc)) {
-    saveRDS (x$verts_c, fname_vc)
-  }
-  
-  fname_e <- fs::path (td, paste0 ("dodgr_edge_map_", hashc, ".Rds"))
-  if (!fs::file_exists (fname_e)) {
-    saveRDS (x$edge_map, fname_e)
-  }
-  
-  fname_j <- fs::path (td, paste0 ("dodgr_junctions_", hashc, ".Rds"))
-  if (!fs::file_exists (fname_j)) {
-    saveRDS (x$junctions, fname_j)
-  }
-  
-  return (list(graph = x$graph, verts_c = x$verts_c))
-}
