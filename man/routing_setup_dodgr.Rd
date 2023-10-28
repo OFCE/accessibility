@@ -5,7 +5,8 @@
 \title{setup du système de routing de dodgr}
 \usage{
 routing_setup_dodgr(
-  path,
+  path = "/tmp/",
+  osm,
   date = "17-12-2019 8:00:00",
   mode = "CAR",
   turn_penalty = FALSE,
@@ -16,13 +17,13 @@ routing_setup_dodgr(
   overwrite = FALSE,
   contract = FALSE,
   deduplicate = TRUE,
-  di = FALSE,
-  elevation = FALSE,
   nofuture = TRUE
 )
 }
 \arguments{
-\item{path}{string, chemin d'accès au dossier contenant le réseau}
+\item{path}{string, chemin d'accès pour sauvegarder le routeur (par défaut il est mis en /tmp)}
+
+\item{osm}{chemin vers le fichier osm au format silicate}
 
 \item{date}{string, date Date où seront simulées les routes (non utilisé)}
 

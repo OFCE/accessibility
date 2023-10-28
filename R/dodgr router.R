@@ -268,13 +268,10 @@ routing_setup_dodgr <- function(
   
   if(file.exists(graph_name)&!overwrite) {
     if(nofuture) {
-      net <- dgr_load_streetnet(graph_name)
-      graph <- net$graph
-      vertices <- net$verts_c
-    }
+      pg <- load_streetnet(graph_name)
+      }
     else {
-      graph <- NULL
-      vertices <- NULL
+      pg <- NULL
     }
     message("dodgr network en cache")
     
@@ -309,8 +306,7 @@ routing_setup_dodgr <- function(
     out <- save_streetnet(pg, filename = graph_name)
   }
   mtnt <- lubridate::now()
-  if("dz"%in% names(graph)) {
-    pg$graph$dzplus <- pg$graph$dz * pg$graph$d * (pg$graph$dz >0)
+  if("dz"%in% names(pg$graph_compound)) {
     pg$graph_compound$dzplus <- 
       pg$graph_compound$dz * pg$graph_compound$d * (pg$graph_compound$dz >0)
     pg$graph_compound$dzplus[is.na(pg$graph_compound$dzplus)] <- 0
@@ -336,7 +332,7 @@ routing_setup_dodgr <- function(
     future = TRUE,
     future_routing = function(routing) {
       rout <- routing
-      rout$processed_graph <- NULL
+      rout$pg <- NULL
       return(rout)
     },
     core_init = function(routing){
@@ -365,10 +361,11 @@ routing_setup_dodgr <- function(
 #' @export
 
 dodgr_pairs <- function(od, routing, chunk = Inf) {
-  logger::log_info("dodgr_pairs called, {nrow(od)}")
+  logger::log_info("dodgr_pairs called, {nrow(od)} paires")
   RcppParallel::setThreadOptions(numThreads = routing$n_threads)
   if(is.null(routing$pg))
-    lpg <- routing$pg
+    routing <- routing$core_init(routing)
+  lpg <- routing$pg
   lpg$graph$d <- routing$pg$graph$time
   lpg$graph_compound$d <- routing$pg$graph_compound$time
   if(is.finite(chunk)) {
@@ -380,6 +377,7 @@ dodgr_pairs <- function(od, routing, chunk = Inf) {
     odl <- list(od)
   }
   ttm <- map_dfr(odl, ~{
+    tictoc::tic()
     m_o <- as.matrix(.x |> select(o_lon, o_lat), ncol=2)
     m_d <- as.matrix(.x |> select(d_lon, d_lat), ncol=2)
     
@@ -407,8 +405,21 @@ dodgr_pairs <- function(od, routing, chunk = Inf) {
       to = m_d,
       shortest = FALSE,
       pairwise = TRUE)
-    bind_cols(old, tibble(d = dist, travel_time = temps, dzplus = dzplus))
+    
+    time <- tictoc::toc(quiet=TRUE)
+    dtime <- (time$toc - time$tic)
+    speed_log <- stringr::str_c(
+      ofce::f2si2(nrow(.x)),
+      "@",ofce::f2si2(nrow(.x)/dtime),
+      "p/s")
+    logger::log_info(speed_log)
+    
+    bind_cols(.x, tibble(d = dist, travel_time = temps, dzplus = dzplus))
   })
+  
+  
+  
+  ttm
 }
 
 dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
