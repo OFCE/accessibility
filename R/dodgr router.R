@@ -337,6 +337,8 @@ routing_setup_dodgr <- function(
     },
     core_init = function(routing){
       RcppParallel::setThreadOptions(numThreads = routing$n_threads)
+      if(!is.null(routing$pg)
+         return(routing)
       rout <- routing
       rout$pg <- load_streetnet(routing$graph_name)
       if("dz"%in% names(rout$pg$graph)) {
