@@ -342,8 +342,6 @@ routing_setup_dodgr <- function(
       rout <- routing
       rout$pg <- load_streetnet(routing$graph_name)
       if("dz"%in% names(rout$pg$graph)) {
-        rout$pg$graph$dzplus <-
-          rout$pg$graph$dz * rout$pg$graph$d * (rout$pg$graph$dz >0)
         rout$pg$graph_compound$dzplus <- 
           rout$pg$graph_compound$dz * rout$pg$graph_compound$d * (rout$pg$graph_compound$dz >0)
         rout$pg$graph_compound$dzplus[is.na(rout$pg$graph_compound$dzplus)] <- 0
@@ -368,7 +366,6 @@ dodgr_pairs <- function(od, routing, chunk = Inf) {
   if(is.null(routing$pg))
     routing <- routing$core_init(routing)
   lpg <- routing$pg
-  lpg$graph$d <- routing$pg$graph$time
   lpg$graph_compound$d <- routing$pg$graph_compound$time
   if(is.finite(chunk)) {
     odl <- od |>
@@ -390,8 +387,7 @@ dodgr_pairs <- function(od, routing, chunk = Inf) {
       shortest = FALSE,
       pairwise = TRUE)
     
-    lpg$graph$d <- routing$pg$graph$d
-    lpg$graph_compound$d <- routing$pg$graph_compound$d
+    lpg$graph_compound$d <- routing$pg$d
     dist <- dodgr::dodgr_dists_pre(
       proc_g = lpg,
       from = m_o,
