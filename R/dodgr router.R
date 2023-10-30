@@ -269,7 +269,7 @@ routing_setup_dodgr <- function(
   if(file.exists(graph_name)&!overwrite) {
     if(nofuture) {
       pg <- load_streetnet(graph_name)
-      }
+    }
     else {
       pg <- NULL
     }
@@ -338,7 +338,7 @@ routing_setup_dodgr <- function(
     core_init = function(routing){
       RcppParallel::setThreadOptions(numThreads = routing$n_threads)
       if(!is.null(routing$pg))
-         return(routing)
+        return(routing)
       rout <- routing
       rout$pg <- load_streetnet(routing$graph_name)
       if("dz"%in% names(rout$pg$graph)) {
@@ -349,75 +349,6 @@ routing_setup_dodgr <- function(
       logger::log_info("router {graph_name} chargé")
       return(rout)
     })
-}
-
-#' ttm sur des paires
-#'
-#' @param od tibble origine destination
-#' @param routing routing (voir dodgr_routing_setup)
-#' @param chunk nombre de paires demandées d'un coup 
-#'
-#' @return a tibble
-#' @export
-
-dodgr_pairs <- function(od, routing, chunk = Inf) {
-  logger::log_info("dodgr_pairs called, {nrow(od)} paires")
-  RcppParallel::setThreadOptions(numThreads = routing$n_threads)
-  if(is.null(routing$pg))
-    routing <- routing$core_init(routing)
-  lpg <- routing$pg
-  lpg$graph_compound$d <- routing$pg$graph_compound$time
-  if(is.finite(chunk)) {
-    odl <- od |>
-      mutate(gr = ((1:n())-1) %/% chunk) |>
-      group_by(gr) |> 
-      group_split()
-  } else {
-    odl <- list(od)
-  }
-  ttm <- map_dfr(odl, ~{
-    tictoc::tic()
-    m_o <- as.matrix(.x |> select(o_lon, o_lat), ncol=2)
-    m_d <- as.matrix(.x |> select(d_lon, d_lat), ncol=2)
-    
-    temps <- dodgr::dodgr_dists_pre(
-      proc_g = lpg,
-      from = m_o,
-      to = m_d,
-      shortest = FALSE,
-      pairwise = TRUE)
-    
-    lpg$graph_compound$d <- routing$pg$d
-    dist <- dodgr::dodgr_dists_pre(
-      proc_g = lpg,
-      from = m_o,
-      to = m_d,
-      shortest = FALSE,
-      pairwise = TRUE)
-    
-    lpg$graph$d <- routing$pg$graph$dzplus
-    lpg$graph_compound$d <- routing$pg$graph_compound$dzplus
-    dzplus <- dodgr::dodgr_dists_pre(
-      proc_g = lpg,
-      from = m_o,
-      to = m_d,
-      shortest = FALSE,
-      pairwise = TRUE)
-    
-    time <- tictoc::toc(quiet=TRUE)
-    dtime <- (time$toc - time$tic)
-    speed_log <- stringr::str_c(
-      ofce::f2si2(nrow(.x)),
-      "@",ofce::f2si2(nrow(.x)/dtime),
-      "p/s")
-    logger::log_info(speed_log)
-    
-    bind_cols(.x, tibble(d = dist, travel_time = temps, dzplus = dzplus))
-  })
-  
-  
-  
-  ttm
 }
 
 dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
@@ -734,4 +665,556 @@ dgr_load_streetnet <- function (filename) {
   }
   
   return (list(graph = x$graph, verts_c = x$verts_c))
+}
+
+# full distance par commune ------
+
+#' Full distance
+#' 
+#' Alternative à iso acessibilité, plus simple
+#' ne renvoie que les distances, temps et dzplus
+#' exécute le calcul par COMMUNE
+#' certains batchs sont assez petits mais relativement efficace au total
+#' 
+#' @param idINSes une table d'idINS, avec les colonnes idINS, from (lgl), to (lgl) COMMUNE, DCLT
+#' @param com2com une table donnant les paires de relation
+#' @param routeur un routeur dodgr, généré par routing_setup_dodgr
+#'
+#' pour chaque paire COMMUNE, DCLT le routage est fait sur le produit des 
+#' from et to indiqués pour cette paire
+#'
+#' @return un data.table, tous calculs faits
+#' @export
+#'
+dgr_distances_by_com <- function(idINSes, com2com, routeur,
+                                 path = "dgr",
+                                 overwrite = TRUE,
+                                 parallel = TRUE) {
+  tictoc::tic()
+  
+  if(dir.exists(path)&!overwrite) {
+    cli::cli_alert_warning("le dataset existe déjà")
+  }
+  
+  if(dir.exists(path)&overwrite) {
+    cli::cli_alert_warning("le dataset existe déjà, il est effacé")
+    unlink(path, recursive = TRUE, force = TRUE)
+  } 
+  
+  dir.create(
+    path, 
+    showWarnings = FALSE, 
+    recursive = TRUE )
+  
+  dir.create(
+    glue::glue("logs/"), 
+    showWarnings = FALSE, 
+    recursive = TRUE)
+  
+  timestamp <- lubridate::stamp(
+    "15-01-20 10h08.05", 
+    orders = "dmy HMS",
+    quiet = TRUE) (lubridate::now(tzone = "Europe/Paris"))
+  
+  logfile <- glue::glue("logs/dgr_full_distance_com.{timestamp}.log")
+  
+  logger::log_appender(logger::appender_file(logfile))
+  logger::log_success("Calcul accessibilite version 3")
+  logger::log_success("")
+  
+  fmt <- logger::layout_glue_generator(
+    format = "{pid} [{format(time, \"%H:%M:%S\")}] {msg}") 
+  logger::log_layout(fmt)
+  
+  pts_from <- idINSes |> 
+    filter(from) |> 
+    select(idINS, COMMUNE = com)
+  pts_from <- bind_cols(
+    pts_from,
+    r3035::idINS2lonlat(pts_from$idINS))
+  
+  pts_to <- idINSes |> 
+    filter(to) |> 
+    select(idINS, DCLT = com)
+  pts_to <- bind_cols(
+    pts_to,
+    r3035::idINS2lonlat(pts_to$idINS))
+  
+  cli::cli_alert_info("Indexage de from et to")
+  indexes <- dodgr:::to_from_index_with_tp_pre(
+    routeur$pg, 
+    as.matrix(pts_from[, c("lon", "lat")]),
+    as.matrix(pts_to[, c("lon", "lat")]));
+  
+  pts_from <- pts_from |> 
+    mutate(index = indexes$from$index,
+           id = indexes$from$id) |> 
+    select(idINS, COMMUNE, index, id)
+  
+  pts_to <- pts_to |> 
+    mutate(index = indexes$to$index,
+           id = indexes$to$id) |> 
+    select(idINS, DCLT, index, id)
+  
+  com2com <- com2com |> 
+    left_join(idINSes |> filter(from) |> count(com, name = "nfrom"), 
+              by=c("COMMUNE"="com")) |> 
+    left_join(idINSes |> filter(to) |> count(com, name = "nto"),
+              by=c("DCLT"="com")) |> 
+    mutate(n = nfrom*nto)
+  
+  cli::cli_alert_info("Chargement du routeur")
+  rout <- routeur$future_routing(routeur)
+  rout <- rout$core_init(rout)
+  
+  COMMUNES <- com2com |> 
+    distinct(COMMUNE) |> 
+    pull()
+  
+  pb <- progressr::progressor(steps = sum(com2com$n, na.rm=TRUE))
+  ttms <- imap(COMMUNES, ~{
+    pb(0)
+    tictoc::tic()
+    logger::log_appender(logger::appender_file(logfile))
+    logger::log_layout(fmt)
+    
+    from <- pts_from |> 
+      filter(COMMUNE == .x)
+    dclts <- com2com |> 
+      filter(COMMUNE == .x) |> 
+      distinct(DCLT) |> 
+      pull()
+    to <- pts_to |> 
+      filter(DCLT %in% dclts)
+    
+    ttm <- dgr_onedistance(rout, from, to, parallel)
+    
+    ss <- nrow(ttm)
+    pb(amount=ss)
+    time <- tictoc::toc(quiet=TRUE)
+    dtime <- (time$toc - time$tic)
+    speed_log <- stringr::str_c(
+      ofce::f2si2(ss), "@",ofce::f2si2(ss/dtime), "p/s")
+    
+    logger::log_info("partant de {.x} ({.y}/{lenght(COMMUNES)}) {speed_log}")
+    ttm[, COMMUNE := .x]
+    ttm <- ttm |> 
+      merge(to |> select(toId= idINS, DCLT), by = "toId")
+    dsdir <- glue::glue("{path}/'COMMUNE={.x}'")
+    pqtname <- glue::glue("{dsdir}/ttm.parquet")
+    dir.create(path = dsdir,
+    recursive = TRUE,
+    showWarnings = FALSE)
+  arrow::write_parquet(ttm,pqtname)
+  
+  time <- tictoc::toc(quiet=TRUE)
+  dtime <- (time$toc - time$tic)
+  
+  logger::log_info("Calcul terminé, dataset {path} écrit - {ofce::f2si2(npaires)} en {f2si2(dtime/60)} mn soit {f2si2(npaires/dtime)} p/s")
+  pqtname
+  })
+}
+
+#' dgr_onedistance
+#' 
+#' Calcule un data frame contenant time_travel, distance et dzplus
+#' 
+#'
+#' @param routeur le routeur préprocessé
+#' @param from les points de départ (préindexés sur le routeur$graph)
+#' @param to les points d'arrivée (préindexés sur le routeur$graph)
+#'
+#' @return un data.table
+#' @export
+#'
+
+dgr_onedistance <- function(routeur, from, to, parallel = TRUE) {
+  
+  from_to_indexes <- list(
+    from = list(index = from$index, id = from$id),
+    to = list(index = to$index, id = to$id)
+  )
+  
+  routeur$pg$graph_compound$d <- routeur$pg$d
+  dist <- dodgr::dodgr_dists_pre(
+    to_from_indices = from_to_indexes,
+    proc_g = routeur$pg,
+    shortest = FALSE, 
+    parallel = parallel);
+  
+  dimnames(dist) <- list(from$idINS, to$idINS)
+  dist <- data.table(dist, keep.rownames = TRUE)
+  setnames(dist, "rn", "fromId")
+  dist <- melt(dist,
+               id.vars="fromId",
+               variable.name="toId",
+               value.name = "distance",
+               variable.factor = FALSE)
+  
+  routeur$pg$graph_compound$d <- routeur$pg$graph_compound$time
+  time <- dodgr::dodgr_dists_pre(
+    to_from_indices = from_to_indexes,
+    proc_g = routeur$pg,
+    shortest = FALSE, 
+    parallel = parallel)
+  
+  dimnames(time) <- list(from$idINS, to$idINS)
+  time <- data.table(time, keep.rownames = TRUE)
+  setnames(time, "rn", "fromId")
+  time <- melt(time,
+               id.vars="fromId",
+               variable.name="toId",
+               value.name = "travel_time",
+               variable.factor = FALSE)
+  time[, travel_time := as.integer(travel_time/60)]
+  
+  routeur$pg$graph_compound$d <- routeur$pg$graph_compound$dzplus
+  dzplus <- dodgr::dodgr_dists_pre(
+    to_from_indices = from_to_indexes,
+    proc_g = routeur$pg,
+    shortest = FALSE, 
+    parallel = parallel)
+  
+  dimnames(dzplus) <- list(from$idINS, to$idINS)
+  dzplus <- data.table(dzplus, keep.rownames = TRUE)
+  setnames(dzplus, "rn", "fromId")
+  dzplus <- melt(dzplus,
+                 id.vars="fromId",
+                 variable.name="toId",
+                 value.name = "dzplus",
+                 variable.factor = FALSE)
+  
+  dist |> 
+    merge(time, by = c("fromId", "toId")) |> 
+    merge(dzplus, by=c("fromId", "toId"))
+}
+
+# Full distance par paires ----------------
+
+#' Full distance
+#' 
+#' Alternative à iso acessibilité, plus simple
+#' ne renvoie que les distances, temps et dzplus
+#' exécute le calcul par paires de COMMUNE/DCLT
+#' certains batchs sont assez petits
+#' 
+#' @param idINSes une table d'idINS, avec les colonnes idINS, from (lgl), to (lgl) COMMUNE, DCLT
+#' @param com2com une table donnant les paires de relation
+#' @param routeur un routeur dodgr, généré par routing_setup_dodgr
+#' @param path chemin d'enregistrement du dataset
+#' @param chunk taille du paquet de découpage
+#' @param overwrite écrase des précédents
+#'
+#' pour chaque paire COMMUNE, DCLT le routage est fait sur le produit des 
+#' from et to indiqués pour cette paire
+#'
+#' @return rien, mais un dataset est enregistré dans path
+#' @export
+#'
+dgr_distances_by_paires <- function(
+    idINSes, com2com, routeur,
+    path = "dgr",
+    overwrite = TRUE, 
+    chunk = 5000000L) {
+  
+  if(dir.exists(path)&!overwrite) {
+    cli::cli_alert_warning("le dataset existe déjà")
+  }
+  
+  if(dir.exists(path)&overwrite) {
+    cli::cli_alert_warning("le dataset existe déjà, il est effacé")
+    unlink(path, recursive = TRUE, force = TRUE)
+  } 
+  
+  dir.create(
+    path, 
+    showWarnings = FALSE, 
+    recursive = TRUE )
+  
+  dir.create(
+    "logs/", 
+    showWarnings = FALSE, 
+    recursive = TRUE)
+  
+  timestamp <- lubridate::stamp(
+    "15-01-20 10h08.05", 
+    orders = "dmy HMS",
+    quiet = TRUE) (lubridate::now(tzone = "Europe/Paris"))
+  
+  logfile <- glue::glue("logs/dgr_full_distance_paires.{timestamp}.log")
+  
+  logger::log_appender(logger::appender_file(logfile))
+  logger::log_success("Calcul accessibilite avec dodgr version 3")
+  logger::log_success("")
+  
+  fmt <- logger::layout_glue_generator(
+    format = "[{pid}]-[{format(time, \"%H:%M:%S\")}] {msg}") 
+  logger::log_layout(fmt)
+  
+  pts_from <- idINSes |> 
+    filter(from) |> 
+    select(idINS, com)
+  pts_from <- bind_cols(
+    pts_from,
+    r3035::idINS2lonlat(pts_from$idINS))
+  
+  pts_to <- idINSes |> 
+    filter(to) |> 
+    select(idINS, com)
+  pts_to <- bind_cols(
+    pts_to,
+    r3035::idINS2lonlat(pts_to$idINS))
+  
+  cli::cli_alert_info("Indexage de from et to")
+  indexes <- dodgr:::to_from_index_with_tp_pre(
+    routeur$pg, 
+    as.matrix(pts_from[, c("lon", "lat")]),
+    as.matrix(pts_to[, c("lon", "lat")]));
+  
+  pts_from <- pts_from |> 
+    mutate(index = indexes$from$index,
+           id = indexes$from$id)
+  
+  pts_to <- pts_to |> 
+    mutate(index = indexes$to$index,
+           id = indexes$to$id)
+  
+  com2com <- com2com |> 
+    left_join(idINSes |> filter(from) |> count(com, name = "nfrom"), 
+              by=c("COMMUNE"="com")) |> 
+    left_join(idINSes |> filter(to) |> count(com, name = "nto"),
+              by=c("DCLT"="com")) |> 
+    mutate(n = nfrom*nto)
+  npaires <- sum(com2com$n, na.rm=TRUE)
+  cli::cli_alert_info("Génération des {ofce::f2si2(npaires)} paires")
+  paires <- pmap_dfr(com2com, ~{
+    cross_join(
+      pts_from |> filter(com == .x) |> select(idINS, index, id),
+      pts_to |> filter(com== .y)  |> select(idINS, index, id), suffix = c(".from", ".to"))
+  }, .progress=TRUE)
+  paires <- paires |> 
+    mutate(gg = (1:n()-1) %/% chunk) |> 
+    group_by(gg) |> 
+    group_split()
+  gc()
+  
+  pb <- progressr::progressor(steps = sum(com2com$n, na.rm=TRUE))
+  
+  ttms <- imap(paires, ~{
+    pb(0)
+    tictoc::tic()
+    logger::log_appender(logger::appender_file(logfile))
+    logger::log_layout(fmt)
+    
+    from <- .x |> 
+      select(
+        idINS = idINS.from, 
+        index = index.from,
+        id = id.from)
+    to <- .x |> 
+      select(
+        idINS = idINS.to, 
+        index = index.to,
+        id = id.to)
+    
+    ttm <- dgr_onepaires(routeur, from, to)
+    
+    dir.create(path = glue::glue("{path}/'gg={.y}'"),
+               recursive = TRUE,
+               showWarnings = FALSE)
+    arrow::write_parquet(
+      ttm, 
+      glue::glue("{path}/'gg={.y}'/ttm.parquet"))
+    
+    ss <- nrow(ttm)
+    pb(amount=ss)
+    time <- tictoc::toc(quiet=TRUE)
+    dtime <- (time$toc - time$tic)
+    speed_log <- stringr::str_c(
+      ofce::f2si2(ss), "@",ofce::f2si2(ss/dtime), "p/s")
+    logger::log_info(speed_log)
+  })
+}
+
+#' dgr_onedistance
+#' 
+#' Calcule un data frame contenant time_travel, distance et dzplus
+#' 
+#'
+#' @param routeur le routeur préprocessé
+#' @param from les points de départ (préindexés sur le routeur$graph)
+#' @param to les points d'arrivée (préindexés sur le routeur$graph)
+#'
+#' @return un data.table
+#' @export
+#'
+
+dgr_onepaires <- function(routeur, from, to, parallel = TRUE) {
+  
+  from_to_indexes <- list(
+    from = list(index = from$index, id = from$id),
+    to = list(index = to$index, id = to$id)
+  )
+  
+  routeur$pg$graph_compound$d <- routeur$pg$d
+  dist <- dodgr::dodgr_dists_pre(
+    to_from_indices = from_to_indexes,
+    proc_g = routeur$pg,
+    shortest = FALSE,
+    pairwise = TRUE, 
+    parallel = parallel)
+  
+  routeur$pg$graph_compound$d <- routeur$pg$graph_compound$time
+  time <- dodgr::dodgr_dists_pre(
+    to_from_indices = from_to_indexes,
+    proc_g = routeur$pg,
+    shortest = FALSE,
+    pairwise = TRUE, 
+    parallel = parallel)
+  
+  routeur$pg$graph_compound$d <- routeur$pg$graph_compound$dzplus
+  dzplus <- dodgr::dodgr_dists_pre(
+    to_from_indices = from_to_indexes,
+    proc_g = routeur$pg,
+    shortest = FALSE,
+    pairwise = TRUE, 
+    parallel = parallel)
+  
+  tibble(fromId = from$idINS, 
+         toId = to$idINS, 
+         distance = dist,
+         time_travel = time,
+         dzplus = dzplus)
+}
+
+# full distance tous les produits ------
+
+#' Full distance
+#' 
+#' Alternative à iso acessibilité, plus simple
+#' ne renvoie que les distances, temps et dzplus
+#' exécute le calcul sur toutes les paires
+#' de façon à avoir des gros batchs
+#' 
+#' @param idINSes une table d'idINS, avec les colonnes idINS, from (lgl), to (lgl) COMMUNE, DCLT
+#' @param routeur un routeur dodgr, généré par routing_setup_dodgr
+#'
+#' pour chaque paire from et to 
+#' 
+#' @return un dataset
+#' @export
+#'
+dgr_distances_full <- function(
+    idINSes, routeur,
+    path = "dgr",
+    overwrite = TRUE,
+    chunk  = 5000000L) {
+  
+  if(dir.exists(path)&!overwrite) {
+    cli::cli_alert_warning("le dataset existe déjà")
+  }
+  
+  if(dir.exists(path)&overwrite) {
+    cli::cli_alert_warning("le dataset existe déjà, il est effacé")
+    unlink(path, recursive = TRUE, force = TRUE)
+  } 
+  
+  dir.create(
+    path, 
+    showWarnings = FALSE, 
+    recursive = TRUE )
+  
+  dir.create(
+    glue::glue("logs/"), 
+    showWarnings = FALSE, 
+    recursive = TRUE)
+  
+  timestamp <- lubridate::stamp(
+    "15-01-20 10h08.05", 
+    orders = "dmy HMS",
+    quiet = TRUE) (lubridate::now(tzone = "Europe/Paris"))
+  
+  logfile <- glue::glue("logs/dgr_full_distance_com.{timestamp}.log")
+  
+  logger::log_appender(logger::appender_file(logfile))
+  logger::log_success("Calcul accessibilite version 3")
+  logger::log_success("")
+  
+  fmt <- logger::layout_glue_generator(
+    format = "[{pid}]-[{format(time, \"%H:%M:%S\")}] {msg}") 
+  logger::log_layout(fmt)
+  
+  pts_from <- idINSes |> 
+    filter(from) |> 
+    select(idINS, COMMUNE = com)
+  pts_from <- bind_cols(
+    pts_from,
+    r3035::idINS2lonlat(pts_from$idINS))
+  
+  pts_to <- idINSes |> 
+    filter(to) |> 
+    select(idINS, DCLT = com)
+  pts_to <- bind_cols(
+    pts_to,
+    r3035::idINS2lonlat(pts_to$idINS))
+  
+  cli::cli_alert_info("Indexage de from et to")
+  indexes <- dodgr:::to_from_index_with_tp_pre(
+    routeur$pg, 
+    as.matrix(pts_from[, c("lon", "lat")]),
+    as.matrix(pts_to[, c("lon", "lat")]));
+  
+  pts_from <- pts_from |> 
+    mutate(index = indexes$from$index,
+           id = indexes$from$id) |> 
+    select(idINS, index, id, COMMUNE)
+  
+  pts_to <- pts_to |> 
+    mutate(index = indexes$to$index,
+           id = indexes$to$id) |> 
+    select(idINS, index, id, DCLT)
+  
+  npaires <- nrow(pts_from) * nrow(pts_to)
+  n_grps <- npaires %/% chunk
+  
+  pts_from_list <- pts_from |>
+    mutate(
+      gg = (1:n() - 1) %/% (max(1, nrow(pts_from) %/% n_grps))) |> 
+    group_by(gg) |> 
+    group_split()
+  
+  cli::cli_alert_info("Chargement du routeur")
+  rout <- routeur$future_routing(routeur)
+  rout <- rout$core_init(rout)
+  
+  pb <- progressr::progressor(steps = sum(npaires, na.rm=TRUE))
+  
+  ttms <- imap(pts_from_list, ~{
+    pb(0)
+    tictoc::tic()
+    logger::log_appender(logger::appender_file(logfile))
+    logger::log_layout(fmt)
+    
+    from <- .x
+    to <- pts_to
+    
+    ttm <- dgr_onedistance(rout, from, to)
+    
+    ss <- nrow(ttm)
+    pb(amount=ss)
+    time <- tictoc::toc(quiet=TRUE)
+    dtime <- (time$toc - time$tic)
+    speed_log <- stringr::str_c(
+      ofce::f2si2(ss), "@",ofce::f2si2(ss/dtime), "p/s")
+    logger::log_info("groupe {.y}/{length(pts_from_list)} {speed_log}")
+    ttm <- ttm |> 
+      merge(.x |> select(fromId = idINS, COMMUNE), by = "fromId") |> 
+      merge(to |> select(toId = idINS, DCLT), by = "toId") 
+    ttm
+  })
+  arrow::write_dataset(
+    dataset = ttms, 
+    path = path,
+    partitioning = "COMMUNE")
+  return(arrow::open_dataset(glue::glue("{path}")))
 }
