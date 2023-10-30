@@ -9,8 +9,8 @@ dgr_distances_by_paires(
   com2com,
   routeur,
   path = "dgr",
-  chunk = 5000000L,
-  overwrite = TRUE
+  overwrite = TRUE,
+  chunk = 5000000L
 )
 }
 \arguments{
@@ -22,12 +22,12 @@ dgr_distances_by_paires(
 
 \item{path}{chemin d'enregistrement du dataset}
 
-\item{chunk}{taille du paquet de découpage}
-
 \item{overwrite}{écrase des précédents
 
 pour chaque paire COMMUNE, DCLT le routage est fait sur le produit des
 from et to indiqués pour cette paire}
+
+\item{chunk}{taille du paquet de découpage}
 }
 \value{
 rien, mais un dataset est enregistré dans path

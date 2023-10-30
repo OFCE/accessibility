@@ -4,7 +4,7 @@
 \alias{dgr_onepaires}
 \title{dgr_onedistance}
 \usage{
-dgr_onepaires(routeur, from, to)
+dgr_onepaires(routeur, from, to, parallel = TRUE)
 }
 \arguments{
 \item{routeur}{le routeur préprocessé}
