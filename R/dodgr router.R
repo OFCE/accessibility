@@ -767,7 +767,11 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
                        cluster = cls$cluster), by = "COMMUNE")
     steps <- cls$meta$total_k
     logger::log_info(
-      "Clusterization {ofce::f2si2(npaires)} paires / {ofce::f2si2(cls$meta$total)} paires en agrégation complète / {ofce::f2si2(cls$meta$total_k)} paires en cluster, réduction de temps estimée à {round(cls$meta$ecart_temps*100)}%")
+      "Clusterization {ofce::f2si2(npaires)} paires initial\n
+                      {ofce::f2si2(cls$meta$total)} paires en agrégation complète\n
+                      {ofce::f2si2(cls$meta$total_k)} paires en cluster\n 
+                      plus petit cluster {ofce::f2si2(cls$meta$min_k)}\n
+                      réduction de temps estimée à {100-round(cls$meta$ecart_temps*100)}%")
   } else {
     com2com <- com2com |> mutate(cluster = 1)
     steps <- npaires
@@ -805,7 +809,7 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
     ss <- nrow(from)*nrow(to)
     
     logger::log_info(
-      "cluster ({.y}/{length(COMMUNES)} {ofce::f2si2(ss)} paires")
+      "cluster {.y}/{length(COMMUNES)} {ofce::f2si2(ss)} paires")
   
     ttm <- dgr_onedistance(rout, from, to, parallel)
     
@@ -815,7 +819,7 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
     speed_log <- stringr::str_c("@",ofce::f2si2(ss/dtime), "p/s")
     
     logger::log_info(
-      "         {speed_log}")
+      "       {speed_log}")
     
     ttm <- ttm |> 
       merge(from |> select(fromId= idINS, COMMUNE), by = "fromId") |> 
