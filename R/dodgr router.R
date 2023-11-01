@@ -715,7 +715,7 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
   
   logger::log_appender(logger::appender_file(logfile))
   logger::log_success("Calcul accessibilite version 3")
-  logger::log_success("")
+  logger::log_success("  par commune")
   
   fmt <- logger::layout_glue_generator(
     format = "{pid} [{format(time, \"%H:%M:%S\")}] {msg}") 
@@ -757,16 +757,23 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
     left_join(idINSes |> filter(to) |> count(com, name = "nto"),
               by=c("DCLT"="com")) |> 
     mutate(n = nfrom*nto)
+  
   npaires <- sum(com2com$n, na.rm=TRUE)
+  
   if(clusterize) {
     cls <- clusterize_com2com(com2com)
     com2com <- com2com |> 
       left_join(tibble(COMMUNE = names(cls$cluster),
                        cluster = cls$cluster), by = "COMMUNE")
     steps <- cls$meta$total_k
+    logger::log_info(
+      "Clusterization {ofce::f2si2(npaires)} paires / {ofce::f2si2(cls$meta$total)} paires en agrégation complète / {ofce::f2si2(cls$meta$total_k)} paires en cluster, réduction de temps estimée à {round(cls$meta$ecart_temps*100)}%")
   } else {
     com2com <- com2com |> mutate(cluster = 1)
     steps <- npaires
+    logger::log_info(
+      "{ofce::f2si2(npaires)} paires pour {length(unique(com2com$COMMUNE))} communes d'origine")
+    
   }
   cli::cli_alert_info("Chargement du routeur")
   rout <- routeur$future_routing(routeur)
@@ -798,7 +805,7 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
     ss <- nrow(from)*nrow(to)
     
     logger::log_info(
-      "partant de {com_list}  {ofce::f2si2(ss)} paires")
+      "cluster ({.y}/{length(COMMUNES)} {ofce::f2si2(ss)} paires")
   
     ttm <- dgr_onedistance(rout, from, to, parallel)
     
@@ -808,7 +815,7 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
     speed_log <- stringr::str_c("@",ofce::f2si2(ss/dtime), "p/s")
     
     logger::log_info(
-      "cluster ({.y}/{length(COMMUNES)}), {speed_log}")
+      "         {speed_log}")
     
     ttm <- ttm |> 
       merge(from |> select(fromId= idINS, COMMUNE), by = "fromId") |> 
