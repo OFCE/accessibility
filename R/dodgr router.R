@@ -766,6 +766,7 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
       left_join(tibble(COMMUNE = names(cls$cluster),
                        cluster = cls$cluster), by = "COMMUNE")
     steps <- cls$meta$total_k
+    cli::cli_alert_info("Clustérisation")
     logger::log_info(
       "Clusterization {ofce::f2si2(npaires)} paires initial\n
                       {ofce::f2si2(cls$meta$total)} paires en agrégation complète\n
