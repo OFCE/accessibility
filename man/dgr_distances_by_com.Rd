@@ -10,7 +10,8 @@ dgr_distances_by_com(
   routeur,
   path = "dgr",
   overwrite = TRUE,
-  parallel = TRUE
+  parallel = TRUE,
+  clusterize = FALSE
 )
 }
 \arguments{
@@ -18,8 +19,11 @@ dgr_distances_by_com(
 
 \item{com2com}{une table donnant les paires de relation}
 
-\item{routeur}{un routeur dodgr, généré par routing_setup_dodgr
+\item{routeur}{un routeur dodgr, généré par routing_setup_dodgr}
 
+\item{parallel}{fait le calcul en parallèle (défaut TRUE)}
+
+\item{clusterize}{regroupe les communes pour minimiser le temps de caclul (défaut FALSE)
 pour chaque paire COMMUNE, DCLT le routage est fait sur le produit des
 from et to indiqués pour cette paire}
 }

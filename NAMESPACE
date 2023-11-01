@@ -3,6 +3,7 @@
 export(OTP_server)
 export(choisir_jour_transit)
 export(choix_jour)
+export(clusterize_com2com)
 export(dgr_distances_by_com)
 export(dgr_distances_by_paires)
 export(dgr_distances_full)
