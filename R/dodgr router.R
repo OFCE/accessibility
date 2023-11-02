@@ -768,10 +768,14 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
     steps <- cls$meta$total_k
     cli::cli_alert_info("Clustérization")
     logger::log_info(
-      "Clusterization {ofce::f2si2(npaires)} paires initial\n",
-      "               {ofce::f2si2(cls$meta$total)} paires en agrégation complète\n",
-      "               {ofce::f2si2(cls$meta$total_k)} paires en cluster\n",
-      "                plus petit cluster {ofce::f2si2(cls$meta$min_k)}\n",
+      "Clusterization {ofce::f2si2(npaires)} paires initial, {cls$meta$k} clusters")
+    logger::log_info(
+      "               {ofce::f2si2(cls$meta$total)} paires en agrégation complète")
+    logger::log_info(
+      "               {ofce::f2si2(cls$meta$total_k)} paires en cluster")
+    logger::log_info(
+      "                plus petit cluster {ofce::f2si2(cls$meta$min_k)}")
+    logger::log_info(
       "                réduction de temps estimée à {100-round(cls$meta$ecart_temps*100)}%")
   } else {
     com2com <- com2com |> mutate(cluster = 1)
@@ -789,7 +793,7 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
     reframe(COMMUNE = unique(COMMUNE)) |>
     group_by(cluster) |> 
     group_split()
- 
+  
   logger::log_appender(logger::appender_file(logfile))
   logger::log_layout(fmt)
   
@@ -811,7 +815,7 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
     
     logger::log_info(
       "cluster {.y}/{length(COMMUNES)} {ofce::f2si2(ss)} paires")
-  
+    
     ttm <- dgr_onedistance(rout, from, to, parallel)
     
     pb(amount=ss)
@@ -827,12 +831,12 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
       merge(to |> select(toId= idINS, DCLT), by = "toId")
     
     walk(.x$COMMUNE, \(com) {
-    dsdir <- glue::glue("{path}/'COMMUNE={com}'")
-    pqtname <- glue::glue("{dsdir}/ttm.parquet")
-    dir.create(path = dsdir,
-               recursive = TRUE,
-               showWarnings = FALSE)
-    arrow::write_parquet(ttm[COMMUNE==com,],pqtname)})
+      dsdir <- glue::glue("{path}/'COMMUNE={com}'")
+      pqtname <- glue::glue("{dsdir}/ttm.parquet")
+      dir.create(path = dsdir,
+                 recursive = TRUE,
+                 showWarnings = FALSE)
+      arrow::write_parquet(ttm[COMMUNE==com,],pqtname)})
   })
   
   time <- tictoc::toc(quiet=TRUE)
