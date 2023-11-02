@@ -715,7 +715,7 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
   
   logger::log_appender(logger::appender_file(logfile))
   logger::log_success("Calcul accessibilite version 3")
-  logger::log_success("  par commune")
+  logger::log_success("       par commune, mode {routeur$mode}")
   
   fmt <- logger::layout_glue_generator(
     format = "{pid} [{format(time, \"%H:%M:%S\")}] {msg}") 
@@ -774,9 +774,9 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
     logger::log_info(
       "               {ofce::f2si2(cls$meta$total_k)} paires en cluster")
     logger::log_info(
-      "                plus petit cluster {ofce::f2si2(cls$meta$min_k)}")
+      "               plus petit cluster {ofce::f2si2(cls$meta$min_k)}")
     logger::log_info(
-      "                réduction de temps estimée à {100-round(cls$meta$ecart_temps*100)}%")
+      "               réduction de temps estimée à {100-round(cls$meta$ecart_temps*100)}%")
   } else {
     com2com <- com2com |> mutate(cluster = 1)
     steps <- npaires
