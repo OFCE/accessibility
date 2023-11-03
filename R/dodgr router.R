@@ -308,7 +308,7 @@ routing_setup_dodgr <- function(
   mtnt <- lubridate::now()
   if("dz"%in% names(pg$graph_compound)) {
     pg$graph_compound$dzplus <- 
-      pg$graph_compound$dz * pg$graph_compound$d * (pg$graph_compound$dz >0)
+      pg$graph_compound$dz * (pg$graph_compound$dz >0)
     pg$graph_compound$dzplus[is.na(pg$graph_compound$dzplus)] <- 0
   }
   if(!nofuture) {
@@ -343,7 +343,7 @@ routing_setup_dodgr <- function(
       rout$pg <- load_streetnet(routing$graph_name)
       if("dz"%in% names(rout$pg$graph)) {
         rout$pg$graph_compound$dzplus <- 
-          rout$pg$graph_compound$dz * rout$pg$graph_compound$d * (rout$pg$graph_compound$dz >0)
+          rout$pg$graph_compound$dz * (rout$pg$graph_compound$dz >0)
         rout$pg$graph_compound$dzplus[is.na(rout$pg$graph_compound$dzplus)] <- 0
       }
       logger::log_info("router {graph_name} chargé")
@@ -831,7 +831,7 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
       merge(to |> select(toId= idINS, DCLT), by = "toId")
     
     walk(.x$COMMUNE, \(com) {
-      dsdir <- glue::glue("{path}/'COMMUNE={com}'")
+      dsdir <- glue::glue("{path}/COMMUNE={com}")
       pqtname <- glue::glue("{dsdir}/ttm.parquet")
       dir.create(path = dsdir,
                  recursive = TRUE,
