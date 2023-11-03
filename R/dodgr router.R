@@ -1055,7 +1055,7 @@ dgr_distances_by_paires <- function(
                showWarnings = FALSE)
     arrow::write_parquet(
       ttm, 
-      glue::glue("{path}/'gg={.y}'/ttm.parquet"))
+      glue::glue("{path}/gg={.y}/ttm.parquet"))
     
     ss <- nrow(ttm)
     pb(amount=ss)
