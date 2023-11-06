@@ -836,7 +836,9 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
       dir.create(path = dsdir,
                  recursive = TRUE,
                  showWarnings = FALSE)
-      arrow::write_parquet(ttm[COMMUNE==com,],pqtname)})
+      pqt <- ttm[COMMUNE==com, ]
+      pqt[, COMMUNE := NULL]
+      arrow::write_parquet(pqt,pqtname)})
   })
   
   time <- tictoc::toc(quiet=TRUE)
@@ -867,12 +869,13 @@ dgr_onedistance <- function(routeur, from, to, parallel = TRUE) {
   )
   
   routeur$pg$graph_compound$d <- routeur$pg$d
-  dist <- dodgr::dodgr_dists_pre(
+  dists <- dodgr::dodgr_dists_pre(
     to_from_indices = from_to_indexes,
     proc_g = routeur$pg,
     shortest = FALSE, 
-    parallel = parallel);
-  
+    parallel = parallel,
+    tdz = TRUE);
+  dist <- dists$distance
   dimnames(dist) <- list(from$idINS, to$idINS)
   dist <- data.table(dist, keep.rownames = TRUE)
   setnames(dist, "rn", "fromId")
@@ -882,13 +885,7 @@ dgr_onedistance <- function(routeur, from, to, parallel = TRUE) {
                value.name = "distance",
                variable.factor = FALSE)
   
-  routeur$pg$graph_compound$d <- routeur$pg$graph_compound$time
-  time <- dodgr::dodgr_dists_pre(
-    to_from_indices = from_to_indexes,
-    proc_g = routeur$pg,
-    shortest = FALSE, 
-    parallel = parallel)
-  
+  time <- dists$time
   dimnames(time) <- list(from$idINS, to$idINS)
   time <- data.table(time, keep.rownames = TRUE)
   setnames(time, "rn", "fromId")
@@ -899,13 +896,7 @@ dgr_onedistance <- function(routeur, from, to, parallel = TRUE) {
                variable.factor = FALSE)
   time[, travel_time := as.integer(travel_time/60)]
   
-  routeur$pg$graph_compound$d <- routeur$pg$graph_compound$dzplus
-  dzplus <- dodgr::dodgr_dists_pre(
-    to_from_indices = from_to_indexes,
-    proc_g = routeur$pg,
-    shortest = FALSE, 
-    parallel = parallel)
-  
+  dzplus <- dists$dzplus
   dimnames(dzplus) <- list(from$idINS, to$idINS)
   dzplus <- data.table(dzplus, keep.rownames = TRUE)
   setnames(dzplus, "rn", "fromId")
@@ -915,9 +906,9 @@ dgr_onedistance <- function(routeur, from, to, parallel = TRUE) {
                  value.name = "dzplus",
                  variable.factor = FALSE)
   
-  dist |> 
+  return(dist |> 
     merge(time, by = c("fromId", "toId")) |> 
-    merge(dzplus, by=c("fromId", "toId"))
+    merge(dzplus, by=c("fromId", "toId")))
 }
 
 # Full distance par paires ----------------
