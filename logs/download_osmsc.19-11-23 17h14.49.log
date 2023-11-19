@@ -1816,3 +1816,14 @@ INFO [2023-11-19 18:28:38] Error in check_for_error(paste0(doc)) :
 The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 29 seconds. 
 , distance 1 km; split (52)
 INFO [2023-11-19 18:29:16] d<1km, next
+INFO [2023-11-19 18:30:16] d<1km, next
+SUCCESS [2023-11-19 18:30:23] downloaded après 52 split
+SUCCESS [2023-11-19 18:30:28] downloaded après 52 split
+INFO [2023-11-19 18:30:55] d<1km, next
+INFO [2023-11-19 18:31:36] d<1km, next
+SUCCESS [2023-11-19 18:31:47] downloaded après 52 split
+SUCCESS [2023-11-19 18:31:54] downloaded après 52 split
+SUCCESS [2023-11-19 18:31:59] downloaded après 52 split
+SUCCESS [2023-11-19 18:32:04] downloaded après 52 split
+SUCCESS [2023-11-19 18:32:09] downloaded après 52 split
+SUCCESS [2023-11-19 18:32:14] downloaded après 52 split
