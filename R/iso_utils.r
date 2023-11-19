@@ -424,7 +424,7 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
       logger::log_debug("quoi_f:{nrow(quoi_f)}")
       
       # distances entre les ancres et les cibles
-      if(any(quoi_f))
+      if(any(quoi_f, na.rm=TRUE))
         ttm_0 <- iso_ttm(o = ttm_ou$les_ou,
                          d = quoi_4326[quoi_f],
                          tmax=tmax+delay+3,
@@ -560,8 +560,10 @@ minimax_euclid <- function(from, to, dist)
 
 ttm_idINS <- function(ttm, resolution=200) {
   require("data.table")
-  from <- ttm$fromId[, .(id, fromidINS = r3035::idINS3035(x,y, resolution = resolution))]
-  to <- ttm$toId[, .(id, toidINS = r3035::idINS3035(x,y, resolution = resolution))]
+  from <- ttm$fromId[,
+                     .(id, fromidINS = r3035::idINS3035(x,y, resolution = resolution))]
+  to <- ttm$toId[,
+                 .(id, toidINS = r3035::idINS3035(x,y, resolution = resolution))]
   tt <- ttm$time_table
   if(length(tt)>1)
     tt <- rbindlist(tt, use.names=TRUE, fill = TRUE)
