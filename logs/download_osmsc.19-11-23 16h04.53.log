@@ -1,0 +1,107 @@
+SUCCESS [2023-11-19 15:04:53] bbox 8.53467618458212
+SUCCESS [2023-11-19 15:04:53] bbox 41.3335556799454
+SUCCESS [2023-11-19 15:04:53] bbox 9.56009360694226
+SUCCESS [2023-11-19 15:04:53] bbox 43.027693388452
+SUCCESS [2023-11-19 15:04:59] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:00] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:01] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:02] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:04] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:05] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:05] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:05] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:08] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:09] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:09] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:09] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:10] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:14] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:15] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:15] downloaded après 0 split
+INFO [2023-11-19 15:05:28] Timed out split (0)
+INFO [2023-11-19 15:05:28] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 38 km; split (1)
+INFO [2023-11-19 15:05:28] Timed out split (0)
+INFO [2023-11-19 15:05:28] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 38 km; split (1)
+INFO [2023-11-19 15:05:30] Timed out split (0)
+INFO [2023-11-19 15:05:30] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 38 km; split (1)
+INFO [2023-11-19 15:05:33] Timed out split (0)
+INFO [2023-11-19 15:05:33] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 38 km; split (1)
+INFO [2023-11-19 15:05:37] Timed out split (0)
+INFO [2023-11-19 15:05:37] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 38 km; split (1)
+INFO [2023-11-19 15:05:44] Timed out split (0)
+INFO [2023-11-19 15:05:44] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 38 km; split (1)
+SUCCESS [2023-11-19 15:05:47] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:49] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:50] downloaded après 0 split
+SUCCESS [2023-11-19 15:05:52] downloaded après 1 split
+SUCCESS [2023-11-19 15:05:54] downloaded après 1 split
+SUCCESS [2023-11-19 15:05:56] downloaded après 1 split
+SUCCESS [2023-11-19 15:05:59] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:00] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:00] downloaded après 0 split
+INFO [2023-11-19 15:06:01] Timed out split (1)
+INFO [2023-11-19 15:06:01] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 21 km; split (2)
+SUCCESS [2023-11-19 15:06:03] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:04] downloaded après 2 split
+SUCCESS [2023-11-19 15:06:04] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:04] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:05] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:06] downloaded après 0 split
+SUCCESS [2023-11-19 15:06:08] downloaded après 2 split
+SUCCESS [2023-11-19 15:06:08] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:08] downloaded après 1 split
+INFO [2023-11-19 15:06:08] Timed out split (1)
+INFO [2023-11-19 15:06:08] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 21 km; split (2)
+SUCCESS [2023-11-19 15:06:09] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:10] downloaded après 2 split
+SUCCESS [2023-11-19 15:06:11] downloaded après 0 split
+SUCCESS [2023-11-19 15:06:11] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:11] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:12] downloaded après 2 split
+SUCCESS [2023-11-19 15:06:13] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:14] downloaded après 0 split
+SUCCESS [2023-11-19 15:06:15] downloaded après 0 split
+SUCCESS [2023-11-19 15:06:15] downloaded après 0 split
+SUCCESS [2023-11-19 15:06:16] downloaded après 2 split
+SUCCESS [2023-11-19 15:06:20] downloaded après 2 split
+SUCCESS [2023-11-19 15:06:21] downloaded après 2 split
+SUCCESS [2023-11-19 15:06:22] downloaded après 1 split
+SUCCESS [2023-11-19 15:06:25] downloaded après 2 split
+SUCCESS [2023-11-19 15:06:29] downloaded après 0 split
+SUCCESS [2023-11-19 15:06:30] downloaded après 0 split
+SUCCESS [2023-11-19 15:06:39] downloaded après 0 split
+SUCCESS [2023-11-19 15:06:52] downloaded après 2 split
+SUCCESS [2023-11-19 15:06:56] downloaded après 2 split
+SUCCESS [2023-11-19 15:06:59] downloaded après 2 split
+SUCCESS [2023-11-19 15:07:07] downloaded après 2 split
+SUCCESS [2023-11-19 15:07:10] downloaded après 2 split
+SUCCESS [2023-11-19 15:07:14] downloaded après 0 split
+INFO [2023-11-19 15:07:24] Timed out split (2)
+INFO [2023-11-19 15:07:25] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 21 km; split (3)
+SUCCESS [2023-11-19 15:07:27] downloaded après 3 split
+SUCCESS [2023-11-19 15:07:34] downloaded après 3 split
+SUCCESS [2023-11-19 15:07:54] downloaded après 3 split
+INFO [2023-11-19 15:08:28] Timed out split (3)
+INFO [2023-11-19 15:08:28] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 11 km; split (4)
+SUCCESS [2023-11-19 15:08:33] downloaded après 4 split
+SUCCESS [2023-11-19 15:08:51] downloaded après 4 split
+SUCCESS [2023-11-19 15:08:52] downloaded après 4 split
+INFO [2023-11-19 15:09:25] Timed out split (4)
+INFO [2023-11-19 15:09:25] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 6 km; split (5)
+SUCCESS [2023-11-19 15:09:25] downloaded après 5 split
+SUCCESS [2023-11-19 15:09:26] downloaded après 5 split
+SUCCESS [2023-11-19 15:09:27] downloaded après 5 split
+SUCCESS [2023-11-19 15:09:28] downloaded après 5 split
+SUCCESS [2023-11-19 15:09:32] downloaded après 0 split
+SUCCESS [2023-11-19 15:09:37] OSM silicate téléchargé: 4m 43s 101 Mb

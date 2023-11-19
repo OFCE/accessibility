@@ -12,7 +12,11 @@
 #'
 #'
 #'
-download_osmsc <- function(box, elevation=FALSE, workers = 1, .progress = TRUE) {
+download_osmsc <- function(box, 
+                           main_roads = FALSE,
+                           elevation=FALSE,
+                           workers = 1, 
+                           .progress = TRUE) {
   
   rlang::check_installed(
     "osmdata", 
@@ -63,22 +67,48 @@ download_osmsc <- function(box, elevation=FALSE, workers = 1, .progress = TRUE) 
     while(length (local_q) > 0) {
       
       opres <- NULL
-      opres <- try ({
-        opq (bbox = local_q[[1]], timeout = 25) |>
-          add_osm_features(features = fts) |>
-          osmdata_sc(quiet = TRUE)
-      })
-      
-      if (class(opres)[1] != "try-error") {
+      if(main_roads) {
+        opres <- try ({
+          opq (bbox = local_q[[1]], timeout = 25,
+               memsize = 1073741824) |>
+            add_osm_feature(
+              key="highway",
+              value = c("motorway", "trunk", "primary", "secondary", "tertiary",
+                        "motorway_link", "trunk_link", "primary_link", 
+                        "secondary_link", "tertiary_link")) |> 
+            add_osm_features(features = fts[-1]) |>
+            osmdata_sc(quiet = TRUE)
+        })  
+      } else {
+        opres <- try ({
+          opq (bbox = local_q[[1]], timeout = 25) |>
+            add_osm_features(features = fts) |>
+            osmdata_sc(quiet = TRUE)
+        })
+      }
+      if (!inherits(opres, "try-error")) {
         logger::log_success("downloaded après {split} split")
         result <- append(result, list (opres))
         local_q <- local_q[-1]
       } else {
+        if(!stringr::str_detect(opres[[1]], "timed out")&
+           !stringr::str_detect(opres[[1]], "[Tt]imeout")) {
+          logger::log_info("erreur non timed out {opres[[1]]} {local_q[[1]]}")
+          next()
+        }
+        d <- geodist::geodist(local_q[[1]][, "min"],local_q[[1]][, "max"])/1000
+        if(d<1)
+        {
+          logger::log_info("d<1km, next")
+          next()
+        }
+        logger::log_info("Timed out split ({split})")
         split <- split + 1
-        logger::log_info("{opres} split ({split})")
         
         bboxnew <- split_bbox(local_q[[1]])
-        queue <- append(bboxnew, local_q[-1])
+        local_q <- append(bboxnew, local_q[-1])
+        
+        logger::log_info("{opres[[1]]}, distance {round(d)} km; split ({split})")
       }
     }
     
@@ -103,9 +133,10 @@ download_osmsc <- function(box, elevation=FALSE, workers = 1, .progress = TRUE) 
   
   time <- tictoc::toc(log = TRUE, quiet = TRUE)
   dtime <- (time$toc - time$tic)
-  cli::cli_alert_success(
-    "OSM silicate téléchargé: {dtime%/%60}m {round(dtime-60*dtime%/%60)}s {signif(lobstr::obj_size(osm)/1024/1024, 3)} Mb")
-  
+  mes <-
+    "OSM silicate téléchargé: {dtime%/%60}m {round(dtime-60*dtime%/%60)}s {signif(lobstr::obj_size(osm)/1024/1024, 3)} Mb"
+  cli::cli_alert_success(mes)
+  logger::log_success(mes)
   return(osm)
 }
 
@@ -251,7 +282,6 @@ routing_setup_dodgr <- function(path,
   
   RcppParallel::setThreadOptions(
     numThreads = as.integer(n_threads))
-  # dans le path on s'attend à 1 fichier sfosm
   loff <- list.files(path=path, pattern = "*.scosm")
   if(length(loff)>1)
     cli::cli_alert_warning(
@@ -277,7 +307,7 @@ routing_setup_dodgr <- function(path,
     
     osm_network <- qs::qread(str_c(path, "/", loff[[1]]), nthreads=4)
     
-    dodgr::dodgr_cache_off()
+    dodgr::dodgr_cache_on()
     
     cli::cli_alert_info("Création du streetnet")
     graph <- dodgr::weight_streetnet(
@@ -293,7 +323,6 @@ routing_setup_dodgr <- function(path,
       cli::cli_alert_info("Déduplication")
       graph <- dodgr::dodgr_deduplicate_graph(graph)
     }
-    
     save_street_network(graph, filename = graph_name)
   }
   mtnt <- lubridate::now()
@@ -414,10 +443,10 @@ dodgr_ttm <- function(o, d, tmax, routing, dist_only = FALSE)
       dzplus <- data.table(dzplus, keep.rownames = TRUE)
       dzplus[, fromId:=rn |> as.integer()] [, rn:=NULL]
       dzplus <- melt(dzplus,
-                   id.vars="fromId", 
-                   variable.name="toId", 
-                   value.name = "dzplus", 
-                   variable.factor = FALSE)
+                     id.vars="fromId", 
+                     variable.name="toId", 
+                     value.name = "dzplus", 
+                     variable.factor = FALSE)
       temps <- merge(temps, 
                      dzplus,
                      by=c("fromId", "toId"),

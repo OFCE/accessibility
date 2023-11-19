@@ -1,0 +1,937 @@
+SUCCESS [2023-11-19 12:22:54] bbox -0.327176135408519
+SUCCESS [2023-11-19 12:22:54] bbox 42.3329214678768
+SUCCESS [2023-11-19 12:22:54] bbox 4.84556885066245
+SUCCESS [2023-11-19 12:22:54] bbox 45.0466746382516
+SUCCESS [2023-11-19 12:23:01] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:07] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:11] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:11] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:12] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:13] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:14] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:16] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:18] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:21] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:21] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:21] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:21] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:24] downloaded après 0 split
+SUCCESS [2023-11-19 12:23:25] downloaded après 0 split
+INFO [2023-11-19 12:23:26] Timed out split (0)
+INFO [2023-11-19 12:23:26] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 7 after 26 seconds. 
+, distance 94 km; split (1)
+SUCCESS [2023-11-19 12:23:28] downloaded après 0 split
+INFO [2023-11-19 12:23:31] Timed out split (0)
+INFO [2023-11-19 12:23:31] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 9 after 26 seconds. 
+, distance 94 km; split (1)
+INFO [2023-11-19 12:23:34] Timed out split (0)
+INFO [2023-11-19 12:23:34] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 4 after 27 seconds. 
+, distance 94 km; split (1)
+INFO [2023-11-19 12:23:35] Timed out split (0)
+INFO [2023-11-19 12:23:35] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 4 after 26 seconds. 
+, distance 94 km; split (1)
+INFO [2023-11-19 12:23:36] Timed out split (0)
+INFO [2023-11-19 12:23:36] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 37 seconds. 
+, distance 95 km; split (1)
+INFO [2023-11-19 12:23:37] Timed out split (0)
+INFO [2023-11-19 12:23:37] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 18 after 26 seconds. 
+, distance 94 km; split (1)
+SUCCESS [2023-11-19 12:23:37] downloaded après 0 split
+INFO [2023-11-19 12:23:39] Timed out split (0)
+INFO [2023-11-19 12:23:39] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 31 seconds. 
+, distance 93 km; split (1)
+INFO [2023-11-19 12:23:44] Timed out split (0)
+INFO [2023-11-19 12:23:44] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 43 seconds. 
+, distance 93 km; split (1)
+SUCCESS [2023-11-19 12:23:44] downloaded après 1 split
+SUCCESS [2023-11-19 12:23:46] downloaded après 1 split
+SUCCESS [2023-11-19 12:23:46] downloaded après 1 split
+INFO [2023-11-19 12:23:47] Timed out split (0)
+INFO [2023-11-19 12:23:47] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 26 seconds. 
+, distance 93 km; split (1)
+INFO [2023-11-19 12:23:48] Timed out split (0)
+INFO [2023-11-19 12:23:48] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 4 after 27 seconds. 
+, distance 94 km; split (1)
+SUCCESS [2023-11-19 12:23:52] downloaded après 1 split
+SUCCESS [2023-11-19 12:23:52] downloaded après 1 split
+SUCCESS [2023-11-19 12:23:53] downloaded après 1 split
+SUCCESS [2023-11-19 12:23:56] downloaded après 1 split
+SUCCESS [2023-11-19 12:23:57] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:03] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:06] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:07] downloaded après 1 split
+INFO [2023-11-19 12:24:07] Timed out split (1)
+INFO [2023-11-19 12:24:07] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 32 seconds. 
+, distance 52 km; split (2)
+SUCCESS [2023-11-19 12:24:08] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:08] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:10] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:14] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:15] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:15] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:17] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:20] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:20] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:22] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:25] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:26] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:30] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:30] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:32] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:34] downloaded après 1 split
+INFO [2023-11-19 12:24:36] Timed out split (2)
+INFO [2023-11-19 12:24:36] Timed out split (1)
+INFO [2023-11-19 12:24:36] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 27 seconds. 
+, distance 28 km; split (3)
+INFO [2023-11-19 12:24:36] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 52 seconds. 
+, distance 52 km; split (2)
+SUCCESS [2023-11-19 12:24:38] downloaded après 1 split
+SUCCESS [2023-11-19 12:24:40] downloaded après 0 split
+SUCCESS [2023-11-19 12:24:43] downloaded après 2 split
+INFO [2023-11-19 12:24:49] Timed out split (0)
+INFO [2023-11-19 12:24:49] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 4 after 26 seconds. 
+, distance 94 km; split (1)
+INFO [2023-11-19 12:24:52] Timed out split (1)
+INFO [2023-11-19 12:24:52] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 38 seconds. 
+, distance 52 km; split (2)
+INFO [2023-11-19 12:24:57] Timed out split (0)
+INFO [2023-11-19 12:24:57] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 26 seconds. 
+, distance 94 km; split (1)
+INFO [2023-11-19 12:24:58] Timed out split (0)
+INFO [2023-11-19 12:24:58] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 22 after 26 seconds. 
+, distance 95 km; split (1)
+INFO [2023-11-19 12:25:00] Timed out split (1)
+INFO [2023-11-19 12:25:00] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 30 seconds. 
+, distance 52 km; split (2)
+SUCCESS [2023-11-19 12:25:01] downloaded après 2 split
+SUCCESS [2023-11-19 12:25:03] downloaded après 1 split
+SUCCESS [2023-11-19 12:25:03] downloaded après 3 split
+SUCCESS [2023-11-19 12:25:04] downloaded après 1 split
+SUCCESS [2023-11-19 12:25:05] downloaded après 2 split
+SUCCESS [2023-11-19 12:25:05] downloaded après 2 split
+SUCCESS [2023-11-19 12:25:07] downloaded après 2 split
+INFO [2023-11-19 12:25:07] Timed out split (1)
+INFO [2023-11-19 12:25:07] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 27 seconds. 
+, distance 52 km; split (2)
+SUCCESS [2023-11-19 12:25:08] downloaded après 1 split
+SUCCESS [2023-11-19 12:25:08] downloaded après 3 split
+SUCCESS [2023-11-19 12:25:09] downloaded après 2 split
+SUCCESS [2023-11-19 12:25:10] downloaded après 1 split
+SUCCESS [2023-11-19 12:25:16] downloaded après 2 split
+SUCCESS [2023-11-19 12:25:16] downloaded après 2 split
+SUCCESS [2023-11-19 12:25:19] downloaded après 3 split
+SUCCESS [2023-11-19 12:25:20] downloaded après 1 split
+SUCCESS [2023-11-19 12:25:21] downloaded après 2 split
+SUCCESS [2023-11-19 12:25:24] downloaded après 1 split
+SUCCESS [2023-11-19 12:25:25] downloaded après 1 split
+SUCCESS [2023-11-19 12:25:27] downloaded après 1 split
+SUCCESS [2023-11-19 12:25:29] downloaded après 2 split
+SUCCESS [2023-11-19 12:25:31] downloaded après 1 split
+SUCCESS [2023-11-19 12:25:31] downloaded après 1 split
+INFO [2023-11-19 12:25:39] Timed out split (2)
+INFO [2023-11-19 12:25:39] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 30 seconds. 
+, distance 28 km; split (3)
+SUCCESS [2023-11-19 12:25:40] downloaded après 2 split
+SUCCESS [2023-11-19 12:25:44] downloaded après 3 split
+SUCCESS [2023-11-19 12:25:46] downloaded après 1 split
+INFO [2023-11-19 12:25:49] Timed out split (2)
+INFO [2023-11-19 12:25:49] Timed out split (3)
+INFO [2023-11-19 12:25:49] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 33 seconds. 
+, distance 28 km; split (3)
+INFO [2023-11-19 12:25:49] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 30 seconds. 
+, distance 16 km; split (4)
+INFO [2023-11-19 12:25:49] Timed out split (2)
+INFO [2023-11-19 12:25:49] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 33 seconds. 
+, distance 28 km; split (3)
+SUCCESS [2023-11-19 12:25:51] downloaded après 4 split
+SUCCESS [2023-11-19 12:25:53] downloaded après 4 split
+INFO [2023-11-19 12:25:56] Timed out split (0)
+INFO [2023-11-19 12:25:56] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 27 seconds. 
+, distance 95 km; split (1)
+INFO [2023-11-19 12:25:57] Timed out split (1)
+INFO [2023-11-19 12:25:57] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 23 after 26 seconds. 
+, distance 52 km; split (2)
+SUCCESS [2023-11-19 12:25:58] downloaded après 3 split
+SUCCESS [2023-11-19 12:25:59] downloaded après 2 split
+SUCCESS [2023-11-19 12:26:01] downloaded après 1 split
+SUCCESS [2023-11-19 12:26:03] downloaded après 3 split
+SUCCESS [2023-11-19 12:26:05] downloaded après 2 split
+SUCCESS [2023-11-19 12:26:06] downloaded après 2 split
+SUCCESS [2023-11-19 12:26:11] downloaded après 3 split
+SUCCESS [2023-11-19 12:26:11] downloaded après 1 split
+INFO [2023-11-19 12:26:15] Timed out split (3)
+INFO [2023-11-19 12:26:15] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 31 seconds. 
+, distance 16 km; split (4)
+SUCCESS [2023-11-19 12:26:16] downloaded après 1 split
+SUCCESS [2023-11-19 12:26:17] downloaded après 3 split
+SUCCESS [2023-11-19 12:26:19] downloaded après 4 split
+SUCCESS [2023-11-19 12:26:22] downloaded après 3 split
+SUCCESS [2023-11-19 12:26:23] downloaded après 3 split
+SUCCESS [2023-11-19 12:26:25] downloaded après 1 split
+SUCCESS [2023-11-19 12:26:26] downloaded après 3 split
+SUCCESS [2023-11-19 12:26:29] downloaded après 3 split
+INFO [2023-11-19 12:26:32] Timed out split (2)
+INFO [2023-11-19 12:26:32] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 26 seconds. 
+, distance 29 km; split (3)
+SUCCESS [2023-11-19 12:26:35] downloaded après 3 split
+SUCCESS [2023-11-19 12:26:37] downloaded après 4 split
+SUCCESS [2023-11-19 12:26:38] downloaded après 4 split
+SUCCESS [2023-11-19 12:26:39] downloaded après 4 split
+SUCCESS [2023-11-19 12:26:41] downloaded après 4 split
+SUCCESS [2023-11-19 12:26:42] downloaded après 3 split
+SUCCESS [2023-11-19 12:26:42] downloaded après 4 split
+SUCCESS [2023-11-19 12:26:42] downloaded après 4 split
+SUCCESS [2023-11-19 12:26:44] downloaded après 3 split
+SUCCESS [2023-11-19 12:26:46] downloaded après 4 split
+SUCCESS [2023-11-19 12:26:48] downloaded après 3 split
+SUCCESS [2023-11-19 12:26:50] downloaded après 4 split
+SUCCESS [2023-11-19 12:26:51] downloaded après 4 split
+SUCCESS [2023-11-19 12:26:52] downloaded après 3 split
+SUCCESS [2023-11-19 12:26:53] downloaded après 4 split
+SUCCESS [2023-11-19 12:27:00] downloaded après 3 split
+SUCCESS [2023-11-19 12:27:08] downloaded après 4 split
+SUCCESS [2023-11-19 12:27:11] downloaded après 4 split
+INFO [2023-11-19 12:27:14] Timed out split (0)
+INFO [2023-11-19 12:27:14] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 26 seconds. 
+, distance 93 km; split (1)
+SUCCESS [2023-11-19 12:27:18] downloaded après 3 split
+INFO [2023-11-19 12:27:22] Timed out split (0)
+INFO [2023-11-19 12:27:22] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 27 after 26 seconds. 
+, distance 93 km; split (1)
+SUCCESS [2023-11-19 12:27:25] downloaded après 4 split
+SUCCESS [2023-11-19 12:27:28] downloaded après 1 split
+SUCCESS [2023-11-19 12:27:35] downloaded après 1 split
+SUCCESS [2023-11-19 12:27:38] downloaded après 1 split
+SUCCESS [2023-11-19 12:27:43] downloaded après 1 split
+INFO [2023-11-19 12:27:48] Timed out split (3)
+INFO [2023-11-19 12:27:48] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 30 seconds. 
+, distance 28 km; split (4)
+SUCCESS [2023-11-19 12:27:49] downloaded après 1 split
+SUCCESS [2023-11-19 12:27:51] downloaded après 4 split
+SUCCESS [2023-11-19 12:27:53] downloaded après 1 split
+SUCCESS [2023-11-19 12:27:54] downloaded après 1 split
+INFO [2023-11-19 12:27:55] Timed out split (4)
+INFO [2023-11-19 12:27:55] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 30 seconds. 
+, distance 52 km; split (5)
+SUCCESS [2023-11-19 12:27:56] downloaded après 4 split
+SUCCESS [2023-11-19 12:27:59] downloaded après 5 split
+SUCCESS [2023-11-19 12:28:07] downloaded après 5 split
+SUCCESS [2023-11-19 12:28:08] downloaded après 1 split
+SUCCESS [2023-11-19 12:28:08] downloaded après 4 split
+SUCCESS [2023-11-19 12:28:27] downloaded après 4 split
+INFO [2023-11-19 12:28:44] Timed out split (5)
+INFO [2023-11-19 12:28:44] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 37 seconds. 
+, distance 28 km; split (6)
+SUCCESS [2023-11-19 12:28:47] downloaded après 6 split
+INFO [2023-11-19 12:29:17] Timed out split (6)
+INFO [2023-11-19 12:29:17] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 29 seconds. 
+, distance 16 km; split (7)
+SUCCESS [2023-11-19 12:29:20] downloaded après 7 split
+SUCCESS [2023-11-19 12:29:23] downloaded après 7 split
+SUCCESS [2023-11-19 12:29:25] downloaded après 7 split
+SUCCESS [2023-11-19 12:29:26] downloaded après 7 split
+SUCCESS [2023-11-19 12:29:28] downloaded après 7 split
+SUCCESS [2023-11-19 12:29:33] downloaded après 7 split
+INFO [2023-11-19 12:30:03] Timed out split (7)
+INFO [2023-11-19 12:30:03] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 30 seconds. 
+, distance 28 km; split (8)
+SUCCESS [2023-11-19 12:30:06] downloaded après 8 split
+INFO [2023-11-19 12:30:40] Timed out split (8)
+INFO [2023-11-19 12:30:40] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 33 seconds. 
+, distance 16 km; split (9)
+SUCCESS [2023-11-19 12:30:45] downloaded après 9 split
+INFO [2023-11-19 12:31:21] Timed out split (9)
+INFO [2023-11-19 12:31:21] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 35 seconds. 
+, distance 9 km; split (10)
+SUCCESS [2023-11-19 12:31:51] downloaded après 10 split
+INFO [2023-11-19 12:32:20] Timed out split (10)
+INFO [2023-11-19 12:32:20] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 28 seconds. 
+, distance 5 km; split (11)
+SUCCESS [2023-11-19 12:32:23] downloaded après 11 split
+SUCCESS [2023-11-19 12:32:26] downloaded après 11 split
+SUCCESS [2023-11-19 12:32:30] downloaded après 11 split
+SUCCESS [2023-11-19 12:32:34] downloaded après 11 split
+SUCCESS [2023-11-19 12:32:37] downloaded après 11 split
+SUCCESS [2023-11-19 12:33:13] downloaded après 11 split
+SUCCESS [2023-11-19 12:33:39] downloaded après 11 split
+INFO [2023-11-19 12:34:14] Timed out split (11)
+INFO [2023-11-19 12:34:14] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 35 seconds. 
+, distance 9 km; split (12)
+SUCCESS [2023-11-19 12:34:17] downloaded après 12 split
+INFO [2023-11-19 12:34:48] Timed out split (12)
+INFO [2023-11-19 12:34:48] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 31 seconds. 
+, distance 5 km; split (13)
+SUCCESS [2023-11-19 12:34:50] downloaded après 13 split
+INFO [2023-11-19 12:35:30] Timed out split (13)
+INFO [2023-11-19 12:35:30] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 40 seconds. 
+, distance 3 km; split (14)
+SUCCESS [2023-11-19 12:35:37] downloaded après 14 split
+SUCCESS [2023-11-19 12:35:41] downloaded après 14 split
+INFO [2023-11-19 12:36:23] Timed out split (14)
+INFO [2023-11-19 12:36:23] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 42 seconds. 
+, distance 1 km; split (15)
+SUCCESS [2023-11-19 12:36:27] downloaded après 15 split
+SUCCESS [2023-11-19 12:36:32] downloaded après 15 split
+SUCCESS [2023-11-19 12:36:35] downloaded après 15 split
+SUCCESS [2023-11-19 12:36:39] downloaded après 15 split
+INFO [2023-11-19 12:37:05] Timed out split (15)
+INFO [2023-11-19 12:37:05] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 26 seconds. 
+, distance 1 km; split (16)
+SUCCESS [2023-11-19 12:37:48] downloaded après 16 split
+SUCCESS [2023-11-19 12:37:51] downloaded après 16 split
+INFO [2023-11-19 12:38:32] d<1km, next
+SUCCESS [2023-11-19 12:38:36] downloaded après 16 split
+INFO [2023-11-19 12:39:14] d<1km, next
+SUCCESS [2023-11-19 12:39:18] downloaded après 16 split
+SUCCESS [2023-11-19 12:39:23] downloaded après 16 split
+INFO [2023-11-19 12:40:41] Timed out split (16)
+INFO [2023-11-19 12:40:41] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 78 seconds. 
+, distance 3 km; split (17)
+SUCCESS [2023-11-19 12:40:45] downloaded après 17 split
+SUCCESS [2023-11-19 12:40:49] downloaded après 17 split
+SUCCESS [2023-11-19 12:40:53] downloaded après 17 split
+SUCCESS [2023-11-19 12:41:55] downloaded après 17 split
+SUCCESS [2023-11-19 12:42:02] downloaded après 17 split
+SUCCESS [2023-11-19 12:42:11] downloaded après 17 split
+SUCCESS [2023-11-19 12:42:18] downloaded après 17 split
+INFO [2023-11-19 12:42:47] Timed out split (17)
+INFO [2023-11-19 12:42:47] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 29 seconds. 
+, distance 16 km; split (18)
+INFO [2023-11-19 12:43:18] Timed out split (18)
+INFO [2023-11-19 12:43:18] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 30 seconds. 
+, distance 9 km; split (19)
+SUCCESS [2023-11-19 12:43:42] downloaded après 19 split
+SUCCESS [2023-11-19 12:44:17] downloaded après 19 split
+SUCCESS [2023-11-19 12:44:23] downloaded après 19 split
+SUCCESS [2023-11-19 12:44:42] downloaded après 19 split
+INFO [2023-11-19 12:45:09] Timed out split (19)
+INFO [2023-11-19 12:45:09] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 27 seconds. 
+, distance 9 km; split (20)
+SUCCESS [2023-11-19 12:45:16] downloaded après 20 split
+INFO [2023-11-19 12:46:31] Timed out split (20)
+INFO [2023-11-19 12:46:31] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 75 seconds. 
+, distance 5 km; split (21)
+SUCCESS [2023-11-19 12:46:38] downloaded après 21 split
+INFO [2023-11-19 12:47:07] Timed out split (21)
+INFO [2023-11-19 12:47:07] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 28 seconds. 
+, distance 3 km; split (22)
+INFO [2023-11-19 12:48:06] Timed out split (22)
+INFO [2023-11-19 12:48:06] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 59 seconds. 
+, distance 1 km; split (23)
+SUCCESS [2023-11-19 12:48:12] downloaded après 23 split
+SUCCESS [2023-11-19 12:48:16] downloaded après 23 split
+SUCCESS [2023-11-19 12:48:21] downloaded après 23 split
+SUCCESS [2023-11-19 12:48:25] downloaded après 23 split
+SUCCESS [2023-11-19 12:48:26] downloaded après 23 split
+SUCCESS [2023-11-19 12:48:28] downloaded après 23 split
+INFO [2023-11-19 12:48:55] Timed out split (23)
+INFO [2023-11-19 12:48:55] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 26 seconds. 
+, distance 1 km; split (24)
+SUCCESS [2023-11-19 12:48:58] downloaded après 24 split
+SUCCESS [2023-11-19 12:49:01] downloaded après 24 split
+SUCCESS [2023-11-19 12:49:25] downloaded après 24 split
+SUCCESS [2023-11-19 12:50:02] downloaded après 24 split
+INFO [2023-11-19 12:50:49] Timed out split (24)
+INFO [2023-11-19 12:50:49] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 47 seconds. 
+, distance 3 km; split (25)
+INFO [2023-11-19 12:51:22] Timed out split (25)
+INFO [2023-11-19 12:51:22] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 33 seconds. 
+, distance 1 km; split (26)
+SUCCESS [2023-11-19 12:51:30] downloaded après 26 split
+INFO [2023-11-19 12:52:36] d<1km, next
+SUCCESS [2023-11-19 12:52:43] downloaded après 26 split
+SUCCESS [2023-11-19 12:52:48] downloaded après 26 split
+SUCCESS [2023-11-19 12:52:52] downloaded après 26 split
+SUCCESS [2023-11-19 12:53:33] downloaded après 26 split
+INFO [2023-11-19 12:54:23] Timed out split (26)
+INFO [2023-11-19 12:54:23] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 50 seconds. 
+, distance 1 km; split (27)
+INFO [2023-11-19 12:55:07] d<1km, next
+INFO [2023-11-19 12:55:53] d<1km, next
+SUCCESS [2023-11-19 12:56:00] downloaded après 27 split
+SUCCESS [2023-11-19 12:56:03] downloaded après 27 split
+SUCCESS [2023-11-19 12:56:44] downloaded après 27 split
+SUCCESS [2023-11-19 12:56:49] downloaded après 27 split
+SUCCESS [2023-11-19 12:56:53] downloaded après 27 split
+SUCCESS [2023-11-19 12:57:15] downloaded après 27 split
+SUCCESS [2023-11-19 12:57:55] downloaded après 27 split
+SUCCESS [2023-11-19 12:58:13] downloaded après 27 split
+SUCCESS [2023-11-19 12:58:21] downloaded après 27 split
+SUCCESS [2023-11-19 12:58:30] downloaded après 27 split
+INFO [2023-11-19 12:59:06] Timed out split (27)
+INFO [2023-11-19 12:59:06] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 36 seconds. 
+, distance 52 km; split (28)
+INFO [2023-11-19 12:59:40] Timed out split (28)
+INFO [2023-11-19 12:59:40] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 34 seconds. 
+, distance 28 km; split (29)
+SUCCESS [2023-11-19 12:59:45] downloaded après 29 split
+SUCCESS [2023-11-19 12:59:49] downloaded après 29 split
+SUCCESS [2023-11-19 13:00:21] downloaded après 29 split
+SUCCESS [2023-11-19 13:00:25] downloaded après 29 split
+SUCCESS [2023-11-19 13:00:36] downloaded après 29 split
+INFO [2023-11-19 13:01:15] Timed out split (29)
+INFO [2023-11-19 13:01:15] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 38 seconds. 
+, distance 28 km; split (30)
+SUCCESS [2023-11-19 13:01:35] downloaded après 30 split
+INFO [2023-11-19 13:02:02] Timed out split (30)
+INFO [2023-11-19 13:02:02] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 27 seconds. 
+, distance 16 km; split (31)
+SUCCESS [2023-11-19 13:02:06] downloaded après 31 split
+SUCCESS [2023-11-19 13:02:08] downloaded après 31 split
+INFO [2023-11-19 13:03:09] Timed out split (31)
+INFO [2023-11-19 13:03:09] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 61 seconds. 
+, distance 9 km; split (32)
+INFO [2023-11-19 13:04:02] Timed out split (32)
+INFO [2023-11-19 13:04:02] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 52 seconds. 
+, distance 5 km; split (33)
+SUCCESS [2023-11-19 13:04:05] downloaded après 33 split
+SUCCESS [2023-11-19 13:04:08] downloaded après 33 split
+SUCCESS [2023-11-19 13:04:32] downloaded après 33 split
+INFO [2023-11-19 13:05:04] Timed out split (33)
+INFO [2023-11-19 13:05:04] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 32 seconds. 
+, distance 3 km; split (34)
+SUCCESS [2023-11-19 13:05:11] downloaded après 34 split
+INFO [2023-11-19 13:06:01] Timed out split (34)
+INFO [2023-11-19 13:06:01] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 49 seconds. 
+, distance 1 km; split (35)
+SUCCESS [2023-11-19 13:06:03] downloaded après 35 split
+SUCCESS [2023-11-19 13:06:08] downloaded après 35 split
+INFO [2023-11-19 13:07:00] d<1km, next
+SUCCESS [2023-11-19 13:07:08] downloaded après 35 split
+INFO [2023-11-19 13:07:54] d<1km, next
+INFO [2023-11-19 13:08:22] d<1km, next
+SUCCESS [2023-11-19 13:08:29] downloaded après 35 split
+SUCCESS [2023-11-19 13:08:32] downloaded après 35 split
+SUCCESS [2023-11-19 13:08:36] downloaded après 35 split
+SUCCESS [2023-11-19 13:08:43] downloaded après 35 split
+SUCCESS [2023-11-19 13:08:47] downloaded après 35 split
+SUCCESS [2023-11-19 13:08:49] downloaded après 35 split
+INFO [2023-11-19 13:09:40] Timed out split (35)
+INFO [2023-11-19 13:09:40] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 51 seconds. 
+, distance 9 km; split (36)
+INFO [2023-11-19 13:10:36] Timed out split (36)
+INFO [2023-11-19 13:10:36] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 56 seconds. 
+, distance 5 km; split (37)
+SUCCESS [2023-11-19 13:10:39] downloaded après 37 split
+SUCCESS [2023-11-19 13:10:42] downloaded après 37 split
+SUCCESS [2023-11-19 13:10:50] downloaded après 37 split
+SUCCESS [2023-11-19 13:10:56] downloaded après 37 split
+SUCCESS [2023-11-19 13:11:03] downloaded après 37 split
+SUCCESS [2023-11-19 13:11:06] downloaded après 37 split
+INFO [2023-11-19 13:12:01] Timed out split (37)
+INFO [2023-11-19 13:12:01] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 53 seconds. 
+, distance 5 km; split (38)
+INFO [2023-11-19 13:12:55] Timed out split (38)
+INFO [2023-11-19 13:12:55] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 54 seconds. 
+, distance 3 km; split (39)
+SUCCESS [2023-11-19 13:13:02] downloaded après 39 split
+SUCCESS [2023-11-19 13:13:08] downloaded après 39 split
+SUCCESS [2023-11-19 13:13:09] downloaded après 39 split
+SUCCESS [2023-11-19 13:13:12] downloaded après 39 split
+INFO [2023-11-19 13:13:48] Timed out split (39)
+INFO [2023-11-19 13:13:48] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 35 seconds. 
+, distance 3 km; split (40)
+INFO [2023-11-19 13:14:39] Timed out split (40)
+INFO [2023-11-19 13:14:39] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 51 seconds. 
+, distance 1 km; split (41)
+INFO [2023-11-19 13:15:27] d<1km, next
+INFO [2023-11-19 13:15:55] d<1km, next
+SUCCESS [2023-11-19 13:16:01] downloaded après 41 split
+SUCCESS [2023-11-19 13:16:10] downloaded après 41 split
+SUCCESS [2023-11-19 13:16:13] downloaded après 41 split
+INFO [2023-11-19 13:17:01] d<1km, next
+INFO [2023-11-19 13:17:50] d<1km, next
+SUCCESS [2023-11-19 13:17:58] downloaded après 41 split
+INFO [2023-11-19 13:18:52] Timed out split (41)
+INFO [2023-11-19 13:18:52] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 54 seconds. 
+, distance 1 km; split (42)
+INFO [2023-11-19 13:19:58] d<1km, next
+INFO [2023-11-19 13:20:56] d<1km, next
+SUCCESS [2023-11-19 13:21:03] downloaded après 42 split
+SUCCESS [2023-11-19 13:21:04] downloaded après 42 split
+SUCCESS [2023-11-19 13:21:12] downloaded après 42 split
+INFO [2023-11-19 13:22:01] d<1km, next
+INFO [2023-11-19 13:22:47] d<1km, next
+INFO [2023-11-19 13:23:47] d<1km, next
+INFO [2023-11-19 13:24:44] d<1km, next
+INFO [2023-11-19 13:25:47] d<1km, next
+INFO [2023-11-19 13:26:49] d<1km, next
+INFO [2023-11-19 13:27:37] d<1km, next
+INFO [2023-11-19 13:28:33] d<1km, next
+INFO [2023-11-19 13:29:34] d<1km, next
+INFO [2023-11-19 13:30:24] d<1km, next
+INFO [2023-11-19 13:31:30] d<1km, next
+INFO [2023-11-19 13:32:23] d<1km, next
+INFO [2023-11-19 13:33:05] d<1km, next
+SUCCESS [2023-11-19 13:33:16] downloaded après 42 split
+SUCCESS [2023-11-19 13:33:19] downloaded après 42 split
+SUCCESS [2023-11-19 13:33:20] downloaded après 42 split
+SUCCESS [2023-11-19 13:33:22] downloaded après 42 split
+SUCCESS [2023-11-19 13:33:25] downloaded après 42 split
+SUCCESS [2023-11-19 13:34:05] downloaded après 42 split
+SUCCESS [2023-11-19 13:34:35] downloaded après 42 split
+SUCCESS [2023-11-19 13:34:55] downloaded après 42 split
+INFO [2023-11-19 13:36:45] Timed out split (0)
+INFO [2023-11-19 13:36:45] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 18 after 26 seconds. 
+, distance 93 km; split (1)
+SUCCESS [2023-11-19 13:37:07] downloaded après 1 split
+SUCCESS [2023-11-19 13:37:22] downloaded après 1 split
+INFO [2023-11-19 13:37:56] Timed out split (1)
+INFO [2023-11-19 13:37:56] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 34 seconds. 
+, distance 51 km; split (2)
+SUCCESS [2023-11-19 13:38:01] downloaded après 2 split
+SUCCESS [2023-11-19 13:38:05] downloaded après 2 split
+SUCCESS [2023-11-19 13:38:16] downloaded après 2 split
+INFO [2023-11-19 13:38:46] Timed out split (2)
+INFO [2023-11-19 13:38:46] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 30 seconds. 
+, distance 28 km; split (3)
+SUCCESS [2023-11-19 13:38:54] downloaded après 3 split
+SUCCESS [2023-11-19 13:39:04] downloaded après 3 split
+SUCCESS [2023-11-19 13:39:09] downloaded après 3 split
+SUCCESS [2023-11-19 13:39:11] downloaded après 3 split
+SUCCESS [2023-11-19 13:39:26] downloaded après 3 split
+INFO [2023-11-19 13:40:01] Timed out split (0)
+INFO [2023-11-19 13:40:01] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "query" at line 14 after 26 seconds. 
+, distance 93 km; split (1)
+SUCCESS [2023-11-19 13:40:12] downloaded après 1 split
+SUCCESS [2023-11-19 13:40:18] downloaded après 1 split
+INFO [2023-11-19 13:41:06] Timed out split (1)
+INFO [2023-11-19 13:41:06] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 47 seconds. 
+, distance 51 km; split (2)
+SUCCESS [2023-11-19 13:41:10] downloaded après 2 split
+SUCCESS [2023-11-19 13:41:15] downloaded après 2 split
+INFO [2023-11-19 13:41:45] Timed out split (2)
+INFO [2023-11-19 13:41:45] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 30 seconds. 
+, distance 28 km; split (3)
+SUCCESS [2023-11-19 13:41:49] downloaded après 3 split
+SUCCESS [2023-11-19 13:42:16] downloaded après 3 split
+SUCCESS [2023-11-19 13:42:23] downloaded après 3 split
+INFO [2023-11-19 13:43:42] Timed out split (3)
+INFO [2023-11-19 13:43:42] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 79 seconds. 
+, distance 15 km; split (4)
+SUCCESS [2023-11-19 13:43:45] downloaded après 4 split
+SUCCESS [2023-11-19 13:44:20] downloaded après 4 split
+INFO [2023-11-19 13:44:49] Timed out split (4)
+INFO [2023-11-19 13:44:49] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 27 seconds. 
+, distance 9 km; split (5)
+INFO [2023-11-19 13:45:40] Timed out split (5)
+INFO [2023-11-19 13:45:40] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 51 seconds. 
+, distance 5 km; split (6)
+SUCCESS [2023-11-19 13:45:43] downloaded après 6 split
+SUCCESS [2023-11-19 13:45:44] downloaded après 6 split
+INFO [2023-11-19 13:46:28] Timed out split (6)
+INFO [2023-11-19 13:46:28] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 44 seconds. 
+, distance 3 km; split (7)
+SUCCESS [2023-11-19 13:46:31] downloaded après 7 split
+SUCCESS [2023-11-19 13:46:34] downloaded après 7 split
+INFO [2023-11-19 13:47:31] Timed out split (7)
+INFO [2023-11-19 13:47:31] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 57 seconds. 
+, distance 1 km; split (8)
+INFO [2023-11-19 13:48:11] d<1km, next
+INFO [2023-11-19 13:48:58] d<1km, next
+INFO [2023-11-19 13:50:00] d<1km, next
+INFO [2023-11-19 13:51:10] d<1km, next
+INFO [2023-11-19 13:52:04] d<1km, next
+SUCCESS [2023-11-19 13:52:14] downloaded après 8 split
+SUCCESS [2023-11-19 13:52:20] downloaded après 8 split
+INFO [2023-11-19 13:53:09] d<1km, next
+SUCCESS [2023-11-19 13:53:15] downloaded après 8 split
+SUCCESS [2023-11-19 13:53:21] downloaded après 8 split
+INFO [2023-11-19 13:54:19] Timed out split (8)
+INFO [2023-11-19 13:54:19] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 58 seconds. 
+, distance 1 km; split (9)
+SUCCESS [2023-11-19 13:54:22] downloaded après 9 split
+SUCCESS [2023-11-19 13:54:23] downloaded après 9 split
+INFO [2023-11-19 13:55:14] d<1km, next
+INFO [2023-11-19 13:56:05] d<1km, next
+INFO [2023-11-19 13:56:49] d<1km, next
+INFO [2023-11-19 13:57:40] d<1km, next
+SUCCESS [2023-11-19 13:57:50] downloaded après 9 split
+INFO [2023-11-19 13:58:48] d<1km, next
+SUCCESS [2023-11-19 13:58:55] downloaded après 9 split
+SUCCESS [2023-11-19 13:58:58] downloaded après 9 split
+SUCCESS [2023-11-19 13:59:01] downloaded après 9 split
+INFO [2023-11-19 13:59:55] Timed out split (9)
+INFO [2023-11-19 13:59:55] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 53 seconds. 
+, distance 5 km; split (10)
+INFO [2023-11-19 14:00:53] Timed out split (10)
+INFO [2023-11-19 14:00:53] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 58 seconds. 
+, distance 3 km; split (11)
+INFO [2023-11-19 14:01:37] Timed out split (11)
+INFO [2023-11-19 14:01:37] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 44 seconds. 
+, distance 1 km; split (12)
+INFO [2023-11-19 14:02:36] d<1km, next
+SUCCESS [2023-11-19 14:02:43] downloaded après 12 split
+INFO [2023-11-19 14:03:35] d<1km, next
+INFO [2023-11-19 14:04:03] d<1km, next
+INFO [2023-11-19 14:04:34] d<1km, next
+INFO [2023-11-19 14:05:18] d<1km, next
+SUCCESS [2023-11-19 14:05:27] downloaded après 12 split
+SUCCESS [2023-11-19 14:05:31] downloaded après 12 split
+SUCCESS [2023-11-19 14:05:32] downloaded après 12 split
+INFO [2023-11-19 14:06:29] Timed out split (12)
+INFO [2023-11-19 14:06:29] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 57 seconds. 
+, distance 1 km; split (13)
+INFO [2023-11-19 14:07:18] d<1km, next
+INFO [2023-11-19 14:08:29] d<1km, next
+INFO [2023-11-19 14:09:30] d<1km, next
+INFO [2023-11-19 14:10:37] d<1km, next
+SUCCESS [2023-11-19 14:10:43] downloaded après 13 split
+INFO [2023-11-19 14:11:22] d<1km, next
+INFO [2023-11-19 14:11:55] d<1km, next
+SUCCESS [2023-11-19 14:12:02] downloaded après 13 split
+SUCCESS [2023-11-19 14:12:03] downloaded après 13 split
+SUCCESS [2023-11-19 14:12:09] downloaded après 13 split
+SUCCESS [2023-11-19 14:12:12] downloaded après 13 split
+SUCCESS [2023-11-19 14:12:16] downloaded après 13 split
+INFO [2023-11-19 14:12:58] Timed out split (13)
+INFO [2023-11-19 14:12:58] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 42 seconds. 
+, distance 3 km; split (14)
+SUCCESS [2023-11-19 14:13:34] downloaded après 14 split
+INFO [2023-11-19 14:14:21] Timed out split (14)
+INFO [2023-11-19 14:14:21] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 47 seconds. 
+, distance 1 km; split (15)
+SUCCESS [2023-11-19 14:14:24] downloaded après 15 split
+SUCCESS [2023-11-19 14:14:27] downloaded après 15 split
+SUCCESS [2023-11-19 14:14:33] downloaded après 15 split
+SUCCESS [2023-11-19 14:14:34] downloaded après 15 split
+INFO [2023-11-19 14:15:24] Timed out split (15)
+INFO [2023-11-19 14:15:24] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 50 seconds. 
+, distance 1 km; split (16)
+SUCCESS [2023-11-19 14:15:27] downloaded après 16 split
+INFO [2023-11-19 14:16:16] d<1km, next
+SUCCESS [2023-11-19 14:16:47] downloaded après 16 split
+SUCCESS [2023-11-19 14:16:50] downloaded après 16 split
+SUCCESS [2023-11-19 14:16:53] downloaded après 16 split
+INFO [2023-11-19 14:17:36] Timed out split (16)
+INFO [2023-11-19 14:17:36] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 43 seconds. 
+, distance 1 km; split (17)
+SUCCESS [2023-11-19 14:17:42] downloaded après 17 split
+SUCCESS [2023-11-19 14:17:48] downloaded après 17 split
+SUCCESS [2023-11-19 14:17:49] downloaded après 17 split
+INFO [2023-11-19 14:18:41] d<1km, next
+INFO [2023-11-19 14:19:34] d<1km, next
+INFO [2023-11-19 14:20:31] d<1km, next
+INFO [2023-11-19 14:21:20] d<1km, next
+SUCCESS [2023-11-19 14:21:30] downloaded après 17 split
+SUCCESS [2023-11-19 14:21:31] downloaded après 17 split
+SUCCESS [2023-11-19 14:21:32] downloaded après 17 split
+INFO [2023-11-19 14:22:11] Timed out split (17)
+INFO [2023-11-19 14:22:11] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 39 seconds. 
+, distance 5 km; split (18)
+SUCCESS [2023-11-19 14:22:53] downloaded après 18 split
+SUCCESS [2023-11-19 14:22:54] downloaded après 18 split
+SUCCESS [2023-11-19 14:23:09] downloaded après 18 split
+INFO [2023-11-19 14:24:04] Timed out split (18)
+INFO [2023-11-19 14:24:04] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 55 seconds. 
+, distance 3 km; split (19)
+INFO [2023-11-19 14:24:56] Timed out split (19)
+INFO [2023-11-19 14:24:56] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 51 seconds. 
+, distance 1 km; split (20)
+SUCCESS [2023-11-19 14:25:38] downloaded après 20 split
+INFO [2023-11-19 14:26:49] d<1km, next
+INFO [2023-11-19 14:27:16] d<1km, next
+INFO [2023-11-19 14:27:43] d<1km, next
+INFO [2023-11-19 14:28:26] d<1km, next
+SUCCESS [2023-11-19 14:28:34] downloaded après 20 split
+SUCCESS [2023-11-19 14:28:40] downloaded après 20 split
+SUCCESS [2023-11-19 14:28:47] downloaded après 20 split
+SUCCESS [2023-11-19 14:28:53] downloaded après 20 split
+SUCCESS [2023-11-19 14:28:56] downloaded après 20 split
+INFO [2023-11-19 14:29:33] Timed out split (20)
+INFO [2023-11-19 14:29:33] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 37 seconds. 
+, distance 1 km; split (21)
+SUCCESS [2023-11-19 14:29:36] downloaded après 21 split
+SUCCESS [2023-11-19 14:30:11] downloaded après 21 split
+SUCCESS [2023-11-19 14:30:12] downloaded après 21 split
+SUCCESS [2023-11-19 14:30:14] downloaded après 21 split
+INFO [2023-11-19 14:31:12] Timed out split (21)
+INFO [2023-11-19 14:31:12] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 57 seconds. 
+, distance 9 km; split (22)
+SUCCESS [2023-11-19 14:31:13] downloaded après 22 split
+SUCCESS [2023-11-19 14:31:19] downloaded après 22 split
+INFO [2023-11-19 14:32:21] Timed out split (22)
+INFO [2023-11-19 14:32:21] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 62 seconds. 
+, distance 5 km; split (23)
+SUCCESS [2023-11-19 14:32:22] downloaded après 23 split
+SUCCESS [2023-11-19 14:32:25] downloaded après 23 split
+INFO [2023-11-19 14:33:05] Timed out split (23)
+INFO [2023-11-19 14:33:05] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 39 seconds. 
+, distance 3 km; split (24)
+SUCCESS [2023-11-19 14:33:51] downloaded après 24 split
+SUCCESS [2023-11-19 14:34:07] downloaded après 24 split
+INFO [2023-11-19 14:35:01] Timed out split (24)
+INFO [2023-11-19 14:35:01] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 54 seconds. 
+, distance 1 km; split (25)
+SUCCESS [2023-11-19 14:35:04] downloaded après 25 split
+INFO [2023-11-19 14:36:00] d<1km, next
+INFO [2023-11-19 14:36:59] d<1km, next
+INFO [2023-11-19 14:38:22] d<1km, next
+INFO [2023-11-19 14:39:07] d<1km, next
+INFO [2023-11-19 14:40:05] d<1km, next
+SUCCESS [2023-11-19 14:40:28] downloaded après 25 split
+SUCCESS [2023-11-19 14:40:32] downloaded après 25 split
+SUCCESS [2023-11-19 14:40:35] downloaded après 25 split
+INFO [2023-11-19 14:41:09] Timed out split (25)
+INFO [2023-11-19 14:41:09] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 33 seconds. 
+, distance 1 km; split (26)
+INFO [2023-11-19 14:41:40] d<1km, next
+INFO [2023-11-19 14:42:13] d<1km, next
+INFO [2023-11-19 14:42:45] d<1km, next
+INFO [2023-11-19 14:43:38] d<1km, next
+INFO [2023-11-19 14:44:10] d<1km, next
+INFO [2023-11-19 14:44:44] d<1km, next
+SUCCESS [2023-11-19 14:44:55] downloaded après 26 split
+INFO [2023-11-19 14:46:36] d<1km, next
+SUCCESS [2023-11-19 14:46:43] downloaded après 26 split
+SUCCESS [2023-11-19 14:46:43] downloaded après 26 split
+SUCCESS [2023-11-19 14:46:44] downloaded après 26 split
+SUCCESS [2023-11-19 14:46:51] downloaded après 26 split
+SUCCESS [2023-11-19 14:47:01] downloaded après 26 split
+INFO [2023-11-19 14:47:57] Timed out split (26)
+INFO [2023-11-19 14:47:57] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 44 seconds. 
+, distance 28 km; split (27)
+INFO [2023-11-19 14:48:46] Timed out split (27)
+INFO [2023-11-19 14:48:46] Error in check_for_error(paste0(doc)) : 
+  General overpass server error; returned:
+The data included in this document is from www.openstreetmap.org. The data is made available under ODbL. runtime error: Query timed out in "recurse" at line 31 after 26 seconds. 
+, distance 15 km; split (28)
+INFO [2023-11-19 14:49:18] Timed out split (28)
+INFO [2023-11-19 14:49:18] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 9 km; split (29)
+INFO [2023-11-19 14:49:53] Timed out split (29)
+INFO [2023-11-19 14:49:53] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 5 km; split (30)
+SUCCESS [2023-11-19 14:50:20] downloaded après 30 split
+SUCCESS [2023-11-19 14:50:25] downloaded après 30 split
+SUCCESS [2023-11-19 14:50:34] downloaded après 30 split
+INFO [2023-11-19 14:51:05] Timed out split (30)
+INFO [2023-11-19 14:51:05] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 3 km; split (31)
+SUCCESS [2023-11-19 14:51:13] downloaded après 31 split
+INFO [2023-11-19 14:51:45] Timed out split (31)
+INFO [2023-11-19 14:51:45] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 1 km; split (32)
+INFO [2023-11-19 14:52:17] d<1km, next
+INFO [2023-11-19 14:52:48] d<1km, next
+INFO [2023-11-19 14:53:20] d<1km, next
+INFO [2023-11-19 14:53:51] d<1km, next
+SUCCESS [2023-11-19 14:54:21] downloaded après 32 split
+SUCCESS [2023-11-19 14:54:24] downloaded après 32 split
+SUCCESS [2023-11-19 14:54:32] downloaded après 32 split
+SUCCESS [2023-11-19 14:54:33] downloaded après 32 split
+SUCCESS [2023-11-19 14:54:52] downloaded après 32 split
+SUCCESS [2023-11-19 14:54:57] downloaded après 32 split
+SUCCESS [2023-11-19 14:55:21] downloaded après 32 split
+INFO [2023-11-19 14:55:53] Timed out split (32)
+INFO [2023-11-19 14:55:53] Error in httr2::req_perform(req) : HTTP 504 Gateway Timeout.
+, distance 5 km; split (33)
+SUCCESS [2023-11-19 14:55:58] downloaded après 33 split
+SUCCESS [2023-11-19 14:56:19] downloaded après 33 split
+SUCCESS [2023-11-19 14:56:32] downloaded après 33 split
+SUCCESS [2023-11-19 14:56:46] downloaded après 33 split
+SUCCESS [2023-11-19 14:56:47] downloaded après 33 split
+SUCCESS [2023-11-19 14:56:51] downloaded après 33 split
+SUCCESS [2023-11-19 14:57:24] downloaded après 33 split
+SUCCESS [2023-11-19 14:58:08] downloaded après 33 split
+SUCCESS [2023-11-19 14:58:18] downloaded après 33 split
+SUCCESS [2023-11-19 14:58:57] downloaded après 33 split
+SUCCESS [2023-11-19 14:59:24] downloaded après 33 split
+SUCCESS [2023-11-19 14:59:52] downloaded après 33 split
+SUCCESS [2023-11-19 15:04:41] OSM silicate téléchargé: 160m 59s 2700 Mb
