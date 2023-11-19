@@ -4,7 +4,7 @@
 \alias{r5_di}
 \title{calcul des itinéraires détaillés avec r5r}
 \usage{
-r5_di(o, d, tmax, routing)
+r5_di(o, d, tmax, routing, dist_only = FALSE)
 }
 \arguments{
 \item{o}{origine}
@@ -14,6 +14,8 @@ r5_di(o, d, tmax, routing)
 \item{tmax}{temps max pour le trajet}
 
 \item{routing}{système de routing}
+
+\item{dist_only}{Ne calcule que les distances}
 }
 \description{
 calcul des itinéraires détaillés avec r5r

@@ -5,20 +5,25 @@
 \title{setup du système de routing de dodgr}
 \usage{
 routing_setup_dodgr(
-  path,
+  path = "/tmp/",
+  osm,
   date = "17-12-2019 8:00:00",
   mode = "CAR",
   turn_penalty = FALSE,
   distances = FALSE,
+  denivele = FALSE,
   wt_profile_file = NULL,
   n_threads = 4L,
   overwrite = FALSE,
   contract = FALSE,
-  deduplicate = TRUE
+  deduplicate = TRUE,
+  nofuture = TRUE
 )
 }
 \arguments{
-\item{path}{string, chemin d'accès au dossier contenant le réseau}
+\item{path}{string, chemin d'accès pour sauvegarder le routeur (par défaut il est mis en /tmp)}
+
+\item{osm}{chemin vers le fichier osm au format silicate}
 
 \item{date}{string, date Date où seront simulées les routes (non utilisé)}
 
@@ -27,6 +32,8 @@ routing_setup_dodgr(
 \item{turn_penalty}{booléen, applique une pénalité pour les turns}
 
 \item{distances}{booléen, calcule les distances en prime}
+
+\item{denivele}{calcule le d+ sur le trajet}
 
 \item{wt_profile_file}{string, chemin vers le fichier des profils (écrit avec \code{dodgr::write_dodgr_wt_profile})}
 
@@ -37,10 +44,15 @@ routing_setup_dodgr(
 \item{contract}{applique la fonction de contraction de graphe (défaut FALSE) déconseillé si turn_penalty est employé}
 
 \item{deduplicate}{applique la fonction de déduplication de graphe (défaut TRUE)}
+
+\item{di}{utilise les itinériaires détaillés, mais ne fonctionne pas pour le moment}
 }
 \description{
 Cette fonction met en place ce qui est nécessaire pour lancer dodgr
 A partir d'un fichier de réseau (au format silicate, téléchargé par overpass, voir download_dodgr_osm)
 le setup fabrique le weighted_streetnetwork à partir d'un profile par mode de transport
 Ce fichier est enregistré est peut être ensuite utilisé pour calculer les distances ou les temps de parcours
+}
+\details{
+Dans l'état actuel di ne fonctionne pas, de plus le calcul est fait dans dodgr avec un seul thread
 }

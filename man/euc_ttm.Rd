@@ -4,7 +4,7 @@
 \alias{euc_ttm}
 \title{calcul du temps de trajet avec une distance euclidienne}
 \usage{
-euc_ttm(o, d, tmax, routing)
+euc_ttm(o, d, tmax, routing, dist_only = TRUE)
 }
 \arguments{
 \item{o}{origine}
@@ -14,6 +14,8 @@ euc_ttm(o, d, tmax, routing)
 \item{tmax}{temps max pour le trajet}
 
 \item{routing}{système de routing}
+
+\item{dist_only}{Ne calcule que les distances}
 }
 \description{
 calcul du temps de trajet avec une distance euclidienne

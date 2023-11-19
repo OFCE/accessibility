@@ -388,7 +388,7 @@ is.in.dir <- function(groupe, dir)
 access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_var, ttm_out, pids, dir, t2d)
 {
   spid <- get_pid(pids)
-  
+  gc()
   s_ou <- ou_4326[gr==groupe, .(id, lon, lat, x, y)]
   logger::log_debug("aog:{groupe} {k} {nrow(s_ou)}")
   
@@ -428,7 +428,7 @@ access_on_groupe <- function(groupe, ou_4326, quoi_4326, routing, k, tmax, opp_v
       logger::log_debug("quoi_f:{nrow(quoi_f)}")
       
       # distances entre les ancres et les cibles
-      if(any(quoi_f))
+      if(any(quoi_f, na.rm=TRUE))
         ttm_0 <- iso_ttm(o = ttm_ou$les_ou,
                          d = quoi_4326[quoi_f],
                          tmax=tmax+delay+3,
@@ -564,6 +564,75 @@ minimax_euclid <- function(from, to, dist)
 
 ttm_idINS <- function(ttm, resolution=200) {
   require("data.table")
+  from <- ttm$fromId[,
+                     .(id, fromidINS = r3035::idINS3035(x,y, resolution = resolution))]
+  to <- ttm$toId[,
+                 .(id, toidINS = r3035::idINS3035(x,y, resolution = resolution))]
+  tt <- ttm$time_table
+  if(length(tt)>1)
+    tt <- rbindlist(tt, use.names=TRUE, fill = TRUE)
+  else
+    if("list"%in%class(tt))
+      tt <- tt[[1]]
+  tt <- merge(tt, from, by.x="fromId", by.y="id")
+  tt[, fromId:=NULL]
+  tt <- merge(tt, to, by.x="toId", by.y="id")
+  tt[, toId :=NULL]
+  return(tt)
+}
+
+#' Repackage la matrice de distance du disque
+#'
+#' A partir de l'output de \code{\link{iso_accessibilite}} en mode \code{ttm_out=TRUE}
+#' calcule les idINS et fabrique un data.table associant les points de départ (from) à ceux de destination (to)
+#'
+#' @param dir le répertoire où se trouve les fichiers
+#'
+#' @return un data.table avec les paires o-d et les temps en fonction du mode
+#' @export
+#'
+
+ttm_fromfile <- function(dir) {
+  
+  stopifnot(!is.null(dir))
+  
+  require("data.table")
+  
+  files <- list.files(
+    path=dir,
+    pattern = "*.rda",
+    full.names = TRUE)
+  
+  access <- rbindlist(
+    purrr::map(files, ~qs::qread(.x, nthreads=8L)), use.names = TRUE, fill = TRUE)
+  
+  npaires <- sum(access[, .(npaires=npep[[1]]), by=fromId][["npaires"]])
+  access[, `:=`(npea=NULL, npep=NULL)]
+  
+  access[, gr:=NULL]
+  
+  setnames(access, new="temps", old="travel_time")
+  timecrossou <- CJ(fromId=ou_4326$id,temps=c(0:tmax), sorted=FALSE)
+  access <- merge(timecrossou, access, by=c("fromId", "temps"), all.x=TRUE)
+  for (v in opp_var)
+    set(access, i=which(is.na(access[[v]])), j=v, 0)
+  setorder(access, fromId, temps)
+  access_c <- access[, lapply(.SD, cumsum),
+                     by=fromId,
+                     .SDcols=opp_var]
+  temps_c <- access[, .(temps=temps),by=fromId]
+  access_c[,temps:=temps_c$temps]
+  tt <- seq(pdt, tmax, pdt)
+  access_c <- access_c[temps%in%tt, ]
+  access_c <- merge(access_c, ou_4326, by.x="fromId", by.y="id")
+  
+  r_xy <- access_c[, .(x=x[[1]], y=y[[1]]), by=fromId] [, fromId:=NULL]
+  
+  if(is.numeric(out)) {
+    outr <- resolution
+    out <- "raster"
+  }
+  
   from <- ttm$fromId[, .(id, fromidINS = r3035::idINS3035(x,y, resolution = resolution))]
   to <- ttm$toId[, .(id, toidINS = r3035::idINS3035(x,y, resolution = resolution))]
   tt <- ttm$time_table
@@ -579,6 +648,7 @@ ttm_idINS <- function(ttm, resolution=200) {
   return(tt)
 }
 
+
 ksplit <- function(data, k) {
   if(is.null(nrow(data)))
     n <- length(data)
@@ -586,3 +656,5 @@ ksplit <- function(data, k) {
     n <- nrow(data)
   split(data, ceiling(1:n/(n/k)))
 }
+
+
