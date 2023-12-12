@@ -789,7 +789,8 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
               by=c("COMMUNE"="com")) |> 
     left_join(idINSes |> filter(to) |> count(com, name = "nto"),
               by=c("DCLT"="com")) |> 
-    mutate(n = nfrom*nto)
+    mutate(n = nfrom*nto) |> 
+    drop_na(n)
   
   npaires <- sum(com2com$n, na.rm=TRUE)
   
@@ -1320,7 +1321,8 @@ clusterize_com2com <- function(data, seuil = 20e+6L, method = "complete") {
     np_sep <- n1 * nto1 + n2 * nto2
     np_union <- (n1+n2) * sum(nDCLT[unique(c(com1dclt, com2dclt))])
     np_cross <- n1 * nto2 + n2 * nto1
-    return((np_union-np_sep)/ np_cross)
+    res <- (np_union-np_sep)/ np_cross
+    return(res)
   }
   
   communes <- data |> distinct(COMMUNE) |> pull()
@@ -1331,8 +1333,9 @@ clusterize_com2com <- function(data, seuil = 20e+6L, method = "complete") {
     for(j in 1:(i-1))  
       mm[i,j] <- mm[j,i] <- d_pairique(communes[[i]], communes[[j]]) 
   mm <- as.dist(mm)
-  
-  kk <- map_dfr(1:(n-1), ~data |> 
+  mm[is.na(mm)] <- max(mm, na.rm=TRUE) 
+  kk <- map_dfr(1:(n-1), ~
+                  data |> 
                   mutate(clust  = factoextra::hcut(
                     mm,
                     method = method, 
@@ -1344,10 +1347,11 @@ clusterize_com2com <- function(data, seuil = 20e+6L, method = "complete") {
                   summarize( 
                     k = .x,
                     total_k = sum(n),
-                    min_k = min(ncom*ndclt),
-                    total = sum(nCOMMUNE)*sum(nDCLT),
+                    min_k = min(ncom*ndclt, na.rm = TRUE),
+                    total = sum(nCOMMUNE, na.rm = TRUE)*sum(nDCLT, na.rm = TRUE),
                     ecart_temps = sum((n/total) * (pmin(total, seuil)/pmin(n, seuil))^0.5), 
-                    ecart = total_k/total))
+                    ecart = total_k/total)
+                )
   k <- kk |> filter(ecart_temps==min(ecart_temps)) |> pull(k)
   list(cluster = factoextra::hcut(mm, method = method, k=k)$cluster,
        meta = as.list(kk |> filter(ecart_temps==min(ecart_temps))))
