@@ -69,10 +69,11 @@ r5_ttm <- function(o, d, tmax, routing, dist_only = TRUE)
     if(!routing$extended) {
     res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(travel_time_p50))]
     } else {
-      res$result <- res$result[, .(access_time = quantile(access_time, routing$percentiles, na.rm=TRUE), 
-                                   egress_time = quantile(egress_time, routing$percentiles, na.rm=TRUE),
-                                   travel_time = quantile(total_time, routing$percentiles, na.rm=TRUE),
-                                   n_rides = quantile(n_rides, routing$percentiles, na.rm=TRUE)), by = c("from_id", "to_id")]
+      res$result <- res$result[, .(
+        access_time = quantile(access_time, routing$percentiles, na.rm=TRUE),
+        egress_time = quantile(egress_time, routing$percentiles, na.rm=TRUE),
+        travel_time = quantile(total_time, routing$percentiles, na.rm=TRUE),
+        n_rides = quantile(n_rides, routing$percentiles, na.rm=TRUE)), by = c("from_id", "to_id")]
       res$result <- res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(travel_time))]
     }
   

@@ -939,10 +939,11 @@ dgr_onedistance <- function(routeur, from, to, parallel = TRUE) {
                  variable.name="toId",
                  value.name = "dzplus",
                  variable.factor = FALSE)
-  
-  return(dist |> 
+  res <- dist |> 
     merge(time, by = c("fromId", "toId")) |> 
-    merge(dzplus, by=c("fromId", "toId")))
+    merge(dzplus, by = c("fromId", "toId"))
+  res[, `:=`(fromId = as.integer(fromId), toId = as.integer(toId))]
+  return(res)
 }
 
 # Full distance par paires ----------------
