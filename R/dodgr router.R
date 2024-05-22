@@ -859,7 +859,7 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
     
     logger::log_info(
       "        {speed_log}")
-    
+    gc(full=TRUE)
     ttm <- ttm |> 
       merge(from |> select(fromId= idINS, COMMUNE), by = "fromId") |> 
       merge(to |> select(toId= idINS, DCLT), by = "toId")
@@ -873,6 +873,10 @@ dgr_distances_by_com <- function(idINSes, com2com, routeur,
       pqt <- ttm[COMMUNE==com, ]
       pqt[, COMMUNE := NULL]
       arrow::write_parquet(pqt,pqtname)})
+    rm(ttm)
+    gc()
+    logger::log_info(
+      "       -> Communes {str_c(.x$COMMUNE, sep = ", ")} écrites")
   })
   
   time <- tictoc::toc(quiet=TRUE)
