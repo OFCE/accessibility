@@ -932,7 +932,7 @@ dgr_onedistance <- function(routeur, from, to, parallel = TRUE) {
                variable.name="toId",
                value.name = "travel_time",
                variable.factor = FALSE)
-  time[, travel_time := as.integer(travel_time/60)]
+  time[, travel_time := travel_time/60]
   
   dzplus <- dists$dzplus
   dimnames(dzplus) <- list(from$idINS, to$idINS)
