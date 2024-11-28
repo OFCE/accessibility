@@ -1,3 +1,10 @@
+# ksplit
+ksplit <- function(data, k) {
+  deb <- seq(from = 1, to = max(1,nrow(data)-1), by = k)
+  fin <- unique(c(tail(deb, -1), nrow(data)))
+  map(1:length(deb), ~data |> slice(deb[[.x]]:fin[[.x]]))
+}
+
 #' wrapper pour travel_time_matrix
 #'
 #' @param ... cf r5r::travel_time_matrix
@@ -44,30 +51,39 @@ r5_ttm <- function(o, d, tmax, routing, dist_only = TRUE)
       verbose=FALSE,
       progress=FALSE)
   } else {
-    res <- safe_r5_ttm_ext(
-      r5r_core = routing$core,
-      origins = o,
-      destinations = d,
-      mode=routing$mode,
-      departure_datetime = routing$departure_datetime,
-      max_walk_time = routing$max_walk_time,
-      max_trip_duration = tmax+1,
-      time_window = as.integer(routing$time_window),
-      breakdown = TRUE,
-      walk_speed = routing$walk_speed,
-      bike_speed = routing$bike_speed,
-      max_rides = routing$max_rides,
-      max_lts = routing$max_lts,
-      n_threads = routing$n_threads,
-      draws_per_minute = routing$montecarlo,
-      verbose=FALSE,
-      progress=FALSE
-    )
+    ds <- ksplit(d, 4999) # R5 conveyal limite à 5000 le nbre de dest.
+    res <- map(
+      ds,
+      ~safe_r5_ttm_ext(
+        r5r_core = routing$core,
+        origins = o,
+        destinations = .x,
+        mode=routing$mode,
+        departure_datetime = routing$departure_datetime,
+        max_walk_time = routing$max_walk_time,
+        max_trip_duration = tmax+1,
+        time_window = as.integer(routing$time_window),
+        breakdown = TRUE,
+        walk_speed = routing$walk_speed,
+        bike_speed = routing$bike_speed,
+        max_rides = routing$max_rides,
+        max_lts = routing$max_lts,
+        n_threads = routing$n_threads,
+        draws_per_minute = routing$montecarlo,
+        verbose=FALSE,
+        progress=FALSE, 
+      ))
+    if(is.null(res[[1]]$error)) {
+      tres <- list(error = NULL)
+      tres$result <- reduce(res, ~rbind(.x, .y$result), .init = data.table())
+      res <- tres
+    } else
+      res <- list(error = res[[1]]$error)
   }
   
   if (is.null(res$error)&&nrow(res$result)>0)
     if(!routing$extended) {
-    res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(travel_time_p50))]
+      res$result[, `:=`(fromId=as.integer(from_id), toId=as.integer(to_id), travel_time=as.integer(travel_time_p50))]
     } else {
       res$result <- res$result[, .(
         access_time = quantile(access_time, routing$percentiles, na.rm=TRUE),
